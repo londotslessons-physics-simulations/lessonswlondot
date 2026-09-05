@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Construct a Capacitor Lab</title>
+<style>
+  :root{--ink:#111827;--muted:#5b6472;--line:#cfd5dd;--panel:#f7f8fa;--accent:#173f7a;--good:#1f6f43;--warn:#8a5a00}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef1f5;color:var(--ink)}
+  header{background:white;border-bottom:1px solid var(--line);padding:18px 24px;display:flex;justify-content:space-between;gap:20px;align-items:center}
+  h1{margin:0;font-size:clamp(24px,4vw,40px)}
+  header p{margin:4px 0 0;color:var(--muted)}
+  main{max-width:1220px;margin:auto;padding:18px;display:grid;grid-template-columns:minmax(320px,1.2fr) minmax(300px,.8fr);gap:18px}
+  .panel{background:white;border:1px solid var(--line);border-radius:14px;padding:16px}
+  .panel h2{margin:0 0 12px;font-size:20px}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  label{display:block;font-weight:700;font-size:14px;margin-bottom:5px}
+  input[type=range],select,input[type=number]{width:100%}
+  input[type=number],select{padding:9px;border:1px solid #aeb7c2;border-radius:8px;background:white}
+  .readout{font-weight:700;color:var(--accent)}
+  .full{grid-column:1/-1}
+  .buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  button{border:1px solid #8090a5;background:white;border-radius:9px;padding:10px 13px;font-weight:700;cursor:pointer}
+  button.primary{background:var(--accent);color:white;border-color:var(--accent)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .sim-wrap{position:relative;height:390px;background:linear-gradient(#fafafa,#f1f3f6);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  svg{width:100%;height:100%;display:block}
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+  .metric{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--panel)}
+  .metric span{display:block;color:var(--muted);font-size:12px}
+  .metric strong{font-size:18px}
+  .note{margin-top:10px;padding:10px;border-left:4px solid var(--accent);background:#edf3fb;font-size:14px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{border:1px solid var(--line);padding:7px;text-align:center}
+  th{background:#eef2f7}
+  .table-wrap{overflow:auto}
+  .mode-row{display:flex;gap:16px;flex-wrap:wrap;padding:10px;background:var(--panel);border-radius:10px}
+  .mode-row label{font-weight:600;margin:0}
+  .footer-help{font-size:13px;color:var(--muted);margin-top:10px}
+  @media(max-width:850px){main{grid-template-columns:1fr}.sim-wrap{height:340px}}
+  @media(max-width:520px){.controls,.metrics{grid-template-columns:1fr}.full{grid-column:auto}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Construct a Capacitor Lab</h1><p>Build a parallel-plate capacitor, change its geometry, and collect data.</p></div>
+  <div><strong>Model:</strong> ideal parallel plates</div>
+</header>
+<main>
+  <section class="panel">
+    <h2>Capacitor Construction</h2>
+    <div class="mode-row full">
+      <label><input type="radio" name="mode" value="battery" checked> Battery connected (constant V)</label>
+      <label><input type="radio" name="mode" value="isolated"> Battery disconnected (constant Q)</label>
+    </div>
+    <div class="controls" style="margin-top:12px">
+      <div>
+        <label for="area">Plate area, A</label>
+        <input id="area" type="range" min="20" max="400" step="5" value="150">
+        <div><span class="readout" id="areaOut"></span> cm²</div>
+      </div>
+      <div>
+        <label for="sep">Plate separation, d</label>
+        <input id="sep" type="range" min="1" max="20" step="0.5" value="6">
+        <div><span class="readout" id="sepOut"></span> mm</div>
+      </div>
+      <div>
+        <label for="volt">Battery voltage, V</label>
+        <input id="volt" type="range" min="1" max="24" step="0.5" value="12">
+        <div><span class="readout" id="voltOut"></span> V</div>
+      </div>
+      <div>
+        <label for="dielectric">Dielectric material</label>
+        <select id="dielectric">
+          <option value="1">Air / vacuum (κ = 1.0)</option>
+          <option value="2.1">Teflon (κ = 2.1)</option>
+          <option value="3.4">Paper (κ = 3.4)</option>
+          <option value="4.7">Glass (κ = 4.7)</option>
+          <option value="6.0">Mica (κ = 6.0)</option>
+        </select>
+      </div>
+      <div class="full">
+        <label for="insert">Dielectric insertion</label>
+        <input id="insert" type="range" min="0" max="100" step="5" value="0">
+        <div><span class="readout" id="insertOut"></span>% of plate area filled</div>
+      </div>
+    </div>
+    <div class="buttons">
+      <button class="primary" id="record">Record Trial</button>
+      <button id="reset">New Capacitor</button>
+      <button id="clear">Clear Data</button>
+      <button id="copy">Copy Data</button>
+    </div>
+    <div class="note" id="modeNote"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Live Measurements</h2>
+    <div class="sim-wrap">
+      <svg viewBox="0 0 700 390" role="img" aria-label="Parallel plate capacitor diagram">
+        <defs>
+          <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="12" cy="12" r="2" fill="#777"/></pattern>
+        </defs>
+        <text x="350" y="32" text-anchor="middle" font-size="19" font-weight="700">Parallel-Plate Capacitor</text>
+        <rect x="145" y="95" width="410" height="28" rx="4" fill="#c7ccd3" stroke="#111" stroke-width="2" id="topPlate"/>
+        <rect x="145" y="267" width="410" height="28" rx="4" fill="#c7ccd3" stroke="#111" stroke-width="2" id="bottomPlate"/>
+        <rect x="145" y="123" width="0" height="144" fill="url(#dots)" opacity=".55" id="dielectricBlock"/>
+        <g id="plusSigns" font-size="20" font-weight="700" text-anchor="middle"></g>
+        <g id="minusSigns" font-size="22" font-weight="700" text-anchor="middle"></g>
+        <g id="fieldLines" stroke="#4b5563" stroke-width="2"></g>
+        <line x1="95" y1="109" x2="145" y2="109" stroke="#111" stroke-width="3"/>
+        <line x1="95" y1="281" x2="145" y2="281" stroke="#111" stroke-width="3"/>
+        <line x1="95" y1="109" x2="95" y2="168" stroke="#111" stroke-width="3"/>
+        <line x1="95" y1="222" x2="95" y2="281" stroke="#111" stroke-width="3"/>
+        <line x1="70" y1="168" x2="120" y2="168" stroke="#111" stroke-width="5"/>
+        <line x1="80" y1="190" x2="110" y2="190" stroke="#111" stroke-width="3"/>
+        <text x="95" y="211" text-anchor="middle" font-size="14">battery</text>
+        <text x="570" y="205" font-size="15" id="gapLabel"></text>
+        <line x1="555" y1="125" x2="555" y2="265" stroke="#111" stroke-dasharray="5 4"/>
+        <text x="350" y="365" text-anchor="middle" font-size="14" id="plateLabel"></text>
+      </svg>
+    </div>
+    <div class="metrics">
+      <div class="metric"><span>Capacitance</span><strong id="capMetric"></strong></div>
+      <div class="metric"><span>Charge magnitude</span><strong id="chargeMetric"></strong></div>
+      <div class="metric"><span>Electric field</span><strong id="fieldMetric"></strong></div>
+      <div class="metric"><span>Stored energy</span><strong id="energyMetric"></strong></div>
+      <div class="metric"><span>Effective κ</span><strong id="kMetric"></strong></div>
+      <div class="metric"><span>Potential difference</span><strong id="vMetric"></strong></div>
+    </div>
+  </section>
+
+  <section class="panel" style="grid-column:1/-1">
+    <h2>Recorded Data</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Trial</th><th>Mode</th><th>A (cm²)</th><th>d (mm)</th><th>κ effective</th><th>V (V)</th><th>C (pF)</th><th>Q (nC)</th><th>E (V/m)</th><th>U (nJ)</th></tr></thead>
+        <tbody id="dataBody"><tr><td colspan="10">No trials recorded.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="footer-help">Suggested investigations: vary only area; vary only separation; compare dielectric materials; insert a dielectric with the battery connected, then repeat with the battery disconnected.</div>
+  </section>
+</main>
+<script>
+(() => {
+  const eps0 = 8.8541878128e-12;
+  const area = document.getElementById('area');
+  const sep = document.getElementById('sep');
+  const volt = document.getElementById('volt');
+  const dielectric = document.getElementById('dielectric');
+  const insert = document.getElementById('insert');
+  const rows = [];
+  let isolatedCharge = null;
+
+  const fmt = (x, digits=3) => Number(x).toLocaleString(undefined,{maximumSignificantDigits:digits});
+  function mode(){ return document.querySelector('input[name="mode"]:checked').value; }
+  function values(){
+    const A = +area.value/10000;
+    const d = +sep.value/1000;
+    const k = +dielectric.value;
+    const f = +insert.value/100;
+    const keff = (1-f) + k*f;
+    const C = eps0*keff*A/d;
+    let V = +volt.value;
+    let Q = C*V;
+    if(mode()==='isolated'){
+      if(isolatedCharge===null) isolatedCharge = Q;
+      Q = isolatedCharge;
+      V = Q/C;
+    }
+    const E = V/d;
+    const U = .5*C*V*V;
+    return {A,d,k,keff,C,V,Q,E,U,f};
+  }
+  function update(){
+    const v = values();
+    document.getElementById('areaOut').textContent=area.value;
+    document.getElementById('sepOut').textContent=sep.value;
+    document.getElementById('voltOut').textContent=volt.value;
+    document.getElementById('insertOut').textContent=insert.value;
+    document.getElementById('capMetric').textContent=fmt(v.C*1e12)+' pF';
+    document.getElementById('chargeMetric').textContent=fmt(v.Q*1e9)+' nC';
+    document.getElementById('fieldMetric').textContent=fmt(v.E)+' V/m';
+    document.getElementById('energyMetric').textContent=fmt(v.U*1e9)+' nJ';
+    document.getElementById('kMetric').textContent=fmt(v.keff,4);
+    document.getElementById('vMetric').textContent=fmt(v.V)+' V';
+    document.getElementById('gapLabel').textContent='d = '+sep.value+' mm';
+    document.getElementById('plateLabel').textContent='A = '+area.value+' cm²';
+    document.getElementById('dielectricBlock').setAttribute('width',410*v.f);
+    document.getElementById('modeNote').textContent = mode()==='battery'
+      ? 'Battery connected: voltage stays constant. Charge changes when capacitance changes.'
+      : 'Battery disconnected: charge stays constant. Voltage changes when capacitance changes.';
+    volt.disabled = mode()==='isolated';
+    drawCharges(Math.max(4,Math.min(18,Math.round(Math.abs(v.Q)*1e9*1.2))));
+    drawField(Math.max(4,Math.min(11,Math.round(v.E/2500))));
+  }
+  function drawCharges(n){
+    const p=document.getElementById('plusSigns'), m=document.getElementById('minusSigns'); p.innerHTML='';m.innerHTML='';
+    for(let i=0;i<n;i++){
+      const x=165+i*(370/Math.max(1,n-1));
+      p.insertAdjacentHTML('beforeend',`<text x="${x}" y="116">+</text>`);
+      m.insertAdjacentHTML('beforeend',`<text x="${x}" y="288">−</text>`);
+    }
+  }
+  function drawField(n){
+    const g=document.getElementById('fieldLines');g.innerHTML='';
+    for(let i=0;i<n;i++){
+      const x=175+i*(350/Math.max(1,n-1));
+      g.insertAdjacentHTML('beforeend',`<line x1="${x}" y1="135" x2="${x}" y2="250"/><polyline points="${x-5},242 ${x},250 ${x+5},242" fill="none"/>`);
+    }
+  }
+  function renderRows(){
+    const body=document.getElementById('dataBody');
+    if(!rows.length){body.innerHTML='<tr><td colspan="10">No trials recorded.</td></tr>';return;}
+    body.innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.mode}</td><td>${r.A}</td><td>${r.d}</td><td>${r.k}</td><td>${r.V}</td><td>${r.C}</td><td>${r.Q}</td><td>${r.E}</td><td>${r.U}</td></tr>`).join('');
+  }
+  [area,sep,volt,dielectric,insert].forEach(el=>el.addEventListener('input',update));
+  document.querySelectorAll('input[name="mode"]').forEach(r=>r.addEventListener('change',()=>{isolatedCharge=null;update();}));
+  document.getElementById('record').addEventListener('click',()=>{
+    const v=values(); rows.push({mode:mode()==='battery'?'constant V':'constant Q',A:(v.A*1e4).toFixed(0),d:(v.d*1e3).toFixed(1),k:v.keff.toFixed(2),V:v.V.toFixed(3),C:(v.C*1e12).toFixed(3),Q:(v.Q*1e9).toFixed(3),E:v.E.toFixed(1),U:(v.U*1e9).toFixed(3)}); renderRows();
+  });
+  document.getElementById('clear').addEventListener('click',()=>{rows.length=0;renderRows();});
+  document.getElementById('reset').addEventListener('click',()=>{area.value=150;sep.value=6;volt.value=12;dielectric.value=1;insert.value=0;document.querySelector('input[value="battery"]').checked=true;isolatedCharge=null;rows.length=0;renderRows();update();});
+  document.getElementById('copy').addEventListener('click',async()=>{
+    if(!rows.length) return alert('Record at least one trial first.');
+    const head='Trial\tMode\tA (cm^2)\td (mm)\tk effective\tV (V)\tC (pF)\tQ (nC)\tE (V/m)\tU (nJ)';
+    const text=[head,...rows.map((r,i)=>[i+1,r.mode,r.A,r.d,r.k,r.V,r.C,r.Q,r.E,r.U].join('\t'))].join('\n');
+    try{await navigator.clipboard.writeText(text);alert('Data copied.');}catch{prompt('Copy the data below:',text);}
+  });
+  update();renderRows();
+})();
+</script>
+</body>
+</html>

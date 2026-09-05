@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coulomb's Law Factors Lab</title>
+<style>
+body{font-family:Arial;margin:0;background:#edf3f8;color:#172532}header{text-align:center;padding:16px}
+main{width:min(1100px,96vw);margin:auto;display:grid;grid-template-columns:1fr 330px;gap:14px}
+.card{background:white;border:1px solid #b9c7d2;border-radius:14px;padding:14px;box-shadow:0 6px 18px #0002}
+svg{width:100%;background:#f8fbfd;border:2px solid #283947;border-radius:12px}
+.controls{display:grid;gap:12px}.control{display:grid;gap:5px}input,select,button{font:inherit}
+button{padding:10px;border-radius:8px;border:1px solid #8ea1b0;background:white;font-weight:bold}
+button.primary{background:#2f6fa3;color:white}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.metric{text-align:center;background:#eef4f8;border:1px solid #b9c7d2;border-radius:8px;padding:8px}.metric b{display:block}
+.data{grid-column:1/-1}table{width:100%;border-collapse:collapse}th,td{border:1px solid #aebdca;padding:7px;text-align:center}th{background:#e7eef4}
+@media(max-width:850px){main{grid-template-columns:1fr}.controls{grid-row:1}.metrics{grid-template-columns:1fr 1fr}}
+</style></head>
+<body><header><h1>Coulomb's Law Factors Lab</h1><p>Explore charge magnitude, sign, and separation distance.</p></header>
+<main>
+<section class="card">
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+<button id="reset">Reset</button><button id="random" class="primary">Random Scenario</button><button id="record">Record Data</button>
+</div>
+<svg viewBox="0 0 900 470">
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#2e7d4f"/></marker></defs>
+<line x1="100" y1="250" x2="800" y2="250" stroke="#8396a4" stroke-width="2"/>
+<line id="f1" y1="170" y2="170" stroke="#2e7d4f" stroke-width="7" marker-end="url(#a)"/>
+<line id="f2" y1="170" y2="170" stroke="#2e7d4f" stroke-width="7" marker-end="url(#a)"/>
+<circle id="c1" cy="250" r="45" stroke="#263746" stroke-width="3"/>
+<circle id="c2" cy="250" r="45" stroke="#263746" stroke-width="3"/>
+<text id="t1" y="258" text-anchor="middle" font-size="26" font-weight="bold" fill="white"></text>
+<text id="t2" y="258" text-anchor="middle" font-size="26" font-weight="bold" fill="white"></text>
+<text id="l1" y="320" text-anchor="middle" font-size="17" font-weight="bold"></text>
+<text id="l2" y="320" text-anchor="middle" font-size="17" font-weight="bold"></text>
+<line id="dist" y1="350" y2="350" stroke="#596b78" stroke-dasharray="7 6"/>
+<text id="dt" x="450" y="378" text-anchor="middle" font-size="17" font-weight="bold"></text>
+<text id="interaction" x="450" y="80" text-anchor="middle" font-size="25" font-weight="bold"></text>
+<text x="450" y="430" text-anchor="middle" font-size="20">F = k|q₁q₂|/r²</text>
+</svg>
+<div class="metrics"><div class="metric">Force<b id="force"></b></div><div class="metric">Interaction<b id="type"></b></div><div class="metric">Force on q₁<b id="d1"></b></div><div class="metric">Force on q₂<b id="d2"></b></div></div>
+</section>
+<aside class="card controls">
+<h2>Controls</h2>
+<div class="control"><label>q₁ magnitude: <b id="q1v"></b></label><input id="q1" type="range" min=".5" max="10" step=".5" value="2"><select id="s1"><option value="1">Positive</option><option value="-1">Negative</option></select></div>
+<div class="control"><label>q₂ magnitude: <b id="q2v"></b></label><input id="q2" type="range" min=".5" max="10" step=".5" value="3"><select id="s2"><option value="1">Positive</option><option value="-1" selected>Negative</option></select></div>
+<div class="control"><label>Separation: <b id="rv"></b></label><input id="r" type="range" min=".25" max="2" step=".05" value="1"></div>
+<div style="background:#f7f1e7;border-left:5px solid #c49950;padding:10px;border-radius:8px"><b>Coulomb's Law</b><br>F = k|q₁q₂|/r²<br>k = 8.99 × 10⁹ N·m²/C²</div>
+<h2>Prediction Challenge</h2>
+<div id="prompt" style="background:#fff8dc;padding:10px;border:1px solid #d8c480;border-radius:8px"></div>
+<select id="answer"><option value="">Choose...</option><option value=".25">One-fourth</option><option value=".5">One-half</option><option value="1">Unchanged</option><option value="2">Twice</option><option value="4">Four times</option></select>
+<button id="check" class="primary">Check Prediction</button><button id="newc">New Challenge</button><div id="feedback" style="font-weight:bold;min-height:24px"></div>
+</aside>
+<section class="card data"><h2>Recorded Data</h2><table><thead><tr><th>Trial</th><th>q₁ (μC)</th><th>q₂ (μC)</th><th>r (m)</th><th>Force (N)</th><th>Interaction</th></tr></thead><tbody id="body"></tbody></table><button id="clear">Clear Data</button></section>
+</main>
+<script>
+const $=id=>document.getElementById(id),k=8.99e9;let trial=0,cf=2;
+const E={q1:$('q1'),q2:$('q2'),r:$('r'),s1:$('s1'),s2:$('s2'),c1:$('c1'),c2:$('c2'),t1:$('t1'),t2:$('t2'),l1:$('l1'),l2:$('l2'),f1:$('f1'),f2:$('f2'),dist:$('dist'),dt:$('dt'),interaction:$('interaction'),force:$('force'),type:$('type'),d1:$('d1'),d2:$('d2'),q1v:$('q1v'),q2v:$('q2v'),rv:$('rv'),body:$('body'),prompt:$('prompt'),answer:$('answer'),feedback:$('feedback')};
+function vals(){let q1=+E.q1.value*+E.s1.value,q2=+E.q2.value*+E.s2.value,r=+E.r.value,F=k*Math.abs(q1*q2)*1e-12/(r*r);return{q1,q2,r,F}}
+function update(){let{q1,q2,r,F}=vals(),x1=450-r*175,x2=450+r*175,a=q1*q2<0,L=Math.min(110,35+Math.log10(F*1000+1)*25);
+[['c1',x1],['c2',x2],['t1',x1],['t2',x2],['l1',x1],['l2',x2]].forEach(([id,x])=>E[id].setAttribute('cx' in E[id]? 'cx':'x',x));
+E.c1.setAttribute('fill',q1>0?'#c93636':'#2d62b4');E.c2.setAttribute('fill',q2>0?'#c93636':'#2d62b4');
+E.t1.textContent=(q1>0?'+':'−')+Math.abs(q1).toFixed(1);E.t2.textContent=(q2>0?'+':'−')+Math.abs(q2).toFixed(1);
+E.l1.textContent='q₁ = '+q1.toFixed(1)+' μC';E.l2.textContent='q₂ = '+q2.toFixed(1)+' μC';
+E.dist.setAttribute('x1',x1);E.dist.setAttribute('x2',x2);E.dt.textContent='r = '+r.toFixed(2)+' m';
+if(a){E.f1.setAttribute('x1',x1-15);E.f1.setAttribute('x2',x1+L);E.f2.setAttribute('x1',x2+15);E.f2.setAttribute('x2',x2-L);E.d1.textContent='Right';E.d2.textContent='Left'}else{E.f1.setAttribute('x1',x1+15);E.f1.setAttribute('x2',x1-L);E.f2.setAttribute('x1',x2-15);E.f2.setAttribute('x2',x2+L);E.d1.textContent='Left';E.d2.textContent='Right'}
+E.interaction.textContent=(a?'Attractive':'Repulsive')+' Interaction';E.force.textContent=F.toFixed(4)+' N';E.type.textContent=a?'Attractive':'Repulsive';E.q1v.textContent=Math.abs(q1).toFixed(1)+' μC';E.q2v.textContent=Math.abs(q2).toFixed(1)+' μC';E.rv.textContent=r.toFixed(2)+' m'}
+function challenge(){let A=[['If q₁ doubles, what happens to F?',2],['If both charges double, what happens to F?',4],['If distance doubles, what happens to F?',.25],['If distance is halved, what happens to F?',4],['If q₂ is halved, what happens to F?',.5]],c=A[Math.floor(Math.random()*A.length)];E.prompt.textContent=c[0];cf=c[1];E.answer.value='';E.feedback.textContent=''}
+['q1','q2','r','s1','s2'].forEach(id=>$(id).addEventListener('input',update));
+$('reset').onclick=()=>{E.q1.value=2;E.q2.value=3;E.r.value=1;E.s1.value=1;E.s2.value=-1;update()};
+$('random').onclick=()=>{E.q1.value=(Math.floor(Math.random()*19)+1)/2;E.q2.value=(Math.floor(Math.random()*19)+1)/2;E.r.value=(.25+Math.random()*1.75).toFixed(2);E.s1.value=Math.random()<.5?1:-1;E.s2.value=Math.random()<.5?1:-1;update()};
+$('record').onclick=()=>{let{q1,q2,r,F}=vals(),tr=document.createElement('tr');trial++;tr.innerHTML=`<td>${trial}</td><td>${q1.toFixed(1)}</td><td>${q2.toFixed(1)}</td><td>${r.toFixed(2)}</td><td>${F.toFixed(5)}</td><td>${q1*q2<0?'Attractive':'Repulsive'}</td>`;E.body.appendChild(tr)};
+$('clear').onclick=()=>{E.body.innerHTML='';trial=0};$('newc').onclick=challenge;$('check').onclick=()=>{let a=+E.answer.value;E.feedback.textContent=!a?'Choose an answer.':a===cf?'Correct.':'Try again. Use the variable’s exponent in Coulomb’s law.'};challenge();update();
+</script></body></html>

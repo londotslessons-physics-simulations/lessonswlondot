@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inclined Plane Investigation</title>
+<style>
+  :root{--blue:#1f4e79;--light:#eef5fb;--panel:#ffffff;--ink:#17202a;--accent:#d97b2b;}
+  *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#dce8f2;color:var(--ink)}
+  header{background:var(--blue);color:white;padding:12px 16px;text-align:center;border-bottom:4px solid #163854}
+  header h1{margin:0;font-size:1.5rem} header p{margin:.25rem 0 0;font-size:.92rem}
+  main{display:grid;grid-template-columns:minmax(320px,1fr) 360px;gap:14px;padding:14px;max-width:1280px;margin:0 auto}
+  .card{background:var(--panel);border:2px solid #9bb8ce;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12);overflow:hidden}
+  .card h2{font-size:1rem;margin:0;padding:10px 12px;background:#f4f8fb;border-bottom:1px solid #c7d7e3;color:#163854}
+  #simWrap{padding:10px}.canvasBox{position:relative;width:100%;background:#b7d6e8;border:2px solid #557a95;border-radius:8px;overflow:hidden}canvas{display:block;width:100%;height:auto;touch-action:none}.readout{display:flex;justify-content:space-around;gap:8px;flex-wrap:wrap;margin-top:8px;font-weight:bold}.readout div{background:#f4f8fb;border:1px solid #b9ccd9;border-radius:8px;padding:8px 10px;min-width:120px;text-align:center}
+  .controls{padding:12px;display:grid;gap:12px}.control{display:grid;gap:5px}label{font-weight:bold;font-size:.92rem}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row > *{flex:1}input[type=range]{width:100%}select,input[type=number]{padding:8px;border:1px solid #9fb5c8;border-radius:6px;font-size:1rem}button{padding:10px 12px;border:0;border-radius:8px;background:var(--blue);color:white;font-weight:bold;cursor:pointer;font-size:.95rem}button.secondary{background:#516b7e}button.warn{background:#a33}button:disabled{opacity:.5;cursor:not-allowed}.tiny{font-size:.8rem;color:#51606b}.data{padding:10px;max-height:340px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:.88rem}th,td{border:1px solid #b8ccd8;padding:6px;text-align:right}th{background:#eaf2f8;color:#163854;text-align:center}.graph{padding:10px}.equationBox{background:#fff8ea;border:1px solid #e1bd7d;border-radius:8px;padding:8px;margin:10px;font-size:.9rem}.hide{display:none!important}
+  @media (max-width:900px){main{grid-template-columns:1fr;padding:8px}.controls{grid-template-columns:1fr}.card{border-radius:8px}.readout div{min-width:100px;font-size:.85rem}header h1{font-size:1.2rem}}
+</style>
+</head>
+<body>
+<header><h1>Inclined Plane Investigation</h1><p>Choose the cart's starting position, data interval, and whether to collect position-time or velocity-time data.</p></header>
+<main>
+  <section class="card" id="simWrap"><h2>Simulation Window</h2><div class="canvasBox"><canvas id="sim" width="900" height="520" aria-label="Inclined plane simulation"></canvas></div><div class="readout"><div>Time: <span id="tRead">0.00</span> s</div><div>Angle: <span id="angleRead">10</span>°</div><div>Position Traveled: <span id="xRead">0.00</span> m</div><div>Trial: <span id="trialRead">1</span></div></div></section>
+  <aside class="card"><h2>Controls</h2><div class="controls">
+    <div class="control"><label for="angle">Plane pitch / angle</label><input id="angle" type="range" min="5" max="35" step="1" value="10"><div class="tiny">Use at least five different angles for the lab.</div></div>
+    <div class="control"><label for="startPosition">Starting position: <span id="startPositionRead">4.0</span> m from the finish</label><input id="startPosition" type="range" min="0.5" max="4.0" step="0.1" value="4.0"><div class="tiny">Move the slider before releasing the cart. The cart will appear at the selected mark on the ramp.</div></div>
+    <div class="row"><div class="control"><label for="surface">Surface</label><select id="surface"><option value="smooth">Smooth track</option><option value="felt">Felt strip</option><option value="rubber">Rubber strip</option></select></div><div class="control"><label for="mass">Cart mass (kg)</label><input id="mass" type="number" min="0.2" max="2" step="0.1" value="0.8"></div></div>
+    <div class="row"><button id="startBtn">Start / Release</button><button class="secondary" id="pauseBtn">Pause</button><button class="warn" id="resetBtn">Reset / Next Trial</button></div>
+    <div class="row"><button id="copyBtn">Copy Raw Data</button><button class="secondary" id="newTrialBtn">New Trial</button><button class="secondary" id="clearBtn">Clear All Data</button></div>
+    <div class="control"><label for="dataType">Data type</label><select id="dataType"><option value="position" selected>Position vs. Time</option><option value="velocity">Velocity vs. Time</option></select><div class="tiny">Choose which motion data the simulation will collect for the trial.</div></div><div class="control"><label for="timeInterval">Data collection interval (s)</label><select id="timeInterval"><option value="0.05">0.05 s</option><option value="0.10" selected>0.10 s</option><option value="0.20">0.20 s</option><option value="0.25">0.25 s</option><option value="0.50">0.50 s</option></select><div class="tiny">Measurements are recorded automatically at the selected interval.</div></div><label><input type="checkbox" id="teacherMode"> Teacher mode: show hidden values</label>
+  </div><div class="equationBox hide" id="teacherBox">Actual acceleration: <b><span id="aRead"></span> m/s²</b><br>Model: acceleration along ramp includes gravity component and surface friction.</div><h2 id="dataTitle">Position vs. Time Data</h2><div class="data"><table id="dataTable"><thead><tr><th>Trial</th><th>Angle (°)</th><th>Time (s)</th><th id="measureHead">Position (m)</th></tr></thead><tbody></tbody></table></div></aside>
+  <section class="card"><h2>Five-Trial Calculation Table</h2><div class="data"><table id="calcTable"><thead><tr><th>Trial</th><th>Initial Time, tᵢ (s)</th><th>Final Time, t_f (s)</th><th>Initial Velocity, vᵢ (m/s)</th><th>Final Velocity, v_f (m/s)</th><th>Δt (s)</th><th>Δv (m/s)</th><th>Acceleration (m/s²)</th></tr></thead><tbody><tr><td>1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>5</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table></div><div class="equationBox"><b>Calculate velocity from the raw data:</b> v = Δx / Δt. Use two nearby position-time points near the beginning of a run for vᵢ and two nearby points near the end for v_f. Then calculate Δt = t_f − tᵢ, Δv = v_f − vᵢ, and a = Δv / Δt.</div></section>
+  <section class="card"><h2>Student Task</h2><div class="controls"><ol><li>Select the incline angle, starting position, data interval, and data type for Trial 1.</li><li>Choose <b>Position vs. Time</b> if you want to calculate velocity from position data, or choose <b>Velocity vs. Time</b> to collect velocity directly.</li><li>Release the cart and record the needed initial and final values.</li><li>Record tᵢ, t_f, vᵢ, and v_f in your lab data chart. If using position data, calculate vᵢ and v_f from nearby points first.</li><li>Calculate Δt, Δv, and acceleration.</li><li>Repeat until you have completed five trials.</li></ol></div></section>
+</main>
+<script>
+const canvas=document.getElementById('sim'),ctx=canvas.getContext('2d');
+const angleEl=document.getElementById('angle'),startPositionEl=document.getElementById('startPosition'),startPositionRead=document.getElementById('startPositionRead'),surfaceEl=document.getElementById('surface'),massEl=document.getElementById('mass');
+const tRead=document.getElementById('tRead'),angleRead=document.getElementById('angleRead'),xRead=document.getElementById('xRead'),aRead=document.getElementById('aRead'),trialRead=document.getElementById('trialRead');
+const teacherBox=document.getElementById('teacherBox'),teacherMode=document.getElementById('teacherMode'),tbody=document.querySelector('#dataTable tbody'),dataTypeEl=document.getElementById('dataType'),dataTitle=document.getElementById('dataTitle'),measureHead=document.getElementById('measureHead');
+let running=false,last=null,t=0,x=0,v=0,trial=1,data=[],lastAuto=-Infinity;
+const rampLen=4.0, g=9.8;
+function mu(){return {smooth:0.015,felt:0.06,rubber:0.12}[surfaceEl.value]||0.02}
+function accel(){let th=Number(angleEl.value)*Math.PI/180; return Math.max(0, g*Math.sin(th)-mu()*g*Math.cos(th));}
+function resetRun(newTrial=false){running=false;last=null;t=0;x=0;v=0;lastAuto=-Infinity;if(newTrial && trial<5)trial++;update();draw();}
+function currentTrialHasData(){return data.some(d=>d.trial===trial);}
+function resetAndAdvanceTrial(){
+  const hadData=currentTrialHasData();
+  if(hadData && trial<5){trial++;}
+  else if(hadData && trial>=5){alert('Trial 5 is complete. Use Clear All Data to begin a new five-trial set.');}
+  resetRun(false);
+}
+function update(){angleRead.textContent=angleEl.value;startPositionRead.textContent=Number(startPositionEl.value).toFixed(1);tRead.textContent=t.toFixed(2);xRead.textContent=x.toFixed(2);aRead.textContent=accel().toFixed(2);trialRead.textContent=trial;teacherBox.classList.toggle('hide',!teacherMode.checked)}
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);let W=canvas.width,H=canvas.height;let sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#d8eef9');sky.addColorStop(1,'#93c5df');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+ // airplane/lab window
+ ctx.fillStyle='#f7fbff';ctx.strokeStyle='#3b5f78';ctx.lineWidth=4;roundRect(ctx,50,35,W-100,H-70,28,true,true);ctx.fillStyle='#dce6ed';ctx.fillRect(85,65,W-170,70);ctx.fillStyle='#6ea7c8';ctx.fillRect(105,80,W-210,40);
+ // ramp geometry
+ let angle=Number(angleEl.value)*Math.PI/180; let p0={x:145,y:405}, len=650; let p1={x:p0.x+len*Math.cos(angle), y:p0.y-len*Math.sin(angle)};
+ ctx.strokeStyle='#5c4632';ctx.lineWidth=18;ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();ctx.strokeStyle='#b58b5e';ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();
+ ctx.strokeStyle='#333';ctx.lineWidth=2;for(let i=0;i<=8;i++){let s=i/8;let px=p0.x+s*(p1.x-p0.x),py=p0.y+s*(p1.y-p0.y);ctx.beginPath();ctx.moveTo(px,py-10);ctx.lineTo(px,py+10);ctx.stroke();ctx.fillStyle='#222';ctx.font='14px Arial';ctx.fillText((s*rampLen).toFixed(1)+' m',px-18,py+30)}
+ // protractor/angle
+ ctx.strokeStyle='#1f4e79';ctx.lineWidth=3;ctx.beginPath();ctx.arc(p0.x,p0.y,70,-angle,0);ctx.stroke();ctx.fillStyle='#1f4e79';ctx.font='20px Arial';ctx.fillText(angleEl.value+'°',p0.x+52,p0.y-20);
+ // Cart starts at the selected ramp coordinate, measured from the finish.
+ // x is distance traveled down the ramp from that selected starting point.
+ let startFromFinish=Number(startPositionEl.value);
+ let currentFromFinish=Math.max(0,startFromFinish-x);
+ let s=currentFromFinish/rampLen;
+ let cx=p0.x + s*(p1.x-p0.x), cy=p0.y + s*(p1.y-p0.y);ctx.save();ctx.translate(cx,cy);ctx.rotate(-angle);ctx.fillStyle='#d97b2b';roundRect(ctx,-34,-34,68,30,6,true,true);ctx.fillStyle='#444';ctx.beginPath();ctx.arc(-22,2,8,0,Math.PI*2);ctx.arc(22,2,8,0,Math.PI*2);ctx.fill();ctx.restore();
+ // start/finish labels
+ ctx.fillStyle='#17202a';ctx.font='bold 18px Arial';ctx.fillText('START',p1.x-35,p1.y-28);ctx.fillText('FINISH',p0.x-30,p0.y+58);}
+function roundRect(ctx,x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();if(fill)ctx.fill();if(stroke)ctx.stroke();}
+function step(ts){if(!running){last=ts;return} if(last==null)last=ts;let dt=Math.min((ts-last)/1000,0.04);last=ts;let a=accel();v+=a*dt;x+=v*dt;t+=dt;let interval=Number(document.getElementById('timeInterval').value);if(t-lastAuto>=interval){record();lastAuto=t} let travelLimit=Number(startPositionEl.value);if(x>=travelLimit){x=travelLimit;running=false;record(true)}update();draw();requestAnimationFrame(step)}
+function record(force=false){
+  let time=Number(t.toFixed(3)), pos=Number(x.toFixed(3));
+  let lastRow=data.length?data[data.length-1]:null;
+  if(lastRow && lastRow.trial===trial && Math.abs(lastRow.time-time)<0.0005 && !force) return;
+  let type=dataTypeEl.value;
+  let row={trial,angle:Number(angleEl.value),time,position:pos,velocity:Number(v.toFixed(3)),type};data.push(row);
+  let value=type==='position'?row.position:row.velocity;
+  let tr=document.createElement('tr');tr.innerHTML=`<td>${row.trial}</td><td>${row.angle}</td><td>${row.time.toFixed(3)}</td><td>${value.toFixed(3)}</td>`;tbody.appendChild(tr);
+}
+document.getElementById('startBtn').onclick=()=>{
+  if(x>=Number(startPositionEl.value)){
+    if(currentTrialHasData() && trial<5){trial++;}
+    else if(currentTrialHasData() && trial>=5){alert('Trial 5 is complete. Use Clear All Data to begin a new five-trial set.');return;}
+    resetRun(false);
+  }
+  if(data.filter(d=>d.trial===trial).length===0){record();lastAuto=0;}
+  running=true;last=null;requestAnimationFrame(step)
+};
+document.getElementById('pauseBtn').onclick=()=>{running=false};
+document.getElementById('resetBtn').onclick=()=>resetAndAdvanceTrial();
+document.getElementById('newTrialBtn').onclick=()=>{if(trial<5){resetRun(true)}else{alert('Five trials are already set up. Clear all data to start over.')}};
+document.getElementById('clearBtn').onclick=()=>{data=[];tbody.innerHTML='';trial=1;resetRun(false)};
+document.getElementById('copyBtn').onclick=async()=>{let type=dataTypeEl.value;let rows=data.filter(d=>d.type===type);let header=type==='position'?'trial,angle_deg,time_s,position_m':'trial,angle_deg,time_s,velocity_m_per_s';let text=header+'\n'+rows.map(d=>type==='position'?`${d.trial},${d.angle},${d.time},${d.position}`:`${d.trial},${d.angle},${d.time},${d.velocity}`).join('\n');try{await navigator.clipboard.writeText(text);alert((type==='position'?'Position-time':'Velocity-time')+' data copied to clipboard.')}catch(e){prompt('Copy this data:',text)}};
+function refreshDataMode(){let type=dataTypeEl.value;dataTitle.textContent=type==='position'?'Position vs. Time Data':'Velocity vs. Time Data';measureHead.textContent=type==='position'?'Position (m)':'Velocity (m/s)';tbody.innerHTML='';data.filter(d=>d.type===type).forEach(row=>{let value=type==='position'?row.position:row.velocity;let tr=document.createElement('tr');tr.innerHTML=`<td>${row.trial}</td><td>${row.angle}</td><td>${row.time.toFixed(3)}</td><td>${value.toFixed(3)}</td>`;tbody.appendChild(tr);});resetRun(false)}
+angleEl.oninput=()=>{resetRun(false)};startPositionEl.oninput=()=>{resetRun(false)};surfaceEl.onchange=()=>resetRun(false);massEl.onchange=()=>update();document.getElementById('timeInterval').onchange=()=>resetRun(false);dataTypeEl.onchange=refreshDataMode;teacherMode.onchange=update;refreshDataMode();update();draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Parallel Plate Capacitor Properties Lab</title>
+<style>
+:root{
+ --bg:#edf1f4;--panel:#fff;--ink:#111827;--muted:#5f6876;--line:#c8ced6;
+ --accent:#1f4e79;--soft:#e8f0f7;--good:#176b3a;--warn:#8a5200;--danger:#9b1c1c;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:16px 20px}
+header h1{margin:0;font-size:28px}
+header p{margin:5px 0 0;color:var(--muted)}
+main{max-width:1450px;margin:0 auto;padding:16px;display:grid;grid-template-columns:360px 1fr;gap:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+h2{font-size:18px;margin:0 0 10px}
+h3{font-size:15px;margin:14px 0 8px}
+label{display:block;font-weight:700;font-size:13px;margin:10px 0 4px}
+input,select,button{font:inherit}
+input[type=number],select{width:100%;padding:9px;border:1px solid #adb5c0;border-radius:8px;background:#fff}
+input[type=range]{width:100%}
+button{border:1px solid #9da6b2;border-radius:8px;padding:9px 11px;background:#fff;cursor:pointer}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.good{background:#e8f5ec;color:var(--good);border-color:#9ec7aa}
+button.warn{background:#fff5e7;color:var(--warn);border-color:#e1bd80}
+button.danger{background:#fdecec;color:var(--danger);border-color:#e2aaaa}
+button:disabled{opacity:.45;cursor:not-allowed}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.metric{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fafbfc}
+.metric .k{font-size:12px;color:var(--muted)}
+.metric .v{font-size:20px;font-weight:800;margin-top:3px}
+.workspace{display:grid;grid-template-columns:minmax(470px,1.2fr) minmax(360px,.8fr);gap:16px}
+canvas{width:100%;height:500px;background:#fff;border:1px solid var(--line);border-radius:10px}
+.status{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:8px;background:#f7f8fa;font-size:14px}
+.note{padding:10px;border:1px solid #dfd092;border-radius:8px;background:#fffbe8;font-size:13px}
+.small{font-size:12px;color:var(--muted)}
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{border:1px solid #c9ced6;padding:6px;text-align:center}
+th{background:#edf1f5}
+.tablewrap{max-height:345px;overflow:auto}
+.switchrow{display:flex;align-items:center;justify-content:space-between;padding:10px;border:1px solid var(--line);border-radius:9px;margin-top:12px}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--soft);font-size:12px;font-weight:700}
+.checkgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.resultbox{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:8px;background:#f7f8fa}
+.resultbox.goodresult{border-color:#9ec7aa;background:#eef8f1}
+.resultbox.warnresult{border-color:#e1bd80;background:#fff8eb}
+@media(max-width:520px){.checkgrid{grid-template-columns:1fr}}
+.progress{height:9px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:8px}
+.progress>div{height:100%;background:var(--accent);width:0%}
+@media(max-width:1000px){
+ main{grid-template-columns:1fr}.workspace{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}
+ canvas{height:420px}
+}
+</style>
+</head>
+<body>
+<header>
+<h1>Parallel Plate Capacitor Properties Lab</h1>
+<p>Collect stored-charge data to investigate how capacitance depends on plate separation, plate area, and dielectric material.</p>
+</header>
+
+<main>
+<section class="panel">
+  <div class="tabs">
+    <button class="tab active" data-mode="distance">Part 1: Separation</button>
+    <button class="tab" data-mode="area">Part 2: Area</button>
+    <button class="tab" data-mode="dielectric">Dielectrics</button>
+    <button class="tab" data-mode="explore">Battery Off</button>
+  </div>
+
+  <h2 id="modeTitle">Part 1: Capacitance vs. Separation</h2>
+  <div id="instructions" class="note"></div>
+
+  <label>Power supply voltage (V)</label>
+  <input id="voltageSet" type="number" min="1" max="12" step="0.1" value="6.0">
+
+  <div class="switchrow">
+    <div>
+      <b>Power supply</b><br>
+      <span class="small">Connected keeps voltage constant.</span>
+    </div>
+    <button id="powerBtn" class="primary">CONNECTED</button>
+  </div>
+
+  <div id="distanceControls">
+    <label>Plate separation L (mm): <span id="distanceLabel">2.0</span></label>
+    <input id="distance" type="range" min="2" max="32" step="1" value="2">
+  </div>
+
+  <div id="radiusControls">
+    <label>Plate radius r (cm): <span id="radiusLabel">10.0</span></label>
+    <input id="radius" type="range" min="5" max="15" step="1" value="10">
+  </div>
+
+  <div id="dielectricControls" class="hidden">
+    <label>Dielectric arrangement</label>
+    <select id="dielectricArrangement">
+      <option value="single">One dielectric</option>
+      <option value="parallel">Two dielectrics side-by-side (parallel)</option>
+      <option value="series">Two dielectric layers (series)</option>
+    </select>
+
+    <label id="material1Label">Dielectric material</label>
+    <select id="dielectric">
+      <option value="air">Air</option>
+      <option value="teflon">Teflon</option>
+      <option value="paper">Paper</option>
+      <option value="glass">Glass</option>
+      <option value="ceramic">Ceramic</option>
+    </select>
+
+    <div id="secondMaterialControls" class="hidden">
+      <label>Material 2</label>
+      <select id="dielectric2">
+        <option value="air">Air</option>
+        <option value="teflon">Teflon</option>
+        <option value="paper">Paper</option>
+        <option value="glass">Glass</option>
+        <option value="ceramic">Ceramic</option>
+      </select>
+
+      <label id="splitLabel">Material 1 area fraction: <span id="splitValue">50%</span></label>
+      <input id="dielectricSplit" type="range" min="10" max="90" step="5" value="50">
+    </div>
+
+    <div id="singleInsertionControls">
+      <label>Insertion amount: <span id="insertLabel">100%</span></label>
+      <input id="insertPct" type="range" min="0" max="100" step="5" value="100">
+    </div>
+
+    <div class="note" id="arrangementNote" style="margin-top:10px">
+      One material fills the selected fraction of the space; the remainder is air.
+    </div>
+  </div>
+
+  <label>Measurement variation (%)</label>
+  <input id="noise" type="range" min="0.3" max="3" step="0.1" value="1.0">
+
+  <div class="btnrow">
+    <button id="recordBtn" class="good">Record Measurement</button>
+    <button id="nextBtn" class="warn">Next Suggested Setting</button>
+    <button id="clearBtn" class="danger">Clear Data</button>
+  </div>
+
+  <div class="note" style="margin-top:12px">
+    Students should calculate capacitance using <b>C = q/V</b>. The simulation intentionally does not display capacitance during data collection.
+  </div>
+</section>
+
+<section>
+  <div class="metrics">
+    <div class="metric"><div class="k">Voltage across plates</div><div class="v" id="voltageRead">—</div></div>
+    <div class="metric"><div class="k">Stored charge magnitude</div><div class="v" id="chargeRead">—</div></div>
+    <div class="metric"><div class="k">Plate radius</div><div class="v" id="radiusRead">—</div></div>
+    <div class="metric"><div class="k">Plate separation</div><div class="v" id="distanceRead">—</div></div>
+  </div>
+
+  <div class="workspace">
+    <section class="panel">
+      <h2>Capacitor View</h2>
+      <canvas id="sim" width="820" height="500"></canvas>
+      <div class="status" id="status">Loading capacitor simulation…</div>
+      <div class="progress"><div id="progressBar"></div></div>
+      <div class="small" id="progressText">0 data points recorded.</div>
+    </section>
+
+    <section class="panel">
+      <h2>Collected Data</h2>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>V (V)</th><th>L (mm)</th><th>r (cm)</th>
+              <th>A (m²)</th><th>q (nC)</th><th>κ</th>
+            </tr>
+          </thead>
+          <tbody id="dataBody"></tbody>
+        </table>
+      </div>
+      <div class="btnrow">
+        <button id="copyBtn">Copy for Sheets / Excel / Numbers</button>
+        <button id="downloadBtn">Download CSV</button>
+      </div>
+
+      <h3>Suggested graph</h3>
+      <div class="status" id="graphHint"></div>
+
+      <h3>Confirm Your Values</h3>
+      <div class="status">
+        <label>Value to check</label>
+        <select id="checkType">
+          <option value="capacitance">Capacitance for a recorded trial</option>
+          <option value="epsilon">Experimental permittivity ε₀</option>
+          <option value="effectiveK">Effective dielectric constant κ_eff for a recorded dielectric trial</option>
+        </select>
+
+        <div id="trialChooser">
+          <label>Recorded trial</label>
+          <select id="checkTrial"></select>
+        </div>
+
+        <div class="checkgrid">
+          <div>
+            <label>Your calculated value</label>
+            <input id="studentValue" type="number" step="any" placeholder="Enter value">
+          </div>
+          <div>
+            <label id="unitLabel">Units</label>
+            <select id="studentUnit">
+              <option value="pF">pF</option>
+              <option value="nF">nF</option>
+              <option value="F">F</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btnrow">
+          <button id="confirmBtn" class="primary">Confirm and Calculate Error</button>
+          <button id="clearCheckBtn">Clear Check</button>
+        </div>
+
+        <div id="checkResult" class="resultbox">
+          Enter your calculated value to reveal the simulation value and determine percent error.
+        </div>
+      </div>
+
+      <h3>Teacher Reveal</h3>
+      <div class="status">
+        <button id="revealBtn">Reveal all hidden model values</button>
+        <div id="revealText" class="small" style="margin-top:8px">Hidden during student data collection.</div>
+      </div>
+    </section>
+  </div>
+</section>
+</main>
+
+<script>
+(() => {
+const epsAccepted=8.85e-12;
+const sessionEps=epsAccepted*(0.982+Math.random()*0.036);
+const materialK={
+ air:1.00054,
+ teflon:2.1*(0.975+Math.random()*0.05),
+ paper:3.5*(0.965+Math.random()*0.07),
+ glass:4.6*(0.97+Math.random()*0.06),
+ ceramic:6.2*(0.94+Math.random()*0.12)
+};
+const $=id=>document.getElementById(id);
+const state={mode:'distance',connected:true,frozenQ:null,rows:[],suggestIndex:0};
+
+const suggested={
+ distance:[2,7,12,17,22,27,32],
+ area:[5,7,9,11,13,15],
+ dielectric:['air','teflon','paper','glass','ceramic'],
+ explore:[]
+};
+
+const el={
+ modeTitle:$('modeTitle'),instructions:$('instructions'),voltageSet:$('voltageSet'),
+ powerBtn:$('powerBtn'),distance:$('distance'),radius:$('radius'),
+ distanceLabel:$('distanceLabel'),radiusLabel:$('radiusLabel'),
+ distanceControls:$('distanceControls'),radiusControls:$('radiusControls'),
+ dielectricControls:$('dielectricControls'),dielectric:$('dielectric'),
+ dielectricArrangement:$('dielectricArrangement'),dielectric2:$('dielectric2'),
+ secondMaterialControls:$('secondMaterialControls'),singleInsertionControls:$('singleInsertionControls'),
+ dielectricSplit:$('dielectricSplit'),splitLabel:$('splitLabel'),splitValue:$('splitValue'),
+ material1Label:$('material1Label'),arrangementNote:$('arrangementNote'),
+ insertPct:$('insertPct'),insertLabel:$('insertLabel'),noise:$('noise'),
+ voltageRead:$('voltageRead'),chargeRead:$('chargeRead'),radiusRead:$('radiusRead'),
+ distanceRead:$('distanceRead'),status:$('status'),dataBody:$('dataBody'),
+ progressBar:$('progressBar'),progressText:$('progressText'),graphHint:$('graphHint'),
+ revealText:$('revealText'),sim:$('sim'),
+ checkType:$('checkType'),checkTrial:$('checkTrial'),trialChooser:$('trialChooser'),
+ studentValue:$('studentValue'),studentUnit:$('studentUnit'),unitLabel:$('unitLabel'),
+ checkResult:$('checkResult')
+};
+const ctx=el.sim.getContext('2d');
+
+function area(){const r=Number(el.radius.value)/100;return Math.PI*r*r}
+function materialInfo(selectEl){
+ const option=selectEl.options[selectEl.selectedIndex];
+ const key=selectEl.value;
+ return {
+   k:materialK[key],
+   key,
+   name:option.text
+ };
+}
+function selectedK(){ return materialInfo(el.dielectric).k; }
+function dielectricConfiguration(){
+ const arrangement=el.dielectricArrangement.value;
+ const m1=materialInfo(el.dielectric);
+ const m2=materialInfo(el.dielectric2);
+ const f=Number(el.dielectricSplit.value)/100;
+ if(arrangement==='single'){
+   const inserted=Number(el.insertPct.value)/100;
+   return {
+     arrangement,
+     kEff:1.00054*(1-inserted)+m1.k*inserted,
+     hiddenEffective:true,
+     label:`${m1.name} (${Math.round(inserted*100)}% inserted)`
+   };
+ }
+ if(arrangement==='parallel'){
+   return {
+     arrangement,
+     kEff:f*m1.k+(1-f)*m2.k,
+     hiddenEffective:true,
+     label:`${m1.name} / ${m2.name} parallel`
+   };
+ }
+ return {
+   arrangement,
+   kEff:1/(f/m1.k+(1-f)/m2.k),
+   hiddenEffective:true,
+   label:`${m1.name} / ${m2.name} series`
+ };
+}
+function effectiveK(){
+ if(state.mode!=='dielectric')return 1.00054;
+ return dielectricConfiguration().kEff;
+}
+function updateDielectricControls(){
+ const arrangement=el.dielectricArrangement.value;
+ const single=arrangement==='single';
+ el.secondMaterialControls.classList.toggle('hidden',single);
+ el.singleInsertionControls.classList.toggle('hidden',!single);
+ el.material1Label.textContent=single?'Dielectric material':'Material 1';
+ if(arrangement==='parallel'){
+   el.splitLabel.firstChild.textContent='Material 1 area fraction: ';
+   el.arrangementNote.textContent='The two materials occupy different portions of the plate area. Both experience the same voltage, so their capacitances add in parallel.';
+ }else if(arrangement==='series'){
+   el.splitLabel.firstChild.textContent='Material 1 thickness fraction: ';
+   el.arrangementNote.textContent='The two materials form layers along the electric-field direction. The voltage divides across the layers, so they behave as capacitors in series.';
+ }else{
+   el.arrangementNote.textContent='One material fills the selected fraction of the space; the remainder is air.';
+ }
+ el.splitValue.textContent=Number(el.dielectricSplit.value).toFixed(0)+'%';
+}
+function capacitance(){
+ return effectiveK()*sessionEps*area()/(Number(el.distance.value)/1000);
+}
+function voltage(){
+ if(state.connected)return Number(el.voltageSet.value);
+ return state.frozenQ===null?0:state.frozenQ/capacitance();
+}
+function charge(){
+ if(state.connected)return capacitance()*Number(el.voltageSet.value);
+ return state.frozenQ??0;
+}
+function noisyCharge(){
+ const s=Number(el.noise.value)/100;
+ const g=(Math.random()+Math.random()+Math.random()+Math.random()-2)/2;
+ return charge()*(1+s*g);
+}
+function modeInfo(){
+ if(state.mode==='distance')return {
+  title:'Part 1: Capacitance vs. Separation',
+  text:'Keep plate radius and voltage fixed. Begin at the lowest separation and collect seven stored-charge measurements, increasing separation by about 5 mm.',
+  hint:'Calculate C = q/V, then graph capacitance C versus separation L. Try an inverse fit or graph C versus 1/L.'
+ };
+ if(state.mode==='area')return {
+  title:'Part 2: Capacitance vs. Surface Area',
+  text:'Set separation to 2.0 mm. Increase plate radius to obtain six different plate areas. Record radius and stored charge for each setting.',
+  hint:'Calculate A = πr² and C = q/V, then graph capacitance C versus plate area A. A linear fit is appropriate.'
+ };
+ if(state.mode==='dielectric')return {
+  title:'Extension: Dielectric Materials',
+  text:'Keep geometry and voltage fixed. Insert different dielectric materials and compare the stored charge. Greater stored charge at the same voltage means greater capacitance.',
+  hint:'Calculate C = q/V and compare C for each material. Graph capacitance C versus dielectric constant κ for known materials.'
+ };
+ return {
+  title:'Final Questions: Battery Disconnected',
+  text:'Charge the capacitor while connected, then disconnect the power supply. Change separation or plate area and observe what happens to stored charge and voltage.',
+  hint:'With the battery disconnected, stored charge remains constant while capacitance and voltage change.'
+ };
+}
+function updateModeUI(){
+ const info=modeInfo();el.modeTitle.textContent=info.title;el.instructions.textContent=info.text;el.graphHint.textContent=info.hint;
+ el.dielectricControls.classList.toggle('hidden',state.mode!=='dielectric');
+ if(state.mode==='area'){el.distance.value=2;el.distance.disabled=true;el.radius.disabled=false}
+ else if(state.mode==='distance'){el.distance.disabled=false;el.radius.value=10;el.radius.disabled=true}
+ else{el.distance.disabled=false;el.radius.disabled=false}
+ if(state.mode!=='explore'&&!state.connected)togglePower();
+ state.suggestIndex=0;state.rows=[];renderTable();applySuggested();update();
+}
+function togglePower(){
+ if(state.connected){
+  state.frozenQ=capacitance()*Number(el.voltageSet.value);
+  state.connected=false;el.powerBtn.textContent='DISCONNECTED';el.powerBtn.classList.remove('primary');el.powerBtn.classList.add('warn');
+  el.status.textContent='Power supply disconnected. Stored charge is now constant.';
+ }else{
+  state.connected=true;state.frozenQ=null;el.powerBtn.textContent='CONNECTED';el.powerBtn.classList.add('primary');el.powerBtn.classList.remove('warn');
+  el.status.textContent='Power supply connected. Voltage is held constant.';
+ }
+ update();
+}
+function applySuggested(){
+ const vals=suggested[state.mode];
+ if(!vals.length)return;
+ const value=vals[Math.min(state.suggestIndex,vals.length-1)];
+ if(state.mode==='distance')el.distance.value=value;
+ if(state.mode==='area')el.radius.value=value;
+ if(state.mode==='dielectric'){
+   el.dielectric.value=value;
+   if(el.dielectricArrangement.value!=='single' && el.dielectric2.value===value){
+     const alternatives=['air','teflon','paper','glass','ceramic'].filter(k=>k!==value);
+     el.dielectric2.value=alternatives[0];
+   }
+ }
+ update();
+}
+function nextSuggested(){
+ const vals=suggested[state.mode];
+ if(!vals.length){el.status.textContent='Adjust the controls freely in Battery Off mode.';return}
+ state.suggestIndex=Math.min(state.suggestIndex+1,vals.length-1);applySuggested();
+}
+function record(){
+ if(state.mode==='dielectric' && el.dielectricArrangement.value!=='single' && el.dielectric.value===el.dielectric2.value){
+   el.status.textContent='Choose two different dielectric materials before recording.';
+   return;
+ }
+ const qn=noisyCharge();
+ const row={
+  n:state.rows.length+1,V:voltage(),L:Number(el.distance.value),
+  r:Number(el.radius.value),A:area(),q:qn,K:effectiveK(),mode:state.mode,
+  dielectricConfig:state.mode==='dielectric'?dielectricConfiguration():null
+ };
+ state.rows.push(row);renderTable();
+ el.status.textContent=`Recorded q = ${(qn*1e9).toFixed(4)} nC. Calculate C = q/V in your lab table.`;
+}
+function renderTable(){
+ el.dataBody.innerHTML=state.rows.map(r=>`<tr>
+ <td>${r.n}</td><td>${r.V.toFixed(3)}</td><td>${r.L.toFixed(1)}</td>
+ <td>${r.r.toFixed(1)}</td><td>${r.A.toExponential(4)}</td>
+ <td>${(r.q*1e9).toFixed(5)}</td>
+<td>${r.mode==='dielectric' ? 'Calculate' : '—'}</td></tr>`).join('');
+ const target=state.mode==='distance'?7:state.mode==='area'?6:state.mode==='dielectric'?5:0;
+ el.progressBar.style.width=target?Math.min(100,state.rows.length/target*100)+'%':'0%';
+ el.progressText.textContent=target?`${state.rows.length} of ${target} suggested data points recorded.`:`${state.rows.length} observations recorded.`;
+ populateTrialChooser();
+}
+function draw(){
+ const c=el.sim,w=c.width,h=c.height;ctx.clearRect(0,0,w,h);ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
+ ctx.strokeStyle='#dde1e6';ctx.lineWidth=1;
+ for(let x=40;x<w;x+=40){ctx.beginPath();ctx.moveTo(x,35);ctx.lineTo(x,h-30);ctx.stroke()}
+ for(let y=40;y<h;y+=40){ctx.beginPath();ctx.moveTo(30,y);ctx.lineTo(w-30,y);ctx.stroke()}
+ const L=Number(el.distance.value),gap=75+(L-2)/30*260,cx=w/2,left=cx-gap/2,right=cx+gap/2;
+ const rad=Number(el.radius.value),plateH=170+(rad-5)/10*190,top=(h-plateH)/2,bottom=top+plateH;
+ ctx.fillStyle='#bfc6ce';ctx.fillRect(left-10,top,20,plateH);ctx.fillRect(right-10,top,20,plateH);
+ ctx.strokeStyle='#111';ctx.lineWidth=2;ctx.strokeRect(left-10,top,20,plateH);ctx.strokeRect(right-10,top,20,plateH);
+ if(state.mode==='dielectric'){
+   const arrangement=el.dielectricArrangement.value;
+   const gapX=left+10, gapW=right-left-20;
+   ctx.strokeStyle='#555';
+   if(arrangement==='single'&&Number(el.insertPct.value)>0){
+     const f=Number(el.insertPct.value)/100;
+     ctx.fillStyle='rgba(120,120,120,.28)';
+     ctx.fillRect(gapX,top+(1-f)*plateH,gapW,f*plateH);
+     ctx.strokeRect(gapX,top+(1-f)*plateH,gapW,f*plateH);
+   }else if(arrangement==='parallel'){
+     const f=Number(el.dielectricSplit.value)/100;
+     ctx.fillStyle='rgba(90,90,90,.22)';
+     ctx.fillRect(gapX,top,gapW,plateH*f);
+     ctx.fillStyle='rgba(150,150,150,.38)';
+     ctx.fillRect(gapX,top+plateH*f,gapW,plateH*(1-f));
+     ctx.strokeRect(gapX,top,gapW,plateH);
+     ctx.beginPath();ctx.moveTo(gapX,top+plateH*f);ctx.lineTo(gapX+gapW,top+plateH*f);ctx.stroke();
+     ctx.fillStyle='#111';ctx.font='14px Arial';
+     ctx.fillText('Material 1',gapX+8,top+20);
+     ctx.fillText('Material 2',gapX+8,top+plateH*f+20);
+   }else if(arrangement==='series'){
+     const f=Number(el.dielectricSplit.value)/100;
+     ctx.fillStyle='rgba(90,90,90,.22)';
+     ctx.fillRect(gapX,top,gapW*f,plateH);
+     ctx.fillStyle='rgba(150,150,150,.38)';
+     ctx.fillRect(gapX+gapW*f,top,gapW*(1-f),plateH);
+     ctx.strokeRect(gapX,top,gapW,plateH);
+     ctx.beginPath();ctx.moveTo(gapX+gapW*f,top);ctx.lineTo(gapX+gapW*f,bottom);ctx.stroke();
+     ctx.save();ctx.translate(gapX+gapW*f/2,top+plateH/2);ctx.rotate(-Math.PI/2);
+     ctx.fillStyle='#111';ctx.font='14px Arial';ctx.fillText('Material 1',-34,0);ctx.restore();
+     ctx.save();ctx.translate(gapX+gapW*f+gapW*(1-f)/2,top+plateH/2);ctx.rotate(-Math.PI/2);
+     ctx.fillStyle='#111';ctx.font='14px Arial';ctx.fillText('Material 2',-34,0);ctx.restore();
+   }
+ }
+ const qq=charge();
+ if(Math.abs(qq)>0){
+   const count=Math.max(4,Math.min(12,Math.round(Math.abs(qq)*1e10)));
+   ctx.font='bold 20px Arial';
+   for(let i=0;i<count;i++){
+     const y=top+20+i*(plateH-40)/(count-1);
+     ctx.fillStyle='#111';ctx.fillText('+',left-5,y);ctx.fillText('−',right-5,y);
+   }
+   ctx.strokeStyle='#565d65';ctx.lineWidth=1.4;
+   for(let i=0;i<7;i++){
+     const y=top+30+i*(plateH-60)/6;
+     ctx.beginPath();ctx.moveTo(left+14,y);ctx.lineTo(right-16,y);ctx.stroke();
+   }
+ }
+ ctx.fillStyle='#111';ctx.font='16px Arial';
+ ctx.fillText(`L = ${L.toFixed(1)} mm`,cx-42,50);
+ ctx.fillText(`r = ${rad.toFixed(1)} cm`,35,468);
+ ctx.fillText(state.connected?'Battery connected: V constant':'Battery disconnected: q constant',w-300,468);
+ ctx.strokeStyle='#111';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(left,70);ctx.lineTo(right,70);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(left,64);ctx.lineTo(left,76);ctx.moveTo(right,64);ctx.lineTo(right,76);ctx.stroke();
+}
+function update(){
+ el.distanceLabel.textContent=Number(el.distance.value).toFixed(1);
+ el.radiusLabel.textContent=Number(el.radius.value).toFixed(1);
+ el.insertLabel.textContent=Number(el.insertPct.value).toFixed(0)+'%';
+ updateDielectricControls();
+ el.voltageRead.textContent=voltage().toFixed(3)+' V';
+ el.chargeRead.textContent=(Math.abs(charge())*1e9).toFixed(4)+' nC';
+ el.radiusRead.textContent=Number(el.radius.value).toFixed(1)+' cm';
+ el.distanceRead.textContent=Number(el.distance.value).toFixed(1)+' mm';
+ draw();
+}
+
+function populateTrialChooser(){
+ if(!el.checkTrial)return;
+ el.checkTrial.innerHTML=state.rows.length
+   ? state.rows.map((r,i)=>`<option value="${i}">Trial ${r.n}: ${r.dielectricConfig?.label || `L=${r.L.toFixed(1)} mm, r=${r.r.toFixed(1)} cm`}</option>`).join('')
+   : '<option value="">No recorded trials</option>';
+}
+function configureCheck(){
+ const type=el.checkType.value;
+ el.trialChooser.classList.toggle('hidden',!(type==='capacitance'||type==='effectiveK'));
+ el.studentUnit.innerHTML='';
+ if(type==='capacitance'){
+   el.unitLabel.textContent='Capacitance units';
+   el.studentUnit.innerHTML='<option value="pF">pF</option><option value="nF">nF</option><option value="F">F</option>';
+   el.studentValue.placeholder='Example: 137.6';
+ }else if(type==='epsilon'){
+   el.unitLabel.textContent='Permittivity units';
+   el.studentUnit.innerHTML='<option value="SI">C²/(N·m²)</option><option value="pFpm">pF/m</option>';
+   el.studentValue.placeholder='Example: 8.73e-12';
+ }else{
+   el.unitLabel.textContent='Units';
+   el.studentUnit.innerHTML='<option value="none">dimensionless</option>';
+   el.studentValue.placeholder='Example: 3.87';
+ }
+ el.checkResult.className='resultbox';
+ el.checkResult.textContent='Enter your calculated value to reveal the simulation value and determine percent error.';
+}
+function percentError(experimental,accepted){
+ return Math.abs(experimental-accepted)/Math.abs(accepted)*100;
+}
+function confirmValue(){
+ const raw=Number(el.studentValue.value);
+ if(!Number.isFinite(raw)){
+   el.checkResult.className='resultbox warnresult';
+   el.checkResult.textContent='Enter a valid numerical value first.';
+   return;
+ }
+ const type=el.checkType.value;
+ let experimental=raw,accepted,label,acceptedDisplay,experimentalDisplay;
+ if(type==='capacitance'){
+   const idx=Number(el.checkTrial.value);
+   if(!state.rows[idx]){
+     el.checkResult.className='resultbox warnresult';
+     el.checkResult.textContent='Record a trial before checking capacitance.';
+     return;
+   }
+   const row=state.rows[idx];
+   const k=row.K;
+   accepted=k*sessionEps*row.A/(row.L/1000);
+   const unit=el.studentUnit.value;
+   if(unit==='pF') experimental=raw*1e-12;
+   if(unit==='nF') experimental=raw*1e-9;
+   label=`Trial ${row.n} capacitance`;
+   acceptedDisplay=`${(accepted*1e12).toFixed(4)} pF`;
+   experimentalDisplay=`${(experimental*1e12).toFixed(4)} pF`;
+ }else if(type==='epsilon'){
+   accepted=sessionEps;
+   if(el.studentUnit.value==='pFpm')experimental=raw*1e-12;
+   label='Permittivity ε₀';
+   acceptedDisplay=`${accepted.toExponential(5)} C²/(N·m²)`;
+   experimentalDisplay=`${experimental.toExponential(5)} C²/(N·m²)`;
+ }else{
+   const idx=Number(el.checkTrial.value);
+   const row=state.rows[idx];
+   if(!row || row.mode!=='dielectric'){
+     el.checkResult.className='resultbox warnresult';
+     el.checkResult.textContent='Select a recorded dielectric trial before checking the effective dielectric constant.';
+     return;
+   }
+   accepted=row.K;
+   label=`Effective dielectric constant κ_eff — Trial ${row.n}`;
+   acceptedDisplay=accepted.toFixed(4);
+   experimentalDisplay=experimental.toFixed(4);
+ }
+ const err=percentError(experimental,accepted);
+ el.checkResult.className='resultbox '+(err<=5?'goodresult':'warnresult');
+ el.checkResult.innerHTML=
+   `<b>${label}</b><br>`+
+   `Your value: ${experimentalDisplay}<br>`+
+   `Simulation value: ${acceptedDisplay}<br>`+
+   `<b>Percent error: ${err.toFixed(2)}%</b><br>`+
+   `<span class="small">Percent error = |experimental − accepted| / |accepted| × 100%</span>`;
+}
+
+function spreadsheetText(){
+ return 'Trial\tVoltage (V)\tSeparation (mm)\tRadius (cm)\tArea (m^2)\tStored Charge (nC)\tStudent Effective Dielectric Constant\tDielectric Arrangement\tMode\n'+
+ state.rows.map(r=>[
+   r.n,
+   r.V.toFixed(6),
+   r.L.toFixed(3),
+   r.r.toFixed(3),
+   r.A.toExponential(8),
+   (r.q*1e9).toFixed(8),
+   r.mode==='dielectric' ? '' : '',
+   r.dielectricConfig?.label || '',
+   r.mode
+ ].join('\t')).join('\n');
+}
+function csv(){
+ return 'Trial,Voltage_V,Separation_mm,Radius_cm,Area_m2,StoredCharge_nC,StudentEffectiveDielectricConstant,DielectricArrangement,Mode\n'+
+ state.rows.map(r=>[
+   r.n,
+   r.V.toFixed(6),
+   r.L.toFixed(3),
+   r.r.toFixed(3),
+   r.A.toExponential(8),
+   (r.q*1e9).toFixed(8),
+   r.mode==='dielectric' ? '' : '',
+   `"${(r.dielectricConfig?.label || '').replaceAll('"','""')}"`,
+   r.mode
+ ].join(',')).join('\n');
+}
+
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+ state.mode=b.dataset.mode;
+ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));
+ updateModeUI();
+}));
+el.powerBtn.addEventListener('click',togglePower);
+['voltageSet','distance','radius','dielectric','dielectric2','dielectricArrangement','dielectricSplit','insertPct','noise'].forEach(id=>$(id).addEventListener('input',()=>{
+ if(!state.connected&&id==='voltageSet')return;
+ update();
+}));
+$('recordBtn').addEventListener('click',record);
+$('nextBtn').addEventListener('click',nextSuggested);
+$('clearBtn').addEventListener('click',()=>{state.rows=[];renderTable();el.status.textContent='Data table cleared.'});
+el.checkType.addEventListener('change',configureCheck);
+$('confirmBtn').addEventListener('click',confirmValue);
+$('clearCheckBtn').addEventListener('click',()=>{
+ el.studentValue.value='';
+ configureCheck();
+});
+el.studentValue.addEventListener('keydown',e=>{if(e.key==='Enter')confirmValue();});
+$('revealBtn').addEventListener('click',()=>{
+ const cfg=state.mode==='dielectric'?dielectricConfiguration():null;
+ el.revealText.textContent=
+   `Simulation ε₀ = ${sessionEps.toExponential(4)} C²/(N·m²). `+
+   `Session material values: Air ${materialK.air.toFixed(4)}, Teflon ${materialK.teflon.toFixed(3)}, `+
+   `Paper ${materialK.paper.toFixed(3)}, Glass ${materialK.glass.toFixed(3)}, Ceramic ${materialK.ceramic.toFixed(3)}.`+
+   (cfg?` Current κ_eff = ${cfg.kEff.toFixed(4)}.`:'');
+});
+$('copyBtn').addEventListener('click',async()=>{
+ try{
+   await navigator.clipboard.writeText(spreadsheetText());
+   el.status.textContent='Tab-separated data copied. Paste directly into Google Sheets, Excel, or Numbers.';
+ }catch{
+   const textarea=document.createElement('textarea');
+   textarea.value=spreadsheetText();
+   textarea.setAttribute('readonly','');
+   textarea.style.position='fixed';
+   textarea.style.opacity='0';
+   document.body.appendChild(textarea);
+   textarea.select();
+   const copied=document.execCommand('copy');
+   document.body.removeChild(textarea);
+   el.status.textContent=copied
+     ? 'Tab-separated data copied. Paste directly into Google Sheets, Excel, or Numbers.'
+     : 'Automatic copying is unavailable. Use Download CSV.';
+ }
+});
+$('downloadBtn').addEventListener('click',()=>{
+ const blob=new Blob([csv()],{type:'text/csv'}),a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);a.download='parallel_plate_capacitor_properties_data.csv';a.click();URL.revokeObjectURL(a.href);
+});
+try{
+  el.dielectric2.selectedIndex=1;
+  updateModeUI();
+  configureCheck();
+  populateTrialChooser();
+  el.status.textContent='Adjust the capacitor and record stored charge.';
+}catch(error){
+  console.error(error);
+  el.status.textContent='The simulation could not start: '+error.message;
+}
+})();
+</script>
+</body>
+</html>

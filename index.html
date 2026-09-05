@@ -1,0 +1,251 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lessons With Londot Physics Simulations</title>
+<style>
+:root{
+  --purple:#462b7a;
+  --yellow:#facf22;
+  --white:#fefefe;
+  --bg:#f5f3f9;
+  --text:#241b33;
+  --muted:#645d70;
+  --line:#d9d1e5;
+  --soft:#eee9f6;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+header{
+  background:var(--purple);
+  color:white;
+  border-bottom:6px solid var(--yellow);
+}
+.wrap{
+  width:min(1180px,calc(100% - 30px));
+  margin:auto;
+}
+.head{
+  padding:36px 0 34px;
+}
+.head .eyebrow{
+  margin:0 0 8px;
+  color:var(--yellow);
+  font-size:.8rem;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.head h1{
+  margin:0;
+  font-size:clamp(2rem,5vw,3.4rem);
+  line-height:1.05;
+}
+.head p{
+  margin:10px 0 0;
+  max-width:760px;
+  color:#eee8f8;
+  font-size:1.05rem;
+  line-height:1.55;
+}
+main{
+  padding:38px 0 64px;
+}
+.intro{
+  margin-bottom:24px;
+}
+.intro h2{
+  margin:0 0 8px;
+  color:var(--purple);
+}
+.intro p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.6;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:20px;
+}
+.course-card{
+  background:white;
+  border:1px solid var(--line);
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 8px 22px rgba(70,43,122,.09);
+  display:flex;
+  flex-direction:column;
+  min-height:315px;
+}
+.course-top{
+  background:var(--soft);
+  border-left:8px solid var(--yellow);
+  padding:20px 20px 18px;
+}
+.course-label{
+  display:inline-block;
+  margin-bottom:8px;
+  color:var(--purple);
+  font-size:.76rem;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.course-card h3{
+  margin:0;
+  color:var(--purple);
+  font-size:1.45rem;
+}
+.course-body{
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  flex:1;
+}
+.course-body p{
+  margin:0 0 18px;
+  color:var(--muted);
+  line-height:1.55;
+  flex:1;
+}
+.tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:18px;
+}
+.tag{
+  background:#f6f3fa;
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:6px 9px;
+  color:var(--purple);
+  font-size:.78rem;
+  font-weight:800;
+}
+.btn{
+  display:inline-block;
+  text-align:center;
+  background:var(--yellow);
+  color:var(--purple);
+  font-weight:900;
+  text-decoration:none;
+  padding:12px 14px;
+  border-radius:9px;
+}
+.btn:hover{
+  filter:brightness(.97);
+}
+footer{
+  background:#321d5e;
+  color:white;
+  padding:20px 0;
+}
+footer p{
+  margin:0;
+}
+@media(max-width:850px){
+  .grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:620px){
+  .grid{grid-template-columns:1fr}
+  .head{padding:28px 0}
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="wrap head">
+    <p class="eyebrow">Lessons With Londot</p>
+    <h1>Physics Simulations</h1>
+    <p>
+      Interactive investigations, virtual labs, and data-analysis activities
+      for AP Physics 1, AP Physics C, and Physics.
+    </p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <h2>Choose a Course</h2>
+    <p>Select your course to explore simulations organized by unit.</p>
+  </section>
+
+  <section class="grid">
+
+    <article class="course-card">
+      <div class="course-top">
+        <span class="course-label">Algebra-Based</span>
+        <h3>AP Physics 1</h3>
+      </div>
+      <div class="course-body">
+        <p>
+          Interactive labs and simulations supporting AP Physics 1 topics,
+          experimental design, graphing, and quantitative reasoning.
+        </p>
+        <div class="tags">
+          <span class="tag">Kinematics</span>
+          <span class="tag">Dynamics</span>
+          <span class="tag">Energy</span>
+        </div>
+        <a class="btn" href="./ap-physics-1/">Open AP Physics 1 →</a>
+      </div>
+    </article>
+
+    <article class="course-card">
+      <div class="course-top">
+        <span class="course-label">Calculus-Based</span>
+        <h3>AP Physics C</h3>
+      </div>
+      <div class="course-body">
+        <p>
+          Interactive investigations for AP Physics C, including Mechanics
+          and Electricity &amp; Magnetism.
+        </p>
+        <div class="tags">
+          <span class="tag">Mechanics</span>
+          <span class="tag">Electric Fields</span>
+          <span class="tag">Circuits</span>
+        </div>
+        <a class="btn" href="ap-physics-c/index.html">Open AP Physics C →</a>
+      </div>
+    </article>
+
+    <article class="course-card">
+      <div class="course-top">
+        <span class="course-label">High School Physics</span>
+        <h3>Physics</h3>
+      </div>
+      <div class="course-body">
+        <p>
+          Simulations and virtual labs for the regular physics course,
+          organized by instructional unit.
+        </p>
+        <div class="tags">
+          <span class="tag">Motion</span>
+          <span class="tag">Forces</span>
+          <span class="tag">Waves</span>
+        </div>
+        <a class="btn" href="https://lessonswithlondot.github.io/lessons-with-londot-physics-simulations/physics/">Open Physics →</a>
+      </div>
+    </article>
+
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Interactive investigations for physics students.</p>
+  </div>
+</footer>
+</body>
+</html>

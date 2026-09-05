@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ohm's Law and Wire Resistivity Inquiry Simulation</title>
+<style>
+:root{
+  --bg:#eef1f4;--panel:#fff;--ink:#101820;--muted:#5f6876;--line:#c9ced6;
+  --accent:#1f4e79;--soft:#eaf1f7;--good:#176b3a;--warn:#805000;--danger:#971b1b
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:15px 18px}
+header h1{margin:0;font-size:27px} header p{margin:5px 0 0;color:var(--muted)}
+main{max-width:1500px;margin:auto;padding:14px}
+.tabs,.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.tabs{margin-bottom:12px}
+button,select,input{font:inherit}
+button{padding:9px 12px;border:1px solid #9ea7b1;border-radius:8px;background:#fff;cursor:pointer}
+button.primary,.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.good{background:#e8f5ec;color:var(--good)}
+button.warn{background:#fff5e7;color:var(--warn)}
+button.danger{background:#fdecec;color:var(--danger)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.layout{display:grid;grid-template-columns:365px 1fr;gap:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+h2{font-size:18px;margin:0 0 10px} h3{font-size:15px;margin:14px 0 8px}
+label{display:block;font-weight:700;font-size:13px;margin:10px 0 4px}
+select{width:100%;padding:8px;border:1px solid #adb5c0;border-radius:8px;background:#fff}
+input[type=range]{width:100%}
+.note,.status{padding:10px;border:1px solid var(--line);border-radius:8px;background:#f7f8fa;font-size:14px}
+.note{background:#fffbe8;border-color:#d5c58a}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.metric{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fafbfc}
+.metric .k{font-size:12px;color:var(--muted)} .metric .v{font-size:21px;font-weight:800;margin-top:3px}
+.workspace{display:grid;grid-template-columns:minmax(520px,1.15fr) minmax(380px,.85fr);gap:14px}
+canvas{display:block;width:100%;background:#fff;border:1px solid var(--line);border-radius:10px}
+#apparatus{height:330px} #graph{height:360px;margin-top:12px}
+.tablewrap{max-height:350px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{border:1px solid var(--line);padding:6px;text-align:center} th{background:#edf1f5}
+.hidden{display:none!important}.small{font-size:12px;color:var(--muted)}
+.reveal{margin-top:10px;padding:10px;background:var(--soft);border:1px solid #b6c6d8;border-radius:8px}
+.locked{opacity:.55}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--soft);font-size:12px;margin-top:8px}
+@media(max-width:1050px){.layout,.workspace{grid-template-columns:1fr}}
+@media(max-width:600px){.metrics{grid-template-columns:1fr}.tabs button{flex:1 1 45%}}
+</style>
+</head>
+<body>
+<header>
+<h1>Ohm’s Law and Wire Resistivity Inquiry Lab</h1>
+<p>Each wire is a unique sample with hidden manufacturing variation and contact resistance.</p>
+</header>
+
+<main>
+<div class="tabs">
+<button class="tab active" data-mode="ohm">1. Ohm’s Law</button>
+<button class="tab" data-mode="length">2. Length</button>
+<button class="tab" data-mode="diameter">3. Diameter</button>
+<button class="tab" data-mode="material">4. Resistivity</button>
+<button class="tab" data-mode="unknown">5. Unknown Wire</button>
+</div>
+
+<div class="layout">
+<aside class="panel">
+<h2 id="modeTitle"></h2>
+<div id="directions" class="note"></div>
+<div class="badge" id="sampleBadge">Wire sample #1</div>
+
+<div id="voltageGroup">
+<label>Source voltage: <span id="voltageLabel"></span></label>
+<input id="voltage" type="range" min="0" max="20" step="0.5" value="2">
+</div>
+
+<div id="materialGroup">
+<label>Wire material</label>
+<select id="material">
+<option value="silver">Silver</option>
+<option value="copper" selected>Copper</option>
+<option value="gold">Gold</option>
+<option value="aluminum">Aluminum</option>
+<option value="tungsten">Tungsten</option>
+<option value="iron">Iron</option>
+<option value="nichrome">Nichrome</option>
+</select>
+</div>
+
+<div id="lengthGroup">
+<label>Nominal wire length: <span id="lengthLabel"></span></label>
+<input id="length" type="range" min="0.20" max="10" step="0.10" value="2">
+</div>
+
+<div id="diameterGroup">
+<label>Nominal wire diameter: <span id="diameterLabel"></span></label>
+<input id="diameter" type="range" min="0.10" max="2.00" step="0.05" value="0.50">
+</div>
+
+<label>Instrument variation</label>
+<select id="variation">
+<option value="0">Ideal instruments</option>
+<option value="0.003">Low variation (±0.3%)</option>
+<option value="0.006" selected>Typical variation (±0.6%)</option>
+<option value="0.012">Larger variation (±1.2%)</option>
+</select>
+
+<div class="btnrow" style="margin-top:10px">
+<button id="switchBtn" class="primary">Close Switch</button>
+<button id="newWireBtn">New Wire Sample</button>
+<button id="resetBtn" class="warn">Reset Data</button>
+</div>
+<div class="btnrow" style="margin-top:10px">
+<button id="recordBtn" class="good">Record Trial</button>
+<button id="deleteBtn">Delete Last</button>
+<button id="clearBtn" class="danger">Clear Data</button>
+</div>
+</aside>
+
+<section>
+<div class="metrics">
+<div class="metric"><div class="k">Voltmeter</div><div class="v" id="vRead">0.00 V</div></div>
+<div class="metric"><div class="k">Ammeter</div><div class="v" id="iRead">0.000 A</div></div>
+<div class="metric"><div class="k">Switch</div><div class="v" id="switchRead">Open</div></div>
+</div>
+
+<div class="workspace">
+<section class="panel">
+<h2>Wire Apparatus and Student Graph</h2>
+<canvas id="apparatus" width="900" height="330"></canvas>
+<canvas id="graph" width="900" height="360"></canvas>
+<div id="status" class="status" style="margin-top:10px">Choose settings, close the switch, and record a trial.</div>
+</section>
+
+<section class="panel">
+<h2>Collected Data</h2>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Trial</th><th>Material</th><th>Length (m)</th><th>Diameter (mm)</th><th>Area (mm²)</th><th>Voltage (V)</th><th>Current (A)</th></tr></thead>
+<tbody id="dataBody"></tbody>
+</table>
+</div>
+<div class="btnrow" style="margin-top:10px">
+<button id="copyBtn">Copy Data</button>
+<button id="csvBtn">Download CSV</button>
+</div>
+
+<h3>Graph Selection</h3>
+<select id="graphChoice">
+<option value="VI">Voltage vs. Current</option>
+<option value="IL">Current vs. Length</option>
+<option value="IA">Current vs. Area</option>
+<option value="Id">Current vs. Diameter</option>
+<option value="RL">Experimental Resistance vs. Length</option>
+<option value="RX">Experimental Resistance vs. L/A</option>
+</select>
+<p class="small">Only recorded points are shown. The simulation does not calculate a slope, equation, or resistivity.</p>
+
+<div id="resistancePanel">
+<h3>Check Wire Resistance</h3>
+<p class="small">Collect at least 8 trials, determine resistance from your data, and then reveal the actual resistance of this wire sample.</p>
+<button id="revealResistanceBtn" disabled>Reveal Wire Resistance</button>
+<div id="resistanceResult" class="reveal hidden"></div>
+</div>
+
+<div id="unknownPanel" class="hidden">
+<h3>Unknown-Wire Challenge</h3>
+<p class="small">Collect at least 8 trials using different wire lengths and diameters before revealing the material.</p>
+<button id="revealBtn" disabled>Reveal Material</button>
+<div id="revealResult" class="reveal hidden"></div>
+</div>
+</section>
+</div>
+</section>
+</div>
+</main>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id),A=$('apparatus').getContext('2d'),G=$('graph').getContext('2d');
+const mats={
+silver:{n:'Silver',rho:1.59e-8,c:'#c9c9c9'},
+copper:{n:'Copper',rho:1.68e-8,c:'#b66a35'},
+gold:{n:'Gold',rho:2.44e-8,c:'#c9a227'},
+aluminum:{n:'Aluminum',rho:2.82e-8,c:'#aeb7bf'},
+tungsten:{n:'Tungsten',rho:5.60e-8,c:'#707780'},
+iron:{n:'Iron',rho:9.71e-8,c:'#626971'},
+nichrome:{n:'Nichrome',rho:1.10e-6,c:'#4c4f55'}
+};
+const keys=Object.keys(mats);
+const s={
+mode:'ohm',closed:false,rows:[],unknown:'nichrome',sampleNumber:1,
+sample:{rhoFactor:1,lengthFactor:1,diameterFactor:1,contactR:.1}
+};
+
+const V=()=>+$('voltage').value,Lnom=()=>+$('length').value,dnom=()=>+$('diameter').value;
+const matKey=()=>s.mode==='unknown'?s.unknown:$('material').value,mat=()=>mats[matKey()];
+const actualL=()=>Lnom()*s.sample.lengthFactor;
+const actualD=()=>dnom()*s.sample.diameterFactor;
+const actualArea=()=>Math.PI*Math.pow(actualD()/2000,2);
+const nominalAreaMM=()=>Math.PI*Math.pow(dnom()/2,2);
+const wireOnlyR=()=>mat().rho*s.sample.rhoFactor*actualL()/actualArea();
+const totalR=()=>wireOnlyR()+s.sample.contactR;
+function randomBetween(a,b){return a+Math.random()*(b-a)}
+function normalish(span){return 1+(Math.random()+Math.random()+Math.random()-1.5)*(span/1.5)}
+function generateSample(newMaterial=false){
+ if(newMaterial&&s.mode==='unknown')s.unknown=keys[Math.floor(Math.random()*keys.length)];
+ s.sample={
+   rhoFactor:normalish(.028),          // roughly ±2.8%
+   lengthFactor:normalish(.008),       // roughly ±0.8%
+   diameterFactor:normalish(.014),     // roughly ±1.4%
+   contactR:randomBetween(.035,.42)    // hidden lead/contact resistance
+ };
+ s.sampleNumber++;
+ s.rows=[];
+ s.closed=false;
+ $('switchBtn').textContent='Close Switch';
+ $('revealResistanceBtn').disabled=true;
+ $('revealBtn').disabled=true;
+ $('resistanceResult').classList.add('hidden');
+ $('revealResult').classList.add('hidden');
+ render();
+ update();
+ $('status').textContent='A new wire sample was generated.';
+}
+function meterNoise(){let q=+$('variation').value;return 1+(Math.random()*2-1)*q}
+function measure(){
+ let current=s.closed?V()/totalR():0;
+ return{
+ n:s.rows.length+1,
+ key:matKey(),
+ name:s.mode==='unknown'?'Unknown':mat().n,
+ l:Lnom(),d:dnom(),a:nominalAreaMM(),
+ v:s.closed?V()*meterNoise():0,
+ i:s.closed?current*meterNoise():0,
+ trueI:current,trueR:totalR()
+ };
+}
+function fmtI(i){
+ if(Math.abs(i)>=1)return i.toFixed(3)+' A';
+ if(Math.abs(i)>=.001)return(i*1000).toFixed(2)+' mA';
+ return(i*1e6).toFixed(2)+' µA'
+}
+function setLocked(id,locked){$(id).classList.toggle('locked',locked)}
+function config(){
+ const cfg={
+ ohm:['Investigation 1 — Discovering Ohm’s Law','Choose a metal. Length and diameter remain fixed while you vary voltage and determine the V–I relationship.'],
+ length:['Investigation 2 — Effect of Length','Choose any metal. Keep voltage and diameter fixed while varying only the wire length. Compare how different materials affect your results.'],
+ diameter:['Investigation 3 — Effect of Diameter','Choose any metal. Keep voltage and length fixed while varying only the wire diameter. Compare how different materials affect your results.'],
+ material:['Investigation 4 — Determine Resistivity','Choose a metal and vary nominal length and diameter. Use measured voltage and current to determine resistivity.'],
+ unknown:['Investigation 5 — Unknown Wire','The metal is randomized and hidden. Vary length and diameter, determine resistivity, and identify the material.']
+ }[s.mode];
+ $('modeTitle').textContent=cfg[0];$('directions').textContent=cfg[1];
+
+ const lock={
+ ohm:{v:false,m:false,l:true,d:true},
+ length:{v:true,m:false,l:false,d:true},
+ diameter:{v:true,m:false,l:true,d:false},
+ material:{v:true,m:false,l:false,d:false},
+ unknown:{v:true,m:true,l:false,d:false}
+ }[s.mode];
+
+ $('voltage').disabled=lock.v;$('material').disabled=lock.m;$('length').disabled=lock.l;$('diameter').disabled=lock.d;
+ setLocked('voltageGroup',lock.v);setLocked('materialGroup',lock.m);setLocked('lengthGroup',lock.l);setLocked('diameterGroup',lock.d);
+ $('materialGroup').classList.toggle('hidden',s.mode==='unknown');
+ $('unknownPanel').classList.toggle('hidden',s.mode!=='unknown');
+
+ if(s.mode==='ohm'){$('voltage').value=2;$('length').value=2;$('diameter').value=.35;$('graphChoice').value='VI'}
+ if(s.mode==='length'){$('voltage').value=5;$('length').value=.5;$('diameter').value=.5;$('graphChoice').value='IL'}
+ if(s.mode==='diameter'){$('voltage').value=5;$('length').value=2;$('diameter').value=.2;$('graphChoice').value='IA'}
+ if(s.mode==='material'){$('voltage').value=5;$('length').value=1;$('diameter').value=.35;$('graphChoice').value='RX'}
+ if(s.mode==='unknown'){$('voltage').value=5;$('length').value=1;$('diameter').value=.35;$('graphChoice').value='RX'}
+
+ generateSample(s.mode==='unknown');
+}
+function labels(){
+ $('voltageLabel').textContent=V().toFixed(1)+' V';
+ $('lengthLabel').textContent=Lnom().toFixed(2)+' m';
+ $('diameterLabel').textContent=dnom().toFixed(2)+' mm';
+ $('sampleBadge').textContent='Wire sample #'+s.sampleNumber;
+}
+function update(){
+ labels();
+ let m=measure();
+ $('vRead').textContent=m.v.toFixed(2)+' V';
+ $('iRead').textContent=fmtI(m.i);
+ $('switchRead').textContent=s.closed?'Closed':'Open';
+ drawApp(m);drawGraph();
+}
+function record(){
+ if(!s.closed){$('status').textContent='Close the switch before recording.';return}
+ let m=measure();s.rows.push(m);render();drawGraph();
+ $('status').textContent='Trial '+s.rows.length+' recorded.';
+ let enough=s.rows.length>=8;
+ $('revealResistanceBtn').disabled=!enough;
+ if(s.mode==='unknown')$('revealBtn').disabled=!enough;
+}
+function render(){
+ $('dataBody').innerHTML=s.rows.map(r=>`<tr>
+ <td>${r.n}</td><td>${r.name}</td><td>${r.l.toFixed(2)}</td><td>${r.d.toFixed(2)}</td>
+ <td>${r.a.toFixed(4)}</td><td>${r.v.toFixed(4)}</td><td>${r.i.toPrecision(7)}</td>
+ </tr>`).join('');
+}
+function resetData(){
+ s.closed=false;s.rows=[];$('switchBtn').textContent='Close Switch';
+ $('revealResistanceBtn').disabled=true;$('revealBtn').disabled=true;
+ $('resistanceResult').classList.add('hidden');$('revealResult').classList.add('hidden');
+ render();update();$('status').textContent='Data reset. The same physical wire sample is still installed.';
+}
+function drawApp(m){
+ A.clearRect(0,0,900,330);A.fillStyle='#fff';A.fillRect(0,0,900,330);
+ A.strokeStyle='#111';A.fillStyle='#111';A.lineWidth=3;A.font='16px Arial';
+ let left=90,right=810,top=70,bot=255;
+ A.beginPath();A.moveTo(left,top);A.lineTo(250,top);A.moveTo(650,top);A.lineTo(right,top);A.lineTo(right,bot);A.lineTo(left,bot);A.lineTo(left,190);A.stroke();
+ A.beginPath();A.moveTo(left,top);A.lineTo(left,120);A.moveTo(left,185);A.lineTo(left,190);A.stroke();
+ A.lineWidth=4;A.beginPath();A.moveTo(62,140);A.lineTo(118,140);A.stroke();
+ A.lineWidth=2;A.beginPath();A.moveTo(72,165);A.lineTo(108,165);A.stroke();
+ A.fillText('+',125,143);A.fillText('−',125,170);A.fillText(V().toFixed(1)+' V',40,40);
+
+ let visualLen=180+Lnom()/10*210,x1=450-visualLen/2,x2=450+visualLen/2;
+ A.beginPath();A.moveTo(250,top);A.lineTo(x1,top);A.moveTo(x2,top);A.lineTo(650,top);A.stroke();
+ A.strokeStyle=mat().c;A.lineWidth=Math.max(3,Math.min(22,3+dnom()*8));A.beginPath();A.moveTo(x1,top);A.lineTo(x2,top);A.stroke();
+ A.strokeStyle='#111';A.lineWidth=1;A.strokeRect(x1-4,top-18,x2-x1+8,36);
+ A.fillStyle='#111';A.fillText(s.mode==='unknown'?'UNKNOWN METAL':mat().n,x1+8,top-28);
+ A.fillText(Lnom().toFixed(2)+' m',415,125);A.fillText('diameter '+dnom().toFixed(2)+' mm',370,148);
+
+ A.lineWidth=3;A.beginPath();A.arc(190,bot,6,0,Math.PI*2);A.arc(260,bot,6,0,Math.PI*2);A.fillStyle='#fff';A.fill();A.stroke();
+ A.fillStyle='#111';A.beginPath();A.moveTo(190,bot);A.lineTo(s.closed?260:246,s.closed?bot:bot-38);A.stroke();
+ A.beginPath();A.arc(480,bot,30,0,Math.PI*2);A.stroke();A.fillText('A',473,262);
+
+ A.strokeStyle='#555';A.lineWidth=2;A.setLineDash([6,4]);
+ A.beginPath();A.moveTo(x1,top+20);A.lineTo(x1,190);A.lineTo(390,190);
+ A.moveTo(x2,top+20);A.lineTo(x2,190);A.lineTo(510,190);A.stroke();A.setLineDash([]);
+ A.strokeStyle='#111';A.beginPath();A.arc(450,190,30,0,Math.PI*2);A.stroke();A.fillText('V',443,197);
+ A.fillText(s.closed?'CLOSED':'OPEN',175,298);A.fillText('I = '+fmtI(m.i),650,295);
+}
+function graphData(){
+ let q=$('graphChoice').value;
+ if(q==='VI')return['Current (A)','Voltage (V)',s.rows.map(r=>[r.i,r.v])];
+ if(q==='IL')return['Length (m)','Current (A)',s.rows.map(r=>[r.l,r.i])];
+ if(q==='IA')return['Area (mm²)','Current (A)',s.rows.map(r=>[r.a,r.i])];
+ if(q==='Id')return['Diameter (mm)','Current (A)',s.rows.map(r=>[r.d,r.i])];
+ if(q==='RL')return['Length (m)','Experimental R = V/I (Ω)',s.rows.filter(r=>Math.abs(r.i)>1e-12).map(r=>[r.l,r.v/r.i])];
+ return['L/A (1/m)','Experimental R = V/I (Ω)',s.rows.filter(r=>Math.abs(r.i)>1e-12).map(r=>[r.l/(r.a*1e-6),r.v/r.i])]
+}
+function drawGraph(){
+ G.clearRect(0,0,900,360);G.fillStyle='#fff';G.fillRect(0,0,900,360);
+ let [xl,yl,p]=graphData(),m={l:82,r:25,t:25,b:58},pw=793,ph=277;
+ let xmax=p.length?Math.max(...p.map(x=>x[0]))*1.12:1;
+ let ymax=p.length?Math.max(...p.map(x=>x[1]))*1.12:1;
+ G.strokeStyle='#d5dae0';G.lineWidth=1;
+ for(let i=0;i<=10;i++){let x=m.l+i*pw/10;G.beginPath();G.moveTo(x,m.t);G.lineTo(x,m.t+ph);G.stroke()}
+ for(let i=0;i<=8;i++){let y=m.t+i*ph/8;G.beginPath();G.moveTo(m.l,y);G.lineTo(m.l+pw,y);G.stroke()}
+ G.strokeStyle='#111';G.lineWidth=2;G.beginPath();G.moveTo(m.l,m.t);G.lineTo(m.l,m.t+ph);G.lineTo(m.l+pw,m.t+ph);G.stroke();
+ G.fillStyle='#111';G.font='14px Arial';G.fillText(xl,390,345);
+ G.save();G.translate(18,245);G.rotate(-Math.PI/2);G.fillText(yl,0,0);G.restore();
+ p.forEach(z=>{let x=m.l+z[0]/xmax*pw,y=m.t+ph-z[1]/ymax*ph;G.beginPath();G.arc(x,y,5,0,Math.PI*2);G.fill()});
+}
+function dataText(sep='\t'){
+ let h=['Trial','Material','Nominal_Length_m','Nominal_Diameter_mm','Nominal_Area_mm2','Measured_Voltage_V','Measured_Current_A'];
+ return[h.join(sep),...s.rows.map(r=>[r.n,r.name,r.l,r.d,r.a,r.v,r.i].join(sep))].join('\n')
+}
+
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+ s.mode=b.dataset.mode;
+ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));
+ config();
+}));
+$('switchBtn').addEventListener('click',()=>{s.closed=!s.closed;$('switchBtn').textContent=s.closed?'Open Switch':'Close Switch';update()});
+$('newWireBtn').addEventListener('click',()=>generateSample(s.mode==='unknown'));
+$('resetBtn').addEventListener('click',resetData);
+$('recordBtn').addEventListener('click',record);
+$('deleteBtn').addEventListener('click',()=>{
+ s.rows.pop();render();drawGraph();
+ let enough=s.rows.length>=8;$('revealResistanceBtn').disabled=!enough;
+ if(s.mode==='unknown')$('revealBtn').disabled=!enough;
+});
+$('clearBtn').addEventListener('click',resetData);
+['voltage','length','diameter','variation'].forEach(id=>$(id).addEventListener('input',()=>{$('resistanceResult').classList.add('hidden');update()}));
+$('material').addEventListener('change',()=>generateSample(false));
+$('graphChoice').addEventListener('change',drawGraph);
+$('revealResistanceBtn').addEventListener('click',()=>{
+ $('resistanceResult').textContent='Actual resistance of this installed wire sample: '+totalR().toFixed(4)+' Ω';
+ $('resistanceResult').classList.remove('hidden');
+});
+$('revealBtn').addEventListener('click',()=>{
+ $('revealResult').textContent='The hidden wire is '+mats[s.unknown].n+'.';
+ $('revealResult').classList.remove('hidden');
+});
+$('copyBtn').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText(dataText());$('status').textContent='Data copied.'}
+ catch{$('status').textContent='Clipboard unavailable. Use Download CSV.'}
+});
+$('csvBtn').addEventListener('click',()=>{
+ let blob=new Blob([dataText(',')],{type:'text/csv'}),a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);a.download='ohms_law_random_wire_data.csv';a.click();URL.revokeObjectURL(a.href);
+});
+
+s.sampleNumber=0;
+config();
+})();
+</script>
+</body>
+</html>

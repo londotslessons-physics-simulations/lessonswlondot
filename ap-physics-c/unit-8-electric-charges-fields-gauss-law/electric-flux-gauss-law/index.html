@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Electric Flux and Gauss's Law Lab Simulation</title>
+<style>
+:root{
+  --bg:#edf1f4; --panel:#fff; --ink:#111827; --muted:#5f6876; --line:#c8ced6;
+  --accent:#1f4e79; --soft:#e8f0f7; --good:#176b3a; --warn:#8a5200; --danger:#9b1c1c;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:16px 20px}
+header h1{margin:0;font-size:28px}
+header p{margin:5px 0 0;color:var(--muted)}
+main{max-width:1500px;margin:0 auto;padding:16px;display:grid;grid-template-columns:370px 1fr;gap:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+h2{font-size:18px;margin:0 0 10px}
+h3{font-size:15px;margin:14px 0 8px}
+label{display:block;font-weight:700;font-size:13px;margin:10px 0 4px}
+input,select,button{font:inherit}
+input[type=number],select{width:100%;padding:9px;border:1px solid #adb5c0;border-radius:8px;background:#fff}
+input[type=range]{width:100%}
+button{border:1px solid #9da6b2;border-radius:8px;padding:9px 11px;background:#fff;cursor:pointer}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.good{background:#e8f5ec;color:var(--good);border-color:#9ec7aa}
+button.warn{background:#fff5e7;color:var(--warn);border-color:#e1bd80}
+button.danger{background:#fdecec;color:var(--danger);border-color:#e2aaaa}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.metric{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fafbfc}
+.metric .k{font-size:12px;color:var(--muted)}
+.metric .v{font-size:20px;font-weight:800;margin-top:3px}
+.workspace{display:grid;grid-template-columns:minmax(520px,1.25fr) minmax(360px,.75fr);gap:16px}
+canvas{width:100%;height:560px;background:#fff;border:1px solid var(--line);border-radius:10px;touch-action:none}
+.status{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:8px;background:#f7f8fa;font-size:14px}
+.note{padding:10px;border:1px solid #d4c58f;border-radius:8px;background:#fffbe8;font-size:13px}
+.small{font-size:12px;color:var(--muted)}
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{border:1px solid #c9ced6;padding:6px;text-align:center}
+th{background:#edf1f5}
+.tablewrap{max-height:335px;overflow:auto}
+.checkrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.resultbox{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:8px;background:#f7f8fa}
+input[type=checkbox]{transform:scale(1.15)}
+.inlinecheck{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px}
+@media(max-width:1020px){
+ main{grid-template-columns:1fr}.workspace{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}
+ canvas{height:470px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Electric Flux and Gauss’s Law Lab Simulation</h1>
+  <p>Investigate flux through open and closed surfaces, enclosed charge, and the role of symmetry in Gaussian surfaces.</p>
+</header>
+
+<main>
+<section class="panel">
+  <div class="tabs">
+    <button class="tab active" data-mode="flat">Flat Surface Flux</button>
+    <button class="tab" data-mode="closed">Closed Surface</button>
+    <button class="tab" data-mode="gauss">Gauss’s Law</button>
+  </div>
+
+  <h2 id="modeTitle">Flat Surface Flux</h2>
+  <div class="note" id="instructions"></div>
+
+  <div id="flatControls">
+    <label>Electric field strength E (N/C): <span id="fieldLabel">300</span></label>
+    <input id="fieldStrength" type="range" min="50" max="800" step="10" value="300">
+
+    <label>Surface area A (m²): <span id="areaLabel">0.50</span></label>
+    <input id="surfaceArea" type="range" min="0.10" max="1.20" step="0.05" value="0.50">
+
+    <label>Angle θ between E and area normal: <span id="angleLabel">0°</span></label>
+    <input id="angle" type="range" min="0" max="180" step="5" value="0">
+  </div>
+
+  <div id="closedControls" class="hidden">
+    <label>Closed surface shape</label>
+    <select id="closedShape">
+      <option value="circle">Circular cross-section</option>
+      <option value="square">Square cross-section</option>
+      <option value="irregular">Irregular closed surface</option>
+    </select>
+
+    <label>Surface size: <span id="sizeLabel">1.00</span></label>
+    <input id="surfaceSize" type="range" min="0.55" max="1.45" step="0.05" value="1.00">
+
+    <label>Surface x-position: <span id="surfaceXLabel">0.00</span></label>
+    <input id="surfaceX" type="range" min="-2.2" max="2.2" step="0.1" value="0">
+
+    <label>Surface y-position: <span id="surfaceYLabel">0.00</span></label>
+    <input id="surfaceY" type="range" min="-1.5" max="1.5" step="0.1" value="0">
+
+    <h3>Source charges</h3>
+    <label>Charge 1 q₁ (nC)</label>
+    <input id="q1" type="number" min="-8" max="8" step="0.5" value="3">
+
+    <label>Charge 2 q₂ (nC)</label>
+    <input id="q2" type="number" min="-8" max="8" step="0.5" value="-2">
+
+    <label>Charge 3 q₃ (nC)</label>
+    <input id="q3" type="number" min="-8" max="8" step="0.5" value="1">
+  </div>
+
+  <div id="gaussControls" class="hidden">
+    <label>Charge distribution</label>
+    <select id="distribution">
+      <option value="point">Point charge</option>
+      <option value="line">Long line of charge</option>
+      <option value="plane">Infinite sheet of charge</option>
+    </select>
+
+    <label>Gaussian surface</label>
+    <select id="gaussianShape"></select>
+
+    <label>Source strength</label>
+    <input id="sourceStrength" type="number" step="0.5" value="4">
+
+    <label>Gaussian size: <span id="gaussSizeLabel">1.00</span></label>
+    <input id="gaussSize" type="range" min="0.5" max="1.8" step="0.05" value="1">
+
+    <label>Surface offset: <span id="offsetLabel">0.00</span></label>
+    <input id="gaussOffset" type="range" min="-1.8" max="1.8" step="0.1" value="0">
+  </div>
+
+  <label class="inlinecheck"><input id="showNormals" type="checkbox" checked> Show area-normal vectors</label>
+  <label class="inlinecheck"><input id="showField" type="checkbox" checked> Show electric-field vectors</label>
+  <label class="inlinecheck"><input id="showFluxSigns" type="checkbox" checked> Show positive and negative flux regions</label>
+
+  <div class="btnrow">
+    <button id="recordBtn" class="good">Record Measurement</button>
+    <button id="randomBtn" class="warn">Randomize Scenario</button>
+    <button id="clearBtn" class="danger">Clear Data</button>
+  </div>
+
+  <div class="note" style="margin-top:12px">
+    Use the measured values to test whether flux depends on field strength, area, orientation, surface shape, or only enclosed charge.
+  </div>
+</section>
+
+<section>
+  <div class="metrics">
+    <div class="metric"><div class="k">Net electric flux Φ<sub>E</sub></div><div class="v" id="fluxRead">—</div></div>
+    <div class="metric"><div class="k">Enclosed charge Q<sub>enc</sub></div><div class="v" id="qEncRead">—</div></div>
+    <div class="metric"><div class="k">Gauss-law prediction</div><div class="v" id="gaussRead">—</div></div>
+    <div class="metric"><div class="k">Flux agreement</div><div class="v" id="agreementRead">—</div></div>
+  </div>
+
+  <div class="workspace">
+    <section class="panel">
+      <h2>Interactive Field View</h2>
+      <canvas id="sim" width="900" height="560"></canvas>
+      <div class="status" id="status">Adjust the controls and observe how the flux changes.</div>
+    </section>
+
+    <section class="panel">
+      <h2>Collected Data</h2>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Mode</th><th>E or source</th><th>Area/size</th>
+              <th>Angle/offset</th><th>Qenc (nC)</th><th>Flux</th>
+            </tr>
+          </thead>
+          <tbody id="dataBody"></tbody>
+        </table>
+      </div>
+
+      <div class="btnrow">
+        <button id="copyBtn">Copy for Sheets / Excel / Numbers</button>
+        <button id="downloadBtn">Download CSV</button>
+      </div>
+
+      <h3>Check Your Calculation</h3>
+      <div class="status">
+        <label>Quantity to check</label>
+        <select id="checkType">
+          <option value="flux">Electric flux ΦE</option>
+          <option value="qenc">Enclosed charge from measured flux</option>
+        </select>
+        <div class="checkrow">
+          <div>
+            <label>Your value</label>
+            <input id="studentValue" type="number" step="any" placeholder="Enter value">
+          </div>
+          <div>
+            <label>Units</label>
+            <select id="studentUnit">
+              <option value="flux">N·m²/C</option>
+              <option value="nC">nC</option>
+              <option value="C">C</option>
+            </select>
+          </div>
+        </div>
+        <button id="checkBtn" class="primary" style="margin-top:10px">Check and Calculate Percent Error</button>
+        <div id="checkResult" class="resultbox">Enter a calculated value.</div>
+      </div>
+    </section>
+  </div>
+</section>
+</main>
+
+<script>
+(() => {
+const eps0=8.85e-12;
+const k=8.99e9;
+const $=id=>document.getElementById(id);
+const el={
+ modeTitle:$('modeTitle'),instructions:$('instructions'),
+ flatControls:$('flatControls'),closedControls:$('closedControls'),gaussControls:$('gaussControls'),
+ fieldStrength:$('fieldStrength'),surfaceArea:$('surfaceArea'),angle:$('angle'),
+ fieldLabel:$('fieldLabel'),areaLabel:$('areaLabel'),angleLabel:$('angleLabel'),
+ closedShape:$('closedShape'),surfaceSize:$('surfaceSize'),surfaceX:$('surfaceX'),surfaceY:$('surfaceY'),
+ sizeLabel:$('sizeLabel'),surfaceXLabel:$('surfaceXLabel'),surfaceYLabel:$('surfaceYLabel'),
+ q1:$('q1'),q2:$('q2'),q3:$('q3'),distribution:$('distribution'),
+ gaussianShape:$('gaussianShape'),sourceStrength:$('sourceStrength'),
+ gaussSize:$('gaussSize'),gaussOffset:$('gaussOffset'),gaussSizeLabel:$('gaussSizeLabel'),offsetLabel:$('offsetLabel'),
+ showNormals:$('showNormals'),showField:$('showField'),showFluxSigns:$('showFluxSigns'),
+ fluxRead:$('fluxRead'),qEncRead:$('qEncRead'),gaussRead:$('gaussRead'),agreementRead:$('agreementRead'),
+ dataBody:$('dataBody'),status:$('status'),sim:$('sim'),
+ checkType:$('checkType'),studentValue:$('studentValue'),studentUnit:$('studentUnit'),checkResult:$('checkResult')
+};
+const ctx=el.sim.getContext('2d');
+const state={mode:'flat',rows:[]};
+const charges=[
+ {x:-1.0,y:0.35,get q(){return Number(el.q1.value)}},
+ {x:0.75,y:-0.25,get q(){return Number(el.q2.value)}},
+ {x:1.6,y:0.8,get q(){return Number(el.q3.value)}}
+];
+
+function modeInfo(){
+ if(state.mode==='flat')return{
+  title:'Flat Surface Flux',
+  text:'Change field strength, surface area, and orientation. Test ΦE = EA cos θ for an open surface.'
+ };
+ if(state.mode==='closed')return{
+  title:'Closed Surface Flux',
+  text:'Move and resize a closed surface around point charges. Compare net flux with total enclosed charge.'
+ };
+ return{
+  title:'Gauss’s Law and Symmetry',
+  text:'Compare symmetry-matched and mismatched Gaussian surfaces for point, line, and plane charge distributions.'
+ };
+}
+
+function populateGaussianShapes(){
+ const d=el.distribution.value;
+ let options=[];
+ if(d==='point') options=[['sphere','Sphere'],['cube','Cube'],['cylinder','Cylinder']];
+ if(d==='line') options=[['cylinder','Coaxial cylinder'],['sphere','Sphere'],['cube','Cube']];
+ if(d==='plane') options=[['pillbox','Pillbox'],['sphere','Sphere'],['cylinder','Cylinder']];
+ el.gaussianShape.innerHTML=options.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('');
+}
+
+function worldToCanvas(x,y){
+ return {x:el.sim.width/2+x*150,y:el.sim.height/2-y*150};
+}
+function canvasToWorld(x,y){
+ return {x:(x-el.sim.width/2)/150,y:(el.sim.height/2-y)/150};
+}
+function pointInsideSurface(x,y){
+ const sx=Number(el.surfaceX.value),sy=Number(el.surfaceY.value),s=Number(el.surfaceSize.value);
+ if(el.closedShape.value==='circle')return (x-sx)**2+(y-sy)**2 <= s**2;
+ if(el.closedShape.value==='square')return Math.abs(x-sx)<=s && Math.abs(y-sy)<=s;
+ const dx=(x-sx)/s,dy=(y-sy)/s;
+ return dx*dx+dy*dy+0.25*Math.sin(3*Math.atan2(dy,dx))<=1;
+}
+function qEnclosedClosed(){
+ return charges.reduce((sum,c)=>sum+(pointInsideSurface(c.x,c.y)?c.q:0),0)*1e-9;
+}
+function qEnclosedGauss(){
+ const strength=Number(el.sourceStrength.value);
+ const offset=Math.abs(Number(el.gaussOffset.value));
+ const size=Number(el.gaussSize.value);
+ if(el.distribution.value==='point')return offset<size?strength*1e-9:0;
+ if(el.distribution.value==='line'){
+   const length=2*size;
+   return offset<size ? strength*1e-9*length : 0;
+ }
+ const area=Math.PI*size*size;
+ return offset<size ? strength*1e-9*area : 0;
+}
+function flatFlux(){
+ const E=Number(el.fieldStrength.value),A=Number(el.surfaceArea.value),th=Number(el.angle.value)*Math.PI/180;
+ return E*A*Math.cos(th);
+}
+function measuredFlux(){
+ let ideal=0;
+ if(state.mode==='flat')ideal=flatFlux();
+ else if(state.mode==='closed')ideal=qEnclosedClosed()/eps0;
+ else ideal=qEnclosedGauss()/eps0;
+ const noise=(Math.random()+Math.random()+Math.random()+Math.random()-2)*0.003;
+ return ideal*(1+noise);
+}
+function currentIdealFlux(){
+ if(state.mode==='flat')return flatFlux();
+ if(state.mode==='closed')return qEnclosedClosed()/eps0;
+ return qEnclosedGauss()/eps0;
+}
+function currentQenc(){
+ if(state.mode==='flat')return 0;
+ if(state.mode==='closed')return qEnclosedClosed();
+ return qEnclosedGauss();
+}
+function fmtFlux(v){
+ if(Math.abs(v)>=1000)return v.toExponential(3)+' N·m²/C';
+ return v.toFixed(2)+' N·m²/C';
+}
+function updateMetrics(){
+ const phi=currentIdealFlux(),q=currentQenc(),pred=q/eps0;
+ el.fluxRead.textContent=fmtFlux(phi);
+ el.qEncRead.textContent=(q*1e9).toFixed(3)+' nC';
+ el.gaussRead.textContent=state.mode==='flat'?'—':fmtFlux(pred);
+ el.agreementRead.textContent=state.mode==='flat'?'Open surface':(Math.abs(phi-pred)<1e-8?'Matches':'Check');
+}
+
+function drawArrow(x1,y1,x2,y2,label=''){
+ ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+ const a=Math.atan2(y2-y1,x2-x1),h=8;
+ ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-h*Math.cos(a-.45),y2-h*Math.sin(a-.45));
+ ctx.moveTo(x2,y2);ctx.lineTo(x2-h*Math.cos(a+.45),y2-h*Math.sin(a+.45));ctx.stroke();
+ if(label){ctx.fillText(label,(x1+x2)/2+4,(y1+y2)/2-4)}
+}
+function drawGrid(){
+ ctx.strokeStyle='#e1e5ea';ctx.lineWidth=1;
+ for(let x=0;x<el.sim.width;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,el.sim.height);ctx.stroke()}
+ for(let y=0;y<el.sim.height;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(el.sim.width,y);ctx.stroke()}
+}
+function drawFlat(){
+ const w=el.sim.width,h=el.sim.height,th=Number(el.angle.value)*Math.PI/180;
+ const cx=w/2,cy=h/2,len=180+Number(el.surfaceArea.value)*120;
+ if(el.showField.checked){
+   ctx.strokeStyle='#444';ctx.fillStyle='#222';ctx.lineWidth=1.5;
+   for(let y=80;y<h-60;y+=60)for(let x=50;x<w-80;x+=90)drawArrow(x,y,x+55,y);
+ }
+ ctx.save();ctx.translate(cx,cy);ctx.rotate(-th);
+ ctx.fillStyle='rgba(120,120,120,.18)';ctx.strokeStyle='#111';ctx.lineWidth=4;
+ ctx.fillRect(-8,-len/2,16,len);ctx.strokeRect(-8,-len/2,16,len);
+ if(el.showNormals.checked){
+   ctx.strokeStyle='#111';ctx.lineWidth=2;drawArrow(0,0,100,0,'n');
+ }
+ ctx.restore();
+ ctx.fillStyle='#111';ctx.font='16px Arial';
+ ctx.fillText(`θ = ${Number(el.angle.value).toFixed(0)}°`,cx+110,cy-20);
+ ctx.fillText('Uniform electric field →',35,40);
+}
+function fieldAt(x,y){
+ let Ex=0,Ey=0;
+ for(const c of charges){
+   const dx=x-c.x,dy=y-c.y,r2=dx*dx+dy*dy+0.04,r=Math.sqrt(r2);
+   const f=c.q/r2;
+   Ex+=f*dx/r;Ey+=f*dy/r;
+ }
+ return {Ex,Ey};
+}
+function drawClosed(){
+ if(el.showField.checked){
+   ctx.strokeStyle='#555';ctx.lineWidth=1;
+   for(let y=-1.6;y<=1.6;y+=0.4)for(let x=-2.6;x<=2.6;x+=0.4){
+     const p=worldToCanvas(x,y),f=fieldAt(x,y),mag=Math.hypot(f.Ex,f.Ey);
+     if(mag<.01)continue;
+     const scale=18/Math.max(mag,1);
+     drawArrow(p.x,p.y,p.x+f.Ex*scale,p.y-f.Ey*scale);
+   }
+ }
+ for(const c of charges){
+   const p=worldToCanvas(c.x,c.y);
+   ctx.beginPath();ctx.arc(p.x,p.y,18,0,Math.PI*2);
+   ctx.fillStyle=c.q>=0?'#ddd':'#888';ctx.fill();ctx.strokeStyle='#111';ctx.stroke();
+   ctx.fillStyle=c.q>=0?'#111':'#fff';ctx.font='bold 18px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+   ctx.fillText(c.q>=0?'+':'−',p.x,p.y);ctx.textAlign='left';ctx.textBaseline='alphabetic';
+ }
+ const sx=Number(el.surfaceX.value),sy=Number(el.surfaceY.value),s=Number(el.surfaceSize.value),p=worldToCanvas(sx,sy),r=s*150;
+ ctx.strokeStyle='#111';ctx.lineWidth=3;ctx.setLineDash([10,6]);
+ if(el.closedShape.value==='circle'){ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.stroke()}
+ else if(el.closedShape.value==='square')ctx.strokeRect(p.x-r,p.y-r,2*r,2*r);
+ else{
+   ctx.beginPath();
+   for(let i=0;i<=120;i++){
+     const a=i/120*Math.PI*2,rr=r*(1+0.12*Math.sin(3*a));
+     const x=p.x+rr*Math.cos(a),y=p.y+rr*Math.sin(a);
+     if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+   }
+   ctx.closePath();ctx.stroke();
+ }
+ ctx.setLineDash([]);
+ if(el.showFluxSigns.checked){
+   ctx.fillStyle='#111';ctx.font='14px Arial';
+   ctx.fillText('Outward crossings: positive flux',25,35);
+   ctx.fillText('Inward crossings: negative flux',25,55);
+ }
+}
+function drawGauss(){
+ const d=el.distribution.value,g=el.gaussianShape.value,size=Number(el.gaussSize.value),off=Number(el.gaussOffset.value);
+ const center=worldToCanvas(off,0),r=size*125;
+ ctx.strokeStyle='#111';ctx.fillStyle='#111';ctx.lineWidth=2;
+ if(d==='point'){
+   const p=worldToCanvas(0,0);ctx.beginPath();ctx.arc(p.x,p.y,18,0,Math.PI*2);ctx.fillStyle='#ddd';ctx.fill();ctx.stroke();
+   ctx.fillStyle='#111';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 18px Arial';ctx.fillText('+',p.x,p.y);
+   ctx.textAlign='left';ctx.textBaseline='alphabetic';
+   if(el.showField.checked){
+     for(let a=0;a<Math.PI*2;a+=Math.PI/8)drawArrow(p.x,p.y,p.x+180*Math.cos(a),p.y+180*Math.sin(a));
+   }
+ }else if(d==='line'){
+   ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(el.sim.width/2,40);ctx.lineTo(el.sim.width/2,el.sim.height-40);ctx.stroke();
+   ctx.lineWidth=1.5;
+   if(el.showField.checked)for(let y=80;y<el.sim.height-50;y+=60){
+     drawArrow(el.sim.width/2-10,y,el.sim.width/2-150,y);
+     drawArrow(el.sim.width/2+10,y,el.sim.width/2+150,y);
+   }
+ }else{
+   ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(60,el.sim.height/2);ctx.lineTo(el.sim.width-60,el.sim.height/2);ctx.stroke();
+   ctx.lineWidth=1.5;
+   if(el.showField.checked)for(let x=90;x<el.sim.width-70;x+=70){
+     drawArrow(x,el.sim.height/2-10,x,el.sim.height/2-140);
+     drawArrow(x,el.sim.height/2+10,x,el.sim.height/2+140);
+   }
+ }
+ ctx.strokeStyle='#111';ctx.lineWidth=3;ctx.setLineDash([10,6]);
+ if(g==='sphere'){ctx.beginPath();ctx.arc(center.x,center.y,r,0,Math.PI*2);ctx.stroke()}
+ else if(g==='cube')ctx.strokeRect(center.x-r,center.y-r,2*r,2*r);
+ else if(g==='cylinder'){
+   ctx.strokeRect(center.x-r,center.y-r*.65,2*r,1.3*r);
+   ctx.beginPath();ctx.ellipse(center.x-r,center.y,r*.12,r*.65,0,0,Math.PI*2);ctx.stroke();
+   ctx.beginPath();ctx.ellipse(center.x+r,center.y,r*.12,r*.65,0,0,Math.PI*2);ctx.stroke();
+ }else{
+   ctx.strokeRect(center.x-r,center.y-r*.4,2*r,r*.8);
+   ctx.beginPath();ctx.ellipse(center.x-r,center.y,r*.10,r*.4,0,0,Math.PI*2);ctx.stroke();
+   ctx.beginPath();ctx.ellipse(center.x+r,center.y,r*.10,r*.4,0,0,Math.PI*2);ctx.stroke();
+ }
+ ctx.setLineDash([]);
+ const matched=(d==='point'&&g==='sphere')||(d==='line'&&g==='cylinder')||(d==='plane'&&g==='pillbox');
+ ctx.fillStyle='#111';ctx.font='16px Arial';
+ ctx.fillText(matched?'Symmetry matched: E is constant on useful surface sections.':'Symmetry mismatched: Gauss’s law is valid, but does not simplify E.',25,35);
+}
+function draw(){
+ ctx.clearRect(0,0,el.sim.width,el.sim.height);ctx.fillStyle='#fff';ctx.fillRect(0,0,el.sim.width,el.sim.height);
+ drawGrid();
+ if(state.mode==='flat')drawFlat();
+ else if(state.mode==='closed')drawClosed();
+ else drawGauss();
+}
+
+function update(){
+ el.fieldLabel.textContent=Number(el.fieldStrength.value).toFixed(0);
+ el.areaLabel.textContent=Number(el.surfaceArea.value).toFixed(2);
+ el.angleLabel.textContent=Number(el.angle.value).toFixed(0)+'°';
+ el.sizeLabel.textContent=Number(el.surfaceSize.value).toFixed(2);
+ el.surfaceXLabel.textContent=Number(el.surfaceX.value).toFixed(2);
+ el.surfaceYLabel.textContent=Number(el.surfaceY.value).toFixed(2);
+ el.gaussSizeLabel.textContent=Number(el.gaussSize.value).toFixed(2);
+ el.offsetLabel.textContent=Number(el.gaussOffset.value).toFixed(2);
+ updateMetrics();draw();
+}
+function switchMode(mode){
+ state.mode=mode;
+ document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+ el.flatControls.classList.toggle('hidden',mode!=='flat');
+ el.closedControls.classList.toggle('hidden',mode!=='closed');
+ el.gaussControls.classList.toggle('hidden',mode!=='gauss');
+ const info=modeInfo();el.modeTitle.textContent=info.title;el.instructions.textContent=info.text;
+ el.status.textContent='Adjust the controls and observe how the flux changes.';
+ update();
+}
+function randomize(){
+ if(state.mode==='flat'){
+   el.fieldStrength.value=50+Math.floor(Math.random()*76)*10;
+   el.surfaceArea.value=(0.10+Math.floor(Math.random()*23)*0.05).toFixed(2);
+   el.angle.value=Math.floor(Math.random()*37)*5;
+ }else if(state.mode==='closed'){
+   el.q1.value=(-6+Math.random()*12).toFixed(1);
+   el.q2.value=(-6+Math.random()*12).toFixed(1);
+   el.q3.value=(-6+Math.random()*12).toFixed(1);
+   el.surfaceX.value=(-1.8+Math.random()*3.6).toFixed(1);
+   el.surfaceY.value=(-1.2+Math.random()*2.4).toFixed(1);
+   el.surfaceSize.value=(0.6+Math.random()*.8).toFixed(2);
+ }else{
+   el.sourceStrength.value=(1+Math.random()*7).toFixed(1);
+   el.gaussSize.value=(0.55+Math.random()*1.15).toFixed(2);
+   el.gaussOffset.value=(-1.4+Math.random()*2.8).toFixed(1);
+ }
+ update();
+}
+function record(){
+ const flux=measuredFlux(),q=currentQenc();
+ let source='',size='',orient='';
+ if(state.mode==='flat'){
+   source=Number(el.fieldStrength.value).toFixed(0)+' N/C';
+   size=Number(el.surfaceArea.value).toFixed(2)+' m²';
+   orient=Number(el.angle.value).toFixed(0)+'°';
+ }else if(state.mode==='closed'){
+   source=`q1=${el.q1.value}, q2=${el.q2.value}, q3=${el.q3.value} nC`;
+   size=`${el.closedShape.value}, ${Number(el.surfaceSize.value).toFixed(2)}`;
+   orient=`(${Number(el.surfaceX.value).toFixed(1)}, ${Number(el.surfaceY.value).toFixed(1)})`;
+ }else{
+   source=`${el.distribution.value}: ${Number(el.sourceStrength.value).toFixed(2)}`;
+   size=`${el.gaussianShape.value}, ${Number(el.gaussSize.value).toFixed(2)}`;
+   orient=`offset ${Number(el.gaussOffset.value).toFixed(1)}`;
+ }
+ state.rows.push({n:state.rows.length+1,mode:state.mode,source,size,orient,q,flux});
+ renderTable();
+ el.status.textContent='Measurement recorded with small experimental variation.';
+}
+function renderTable(){
+ el.dataBody.innerHTML=state.rows.map(r=>`<tr>
+ <td>${r.n}</td><td>${r.mode}</td><td>${r.source}</td><td>${r.size}</td>
+ <td>${r.orient}</td><td>${(r.q*1e9).toFixed(3)}</td><td>${r.flux.toFixed(4)}</td></tr>`).join('');
+}
+function spreadsheetText(){
+ return 'Trial\tMode\tE or Source\tArea or Size\tAngle or Offset\tEnclosed Charge (nC)\tElectric Flux (N m^2/C)\n'+
+ state.rows.map(r=>[r.n,r.mode,r.source,r.size,r.orient,(r.q*1e9).toFixed(6),r.flux.toFixed(8)].join('\t')).join('\n');
+}
+function csv(){
+ return 'Trial,Mode,E_or_Source,Area_or_Size,Angle_or_Offset,Enclosed_Charge_nC,Electric_Flux_Nm2_per_C\n'+
+ state.rows.map(r=>[r.n,r.mode,`"${r.source}"`,`"${r.size}"`,`"${r.orient}"`,(r.q*1e9).toFixed(6),r.flux.toFixed(8)].join(',')).join('\n');
+}
+function check(){
+ const raw=Number(el.studentValue.value);
+ if(!Number.isFinite(raw)){el.checkResult.textContent='Enter a valid number.';return}
+ let accepted,student=raw,label;
+ if(el.checkType.value==='flux'){
+   accepted=currentIdealFlux();label='Electric flux';
+ }else{
+   accepted=currentIdealFlux()*eps0;
+   if(el.studentUnit.value==='nC')student=raw*1e-9;
+   label='Enclosed charge';
+ }
+ const err=Math.abs(student-accepted)/(Math.abs(accepted)||1)*100;
+ el.checkResult.innerHTML=`<b>${label}</b><br>Your value: ${raw}<br>Simulation value: ${el.checkType.value==='flux'?accepted.toFixed(5):(accepted*1e9).toFixed(5)+' nC'}<br><b>Percent error: ${err.toFixed(2)}%</b>`;
+}
+
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchMode(b.dataset.mode)));
+['fieldStrength','surfaceArea','angle','closedShape','surfaceSize','surfaceX','surfaceY','q1','q2','q3',
+ 'distribution','gaussianShape','sourceStrength','gaussSize','gaussOffset','showNormals','showField','showFluxSigns']
+ .forEach(id=>$(id).addEventListener('input',()=>{if(id==='distribution')populateGaussianShapes();update()}));
+$('recordBtn').addEventListener('click',record);
+$('randomBtn').addEventListener('click',randomize);
+$('clearBtn').addEventListener('click',()=>{state.rows=[];renderTable();el.status.textContent='Data cleared.'});
+$('copyBtn').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText(spreadsheetText());el.status.textContent='Tab-separated data copied.'}
+ catch{el.status.textContent='Clipboard unavailable. Use Download CSV.'}
+});
+$('downloadBtn').addEventListener('click',()=>{
+ const blob=new Blob([csv()],{type:'text/csv'}),a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);a.download='electric_flux_gauss_law_data.csv';a.click();URL.revokeObjectURL(a.href);
+});
+$('checkBtn').addEventListener('click',check);
+el.checkType.addEventListener('change',()=>{
+ el.studentUnit.innerHTML=el.checkType.value==='flux'
+ ?'<option value="flux">N·m²/C</option>'
+ :'<option value="nC">nC</option><option value="C">C</option>';
+});
+populateGaussianShapes();
+switchMode('flat');
+})();
+</script>
+</body>
+</html>

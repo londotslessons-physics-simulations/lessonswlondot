@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coulomb's Law Vertical Scale Lab</title>
+<style>
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef4f8;color:#172532}
+header{text-align:center;padding:14px 10px 8px}
+h1{margin:0;font-size:clamp(1.5rem,3vw,2.15rem)}
+p{margin:5px 0;color:#607382}
+main{width:min(1120px,96vw);margin:auto;padding-bottom:24px}
+.card{background:#fff;border:1px solid #b8c6d1;border-radius:14px;padding:12px;margin-bottom:12px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:10px}
+button,select,input{font:inherit}
+button{padding:9px 14px;min-height:42px;border:1px solid #8ea1b0;border-radius:8px;background:#fff;font-weight:700}
+button.primary{background:#2f6fa3;color:#fff}
+.stage{border:2px solid #283947;border-radius:12px;background:#fff;overflow:hidden}
+svg{display:block;width:100%;height:auto}
+.sphere{stroke:#22333f;stroke-width:3}
+.sphere-text{font-size:16px;font-weight:800;fill:#fff;text-anchor:middle;dominant-baseline:middle;pointer-events:none}
+.label{font-size:17px;font-weight:700;fill:#1d2d38;text-anchor:middle}
+.ruler{stroke:#2e3f4b;stroke-width:3}
+.tick{stroke:#2e3f4b;stroke-width:2}
+.guide{stroke:#8999a4;stroke-width:2;stroke-dasharray:7 6}
+.force{stroke:#25804b;stroke-width:3;marker-end:url(#arrow)}
+.scale{fill:#3d4a54;stroke:#1f2b33;stroke-width:3}
+.scale-top{fill:#b8c3ca;stroke:#293943;stroke-width:3}
+.screen{fill:#b8d8c8;stroke:#263845;stroke-width:2}
+.screen-text{font-family:monospace;font-size:25px;font-weight:800;fill:#10212a;text-anchor:middle}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.metric{text-align:center;background:#edf4f8;border:1px solid #b8c6d1;border-radius:9px;padding:8px}
+.metric b{display:block;font-size:1.1rem}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.group{border:1px solid #b8c6d1;border-radius:10px;padding:10px;background:#fbfdfe}
+.group h2{font-size:1rem;margin:0 0 8px}
+.control{display:grid;gap:5px;margin:7px 0}
+.value{font-weight:700;text-align:center}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #aebdca;padding:7px;text-align:center}
+th{background:#e7eef4}
+.status{text-align:center;min-height:22px;font-weight:700;color:#7b2822;margin-top:8px}
+@media(max-width:760px){.controls{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>Coulomb's Law Vertical Scale Lab</h1>
+<p>The center of the lower sphere is fixed at 0 cm. Move the upper sphere and record the center-to-center distance and scale reading.</p>
+</header>
+<main>
+
+<section class="card">
+<div class="toolbar">
+<button id="resetBtn">Reset</button>
+<button id="randomBtn" class="primary">New Random Charges</button>
+<button id="recordBtn">Record Measurement</button>
+</div>
+
+<div class="stage">
+<svg id="simSvg" viewBox="0 0 900 560" aria-label="Vertical Coulomb's law apparatus">
+<defs>
+<marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+<path d="M0,0 L6,3 L0,6 Z" fill="#25804b"/>
+</marker>
+</defs>
+
+<text id="interactionText" x="450" y="38" class="label" style="font-size:23px">Attractive Interaction</text>
+
+<line x1="680" y1="86" x2="680" y2="402" class="ruler"/>
+<g id="rulerTicks"></g>
+<line x1="450" y1="396" x2="680" y2="396" class="guide"/>
+<circle cx="680" cy="396" r="5" fill="#c73b3b"/>
+<text x="716" y="401" font-size="14" font-weight="800">0 cm</text>
+
+<circle id="movingSphere" cx="450" cy="170" r="32" class="sphere" fill="#2f63b7" style="cursor:grab;touch-action:none"/>
+<text id="movingSphereText" x="450" y="170" class="sphere-text">−3.0</text>
+<text id="movingSphereLabel" x="450" y="98" class="label">Upper sphere: −3.0 μC</text>
+
+<circle id="fixedSphere" cx="450" cy="396" r="32" class="sphere" fill="#c73b3b"/>
+<text id="fixedSphereText" x="450" y="396" class="sphere-text">+4.0</text>
+<text id="fixedSphereLabel" x="285" y="404" class="label" text-anchor="end">Lower sphere: +4.0 μC</text>
+
+<line id="forceUpper" x1="450" y1="235" x2="450" y2="275" class="force"/>
+<line id="forceLower" x1="450" y1="300" x2="450" y2="260" class="force"/>
+
+<line id="guideTop" x1="510" y1="170" x2="680" y2="170" class="guide"/>
+<rect id="distanceTag" x="570" y="250" width="110" height="36" rx="8" fill="#fff" stroke="#8999a4" stroke-width="2"/>
+<text id="distanceText" x="625" y="275" class="label">19.5 cm</text>
+
+<rect x="330" y="450" width="240" height="82" rx="14" class="scale"/>
+<rect x="375" y="428" width="150" height="30" rx="7" class="scale-top"/>
+<rect x="385" y="478" width="130" height="36" rx="6" class="screen"/>
+<text id="scaleDisplay" x="450" y="503" class="screen-text">0.000 N</text>
+</svg>
+</div>
+
+<div class="metrics">
+<div class="metric">Center-to-center distance<b id="distanceReadout">19.5 cm</b></div>
+<div class="metric">Scale Change<b id="scaleChangeReadout">−2.837 N</b></div>
+</div>
+<div id="status" class="status">Drag the upper sphere or use the slider.</div>
+</section>
+
+<section class="card">
+<div class="controls">
+<div class="group">
+<h2>Lower Sphere</h2>
+<div class="control">
+<label for="fixedCharge">Magnitude</label>
+<input id="fixedCharge" type="range" min="1" max="10" step="0.5" value="4">
+<div id="fixedChargeValue" class="value">4.0 μC</div>
+</div>
+<select id="fixedSign"><option value="1" selected>Positive</option><option value="-1">Negative</option></select>
+</div>
+
+<div class="group">
+<h2>Upper Sphere</h2>
+<div class="control">
+<label for="movingCharge">Magnitude</label>
+<input id="movingCharge" type="range" min="1" max="10" step="0.5" value="3">
+<div id="movingChargeValue" class="value">3.0 μC</div>
+</div>
+<select id="movingSign"><option value="1">Positive</option><option value="-1" selected>Negative</option></select>
+</div>
+
+<div class="group">
+<h2>Distance</h2>
+<div class="control">
+<label for="distanceSlider">Center-to-center distance</label>
+<input id="distanceSlider" type="range" min="14" max="30" step="0.5" value="19.5">
+<div id="distanceValue" class="value">19.5 cm</div>
+</div>
+<div style="text-align:center;font-family:Georgia,serif">F = k|q₁q₂|/r²</div>
+</div>
+</div>
+</section>
+
+<section class="card">
+<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">
+<h2 style="margin:0;font-size:1.1rem">Recorded Measurements</h2>
+<button id="clearDataBtn">Clear Data</button>
+</div>
+<table>
+<thead><tr><th>Trial</th><th>Lower Charge (μC)</th><th>Upper Charge (μC)</th><th>Distance (cm)</th><th>Distance (m)</th><th>Scale Change (N)</th><th>Interaction</th></tr></thead>
+<tbody id="dataBody"></tbody>
+</table>
+</section>
+
+</main>
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+const e={
+fixedCharge:$('fixedCharge'),movingCharge:$('movingCharge'),fixedSign:$('fixedSign'),movingSign:$('movingSign'),
+fixedChargeValue:$('fixedChargeValue'),movingChargeValue:$('movingChargeValue'),distanceSlider:$('distanceSlider'),
+distanceValue:$('distanceValue'),movingSphere:$('movingSphere'),movingSphereText:$('movingSphereText'),
+movingSphereLabel:$('movingSphereLabel'),fixedSphere:$('fixedSphere'),fixedSphereText:$('fixedSphereText'),
+fixedSphereLabel:$('fixedSphereLabel'),guideTop:$('guideTop'),distanceTag:$('distanceTag'),
+distanceText:$('distanceText'),forceUpper:$('forceUpper'),forceLower:$('forceLower'),
+interactionText:$('interactionText'),scaleDisplay:$('scaleDisplay'),distanceReadout:$('distanceReadout'),
+scaleChangeReadout:$('scaleChangeReadout'),rulerTicks:$('rulerTicks'),status:$('status'),dataBody:$('dataBody')
+};
+const k=8.99e9, lowerY=396, pxPerCm=10;
+let trial=0,dragging=false;
+
+function vals(){
+ const q1=+e.fixedCharge.value*+e.fixedSign.value;
+ const q2=+e.movingCharge.value*+e.movingSign.value;
+ const rCm=+e.distanceSlider.value;
+ const rM=rCm/100;
+ const force=k*Math.abs(q1*1e-6*q2*1e-6)/(rM*rM);
+ return{q1,q2,rCm,rM,force};
+}
+function upperY(cm){return lowerY-cm*pxPerCm}
+function distFromY(y){return Math.max(14,Math.min(30,(lowerY-y)/pxPerCm))}
+function sign(q){return q>0?'+':'−'}
+
+function drawRuler(){
+ let s='';
+ for(let cm=0;cm<=30;cm+=1){
+   const y=lowerY-cm*pxPerCm;
+   const major=cm%5===0;
+   s+=`<line x1="680" y1="${y}" x2="${major?710:696}" y2="${y}" class="tick"/>`;
+   if(major)s+=`<text x="716" y="${y+5}" font-size="13">${cm}</text>`;
+ }
+ e.rulerTicks.innerHTML=s;
+}
+
+function update(){
+ const {q1,q2,rCm,force}=vals();
+ const y=upperY(rCm), attractive=q1*q2<0, center=(y+lowerY)/2;
+ e.movingSphere.setAttribute('cy',y);
+ e.movingSphereText.setAttribute('y',y);
+ e.movingSphereLabel.setAttribute('y',y-48);
+ e.guideTop.setAttribute('y1',y);e.guideTop.setAttribute('y2',y);
+ e.distanceTag.setAttribute('y',center-18);
+ e.distanceText.setAttribute('y',center+7);
+ e.distanceText.textContent=`${rCm.toFixed(1)} cm`;
+
+ e.fixedSphere.setAttribute('fill',q1>0?'#c73b3b':'#2f63b7');
+ e.movingSphere.setAttribute('fill',q2>0?'#c73b3b':'#2f63b7');
+ e.fixedSphereText.textContent=`${sign(q1)}${Math.abs(q1).toFixed(1)}`;
+ e.movingSphereText.textContent=`${sign(q2)}${Math.abs(q2).toFixed(1)}`;
+ e.fixedSphereLabel.textContent=`Lower sphere: ${q1>0?'+':'−'}${Math.abs(q1).toFixed(1)} μC`;
+ e.movingSphereLabel.textContent=`Upper sphere: ${q2>0?'+':'−'}${Math.abs(q2).toFixed(1)} μC`;
+
+ if(attractive){
+   e.forceUpper.setAttribute('y1',y+36);e.forceUpper.setAttribute('y2',y+58);
+   e.forceLower.setAttribute('y1',lowerY-36);e.forceLower.setAttribute('y2',lowerY-58);
+ }else{
+   e.forceUpper.setAttribute('y1',y-36);e.forceUpper.setAttribute('y2',y-58);
+   e.forceLower.setAttribute('y1',lowerY+36);e.forceLower.setAttribute('y2',lowerY+58);
+ }
+ const change=attractive?-force:force;
+ e.scaleDisplay.textContent=`${change>=0?'+':''}${change.toFixed(3)} N`;
+ e.scaleChangeReadout.textContent=`${change>=0?'+':''}${change.toFixed(3)} N`;
+ e.distanceReadout.textContent=`${rCm.toFixed(1)} cm`;
+ e.interactionText.textContent=`${attractive?'Attractive':'Repulsive'} Interaction`;
+ e.fixedChargeValue.textContent=`${Math.abs(q1).toFixed(1)} μC`;
+ e.movingChargeValue.textContent=`${Math.abs(q2).toFixed(1)} μC`;
+ e.distanceValue.textContent=`${rCm.toFixed(1)} cm`;
+}
+function randomize(){
+ e.fixedCharge.value=(Math.floor(Math.random()*19)+2)/2;
+ e.movingCharge.value=(Math.floor(Math.random()*19)+2)/2;
+ e.fixedSign.value=Math.random()<.5?'1':'-1';
+ e.movingSign.value=Math.random()<.5?'1':'-1';
+ e.distanceSlider.value=(15+Math.random()*13).toFixed(1);
+ update();
+}
+function record(){
+ const {q1,q2,rCm,rM,force}=vals(),attractive=q1*q2<0,change=attractive?-force:force;
+ trial++;
+ const tr=document.createElement('tr');
+ tr.innerHTML=`<td>${trial}</td><td>${q1.toFixed(1)}</td><td>${q2.toFixed(1)}</td><td>${rCm.toFixed(1)}</td><td>${rM.toFixed(3)}</td><td>${change.toFixed(4)}</td><td>${attractive?'Attractive':'Repulsive'}</td>`;
+ e.dataBody.appendChild(tr);e.status.textContent='Measurement recorded.';
+}
+function pointerY(evt){
+ const rect=document.getElementById('simSvg').getBoundingClientRect();
+ return (evt.clientY-rect.top)*560/rect.height;
+}
+e.movingSphere.addEventListener('pointerdown',evt=>{dragging=true;e.movingSphere.setPointerCapture(evt.pointerId)});
+e.movingSphere.addEventListener('pointermove',evt=>{if(!dragging)return;e.distanceSlider.value=distFromY(pointerY(evt)).toFixed(1);update()});
+e.movingSphere.addEventListener('pointerup',()=>dragging=false);
+e.movingSphere.addEventListener('pointercancel',()=>dragging=false);
+[e.fixedCharge,e.movingCharge,e.fixedSign,e.movingSign,e.distanceSlider].forEach(x=>x.addEventListener('input',update));
+$('resetBtn').addEventListener('click',()=>{e.fixedCharge.value=4;e.movingCharge.value=3;e.fixedSign.value=1;e.movingSign.value=-1;e.distanceSlider.value=19.5;update()});
+$('randomBtn').addEventListener('click',randomize);
+$('recordBtn').addEventListener('click',record);
+$('clearDataBtn').addEventListener('click',()=>{e.dataBody.innerHTML='';trial=0;e.status.textContent='Data cleared.'});
+drawRuler();update();
+})();
+</script>
+</body>
+</html>

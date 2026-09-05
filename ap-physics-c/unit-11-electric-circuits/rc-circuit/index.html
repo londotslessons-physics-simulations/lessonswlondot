@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RC Circuit Discharge Lab — Version 2</title>
+<style>
+  :root{
+    --bg:#eaf1f7;
+    --panel:#ffffff;
+    --ink:#152433;
+    --muted:#5e7182;
+    --line:#263746;
+    --accent:#c83b3b;
+    --accent2:#2e6f9e;
+    --good:#2d7a4d;
+    --border:#b8c6d1;
+    --shadow:0 8px 22px rgba(28,48,66,.12);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    color:var(--ink);
+    background:linear-gradient(#f4f8fb,#dfeaf2);
+    min-height:100vh;
+  }
+  header{
+    padding:14px 18px 8px;
+    text-align:center;
+  }
+  h1{font-size:clamp(1.45rem,3vw,2.15rem);margin:0 0 4px}
+  .subtitle{margin:0;color:var(--muted);font-size:.98rem}
+  main{
+    width:min(1180px,96vw);
+    margin:0 auto 24px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 330px;
+    gap:16px;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+  }
+  .sim-card{padding:12px}
+  .toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:10px;
+  }
+  button, select, input{
+    font:inherit;
+  }
+  button{
+    min-height:44px;
+    padding:9px 14px;
+    border:1px solid #8da1b1;
+    border-radius:9px;
+    background:#fff;
+    color:var(--ink);
+    font-weight:700;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  button:hover{background:#f1f6fa}
+  button.primary{background:var(--accent);color:#fff;border-color:#9b2222}
+  button.secondary{background:var(--accent2);color:#fff;border-color:#1e5278}
+  button:disabled{opacity:.48;cursor:not-allowed}
+  .stage{
+    position:relative;
+    min-height:510px;
+    overflow:hidden;
+    border-radius:12px;
+    background:#477ca6;
+    border:2px solid #263746;
+  }
+  svg{display:block;width:100%;height:auto;min-height:510px}
+  .wire{stroke:#1d2b35;stroke-width:8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .lead{stroke:#151515;stroke-width:4;fill:none}
+  .redlead{stroke:#c72d33;stroke-width:4;fill:none}
+  .component-label{font-size:22px;font-weight:700;fill:#16232e;text-anchor:middle}
+  .small-label{font-size:15px;font-weight:700;fill:#16232e;text-anchor:middle}
+  .resistor-body{fill:#e8d5a9;stroke:#3f3322;stroke-width:2}
+  .cap-plate{fill:#f0b45e;stroke:#6f431a;stroke-width:2}
+  .meter-body{fill:#f2f2f2;stroke:#a52634;stroke-width:5}
+  .meter-screen{fill:#b9d4c8;stroke:#263746;stroke-width:2}
+  .meter-text{font-family:monospace;font-size:19px;font-weight:700;text-anchor:middle;fill:#17232d}
+  .meter-title{font-size:16px;font-weight:700;text-anchor:middle;fill:#fff}
+  .switch{cursor:pointer}
+  .statusbar{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-top:10px;
+  }
+  .readout{
+    background:#eef4f8;
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:9px;
+    text-align:center;
+  }
+  .readout b{display:block;font-size:1.12rem;margin-top:2px}
+  .side{padding:14px;display:flex;flex-direction:column;gap:14px}
+  .side h2{font-size:1.12rem;margin:0 0 8px}
+  .control{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:5px;
+    margin:8px 0 12px;
+  }
+  .control label{font-weight:700;font-size:.92rem}
+  .control input[type="range"]{width:100%}
+  .valuebox{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    padding:7px 9px;
+    background:#f3f7fa;
+    border:1px solid var(--border);
+    border-radius:8px;
+  }
+  .valuebox input[type="number"]{
+    width:125px;
+    padding:8px;
+    border:1px solid #9eb0be;
+    border-radius:7px;
+  }
+  .equation{
+    font-family:Georgia,serif;
+    font-size:1.08rem;
+    background:#f6f1e7;
+    border-left:5px solid #c59b53;
+    padding:10px;
+    border-radius:7px;
+  }
+  .instructions{
+    color:#314555;
+    font-size:.92rem;
+    line-height:1.42;
+  }
+  .data-card{
+    grid-column:1/-1;
+    padding:14px;
+  }
+  .data-top{
+    display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;
+  }
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:.94rem}
+  th,td{border:1px solid #aebdca;padding:7px;text-align:center}
+  th{background:#e7eef4}
+  .notice{
+    margin-top:8px;
+    min-height:24px;
+    text-align:center;
+    font-weight:700;
+    color:#7d231f;
+  }
+  @media(max-width:900px){
+    main{grid-template-columns:1fr}
+    .side{grid-row:1}
+    .statusbar{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:560px){
+    main{width:100%;padding:0 7px}
+    .sim-card,.side,.data-card{border-radius:10px}
+    .stage{min-height:400px}
+    svg{min-height:400px}
+    .toolbar button{flex:1 1 42%}
+    .statusbar{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>RC Circuit Discharge Lab — Version 2</h1>
+  <p class="subtitle">Measure how voltage and current change while a capacitor discharges through a resistor.</p>
+</header>
+
+<main>
+  <section class="card sim-card">
+    <div class="toolbar">
+      <button id="chargeBtn" class="primary">Charge Capacitor</button>
+      <button id="pauseBtn">Pause</button>
+      <button id="resumeBtn" class="secondary">Resume</button>
+      <button id="resetBtn">Reset Trial</button>
+    </div>
+
+    <div class="stage">
+      <svg viewBox="0 0 900 520" role="img" aria-label="Closed RC circuit with a voltmeter connected directly across the resistor and an ammeter in series">
+        <!-- complete main RC circuit -->
+        <path class="wire" d="M70 95 H220"/>
+        <path class="wire" d="M340 95 H650"/>
+        <path class="wire" d="M720 95 H820 V205"/>
+        <path class="wire" d="M820 315 V420 H500"/>
+        <path class="wire" d="M455 420 H70 V95"/>
+
+        <!-- resistor and metal terminals -->
+        <line x1="220" y1="95" x2="235" y2="95" stroke="#c9a04d" stroke-width="8"/>
+        <rect x="235" y="75" width="90" height="40" rx="7" class="resistor-body"/>
+        <line x1="325" y1="95" x2="340" y2="95" stroke="#c9a04d" stroke-width="8"/>
+        <circle cx="220" cy="95" r="6" fill="#111"/>
+        <circle cx="340" cy="95" r="6" fill="#111"/>
+        <text x="280" y="101" id="resistorSvgText" class="component-label">100 kΩ</text>
+        <text x="280" y="58" class="meter-title">RESISTOR</text>
+
+        <!-- switch in the main circuit -->
+        <g id="switchGroup" class="switch">
+          <circle cx="650" cy="95" r="8" fill="#d8a14b" stroke="#222" stroke-width="2"/>
+          <circle cx="720" cy="95" r="8" fill="#d8a14b" stroke="#222" stroke-width="2"/>
+          <line id="switchBlade" x1="650" y1="95" x2="712" y2="70" stroke="#303030" stroke-width="8" stroke-linecap="round"/>
+          <text x="685" y="52" class="meter-title">SWITCH</text>
+        </g>
+
+        <!-- capacitor inserted into the bottom branch -->
+        <line x1="455" y1="382" x2="455" y2="458" stroke="#f0b45e" stroke-width="10"/>
+        <line x1="500" y1="382" x2="500" y2="458" stroke="#f0b45e" stroke-width="10"/>
+        <line x1="455" y1="420" x2="430" y2="420" stroke="#c9a04d" stroke-width="8"/>
+        <line x1="500" y1="420" x2="525" y2="420" stroke="#c9a04d" stroke-width="8"/>
+        <text x="478" y="365" id="capacitorSvgText" class="component-label">100 µF</text>
+        <text x="478" y="486" class="small-label">CAPACITOR</text>
+
+        <!-- voltmeter connected in parallel: probe tips touch each resistor terminal -->
+        <path class="lead" d="M260 245 C220 215 205 160 220 95"/>
+        <path class="redlead" d="M340 245 C375 205 370 145 340 95"/>
+        <circle cx="220" cy="95" r="4" fill="#111"/>
+        <circle cx="340" cy="95" r="4" fill="#c72d33"/>
+        <polygon points="215,105 225,105 220,95" fill="#111"/>
+        <polygon points="335,105 345,105 340,95" fill="#c72d33"/>
+        <rect x="225" y="235" width="150" height="175" rx="12" class="meter-body"/>
+        <rect x="246" y="258" width="108" height="48" rx="4" class="meter-screen"/>
+        <text x="300" y="288" id="voltageDisplay" class="meter-text">PAUSED</text>
+        <circle cx="300" cy="352" r="31" fill="#40494f" stroke="#111" stroke-width="3"/>
+        <line x1="300" y1="352" x2="322" y2="333" stroke="#fff" stroke-width="5"/>
+        <circle cx="260" cy="395" r="7" fill="#111"/>
+        <circle cx="340" cy="395" r="7" fill="#c72d33"/>
+        <text x="300" y="225" class="meter-title">VOLTMETER</text>
+        <text x="300" y="438" class="small-label">Click meter to read</text>
+        <rect id="voltageHit" x="210" y="220" width="180" height="230" fill="transparent" style="cursor:pointer"/>
+
+        <!-- ammeter physically inserted in series on the right side -->
+        <path class="lead" d="M820 205 L765 225"/>
+        <path class="redlead" d="M820 315 L765 305"/>
+        <rect x="650" y="205" width="150" height="155" rx="12" class="meter-body"/>
+        <rect x="671" y="228" width="108" height="48" rx="4" class="meter-screen"/>
+        <text x="725" y="258" id="currentDisplay" class="meter-text">PAUSED</text>
+        <circle cx="725" cy="318" r="28" fill="#40494f" stroke="#111" stroke-width="3"/>
+        <line x1="725" y1="318" x2="745" y2="300" stroke="#fff" stroke-width="5"/>
+        <text x="725" y="195" class="meter-title">AMMETER — SERIES</text>
+        <text x="725" y="386" class="small-label">Click meter to read</text>
+        <rect id="currentHit" x="635" y="190" width="180" height="205" fill="transparent" style="cursor:pointer"/>
+
+        <!-- battery/charging source symbol on left branch -->
+        <line x1="50" y1="245" x2="90" y2="245" stroke="#e9eef2" stroke-width="5"/>
+        <line x1="58" y1="275" x2="82" y2="275" stroke="#e9eef2" stroke-width="5"/>
+        <text x="115" y="267" class="meter-title">CHARGING SOURCE</text>
+
+        <g id="chargeDots"></g>
+      </svg>
+    </div>
+
+    <div class="statusbar">
+      <div class="readout">Elapsed Time<b id="timeReadout">0.00 s</b></div>
+      <div class="readout">Circuit State<b id="stateReadout">Charged / Paused</b></div>
+      <div class="readout">Time Constant τ<b id="tauReadout">10.0 s</b></div>
+      <div class="readout">Initial Voltage<b id="v0Readout">10.0 V</b></div>
+    </div>
+    <div id="notice" class="notice">Meters can only be read while the simulation is paused.</div>
+  </section>
+
+  <aside class="card side">
+    <div>
+      <h2>Investigation Setup</h2>
+      <div class="control">
+        <label for="modeSelect">Choose the constant component</label>
+        <select id="modeSelect">
+          <option value="C" selected>Constant Capacitance</option>
+          <option value="R">Constant Resistance</option>
+        </select>
+      </div>
+
+      <div id="resistanceControl" class="control">
+        <label for="resistanceInput">Resistance</label>
+        <div class="valuebox">
+          <input id="resistanceInput" type="number" min="1" max="1000" step="1" value="100" inputmode="decimal">
+          <select id="resistanceUnit" aria-label="Resistance unit">
+            <option value="1000" selected>kΩ</option>
+            <option value="1">Ω</option>
+            <option value="1000000">MΩ</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="capacitanceControl" class="control">
+        <label for="capacitanceInput">Capacitance</label>
+        <div class="valuebox">
+          <input id="capacitanceInput" type="number" min="1" max="10000" step="1" value="100" inputmode="decimal">
+          <select id="capacitanceUnit" aria-label="Capacitance unit">
+            <option value="0.000001" selected>µF</option>
+            <option value="0.001">mF</option>
+            <option value="0.000000001">nF</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control">
+        <label for="pauseInterval">Automatic pause interval</label>
+        <select id="pauseInterval">
+          <option value="0.5">Every 0.5 s</option>
+          <option value="1" selected>Every 1.0 s</option>
+          <option value="2">Every 2.0 s</option>
+        </select>
+      </div>
+
+      <div class="control">
+        <label for="initialVoltage">Charging Voltage: <span id="initialVoltageLabel">10.0 V</span></label>
+        <input id="initialVoltage" type="range" min="1" max="20" step="0.5" value="10">
+      </div>
+
+      <button id="newTrialBtn">Generate New Hidden Value</button>
+      <button id="revealBtn" disabled>Reveal Hidden Value</button>
+      <div id="hiddenValueBox" class="equation" style="display:none;margin-top:10px"></div>
+    </div>
+
+    <div>
+      <h2>Discharge Model</h2>
+      <div class="equation">
+        V(t) = V<sub>0</sub>e<sup>−t/RC</sup><br>
+        I(t) = −(V<sub>0</sub>/R)e<sup>−t/RC</sup>
+      </div>
+      <p class="instructions">
+        Select which component remains constant. The other component is hidden during data collection.
+        Resume the simulation and it will automatically pause at the selected interval. Read both meters and record each point.
+        After at least one point is recorded, reveal the hidden component value.
+      </p>
+    </div>
+  </aside>
+
+  <section class="card data-card">
+    <div class="data-top">
+      <div>
+        <h2 style="margin:0">Recorded Measurements</h2>
+        <span style="color:var(--muted)">The hidden component value is omitted until students reveal it.</span>
+      </div>
+      <div>
+        <button id="recordBtn" class="secondary">Record Current Point</button>
+        <button id="clearDataBtn">Clear Data</button>
+        <button id="copyDataBtn">Copy Data</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Trial</th><th>Time (s)</th><th>Voltage (V)</th><th>Current (mA)</th><th>Constant Component</th><th>Hidden Component</th></tr>
+      </thead>
+      <tbody id="dataBody"></tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const els = {
+    chargeBtn:$('chargeBtn'), pauseBtn:$('pauseBtn'), resumeBtn:$('resumeBtn'), resetBtn:$('resetBtn'),
+    modeSelect:$('modeSelect'), pauseInterval:$('pauseInterval'), newTrialBtn:$('newTrialBtn'), revealBtn:$('revealBtn'),
+    resistanceControl:$('resistanceControl'), capacitanceControl:$('capacitanceControl'), hiddenValueBox:$('hiddenValueBox'),
+    resistanceInput:$('resistanceInput'), resistanceUnit:$('resistanceUnit'),
+    capacitanceInput:$('capacitanceInput'), capacitanceUnit:$('capacitanceUnit'),
+    initialVoltage:$('initialVoltage'), initialVoltageLabel:$('initialVoltageLabel'),
+    resistorSvgText:$('resistorSvgText'), capacitorSvgText:$('capacitorSvgText'),
+    voltageDisplay:$('voltageDisplay'), currentDisplay:$('currentDisplay'),
+    voltageHit:$('voltageHit'), currentHit:$('currentHit'),
+    timeReadout:$('timeReadout'), stateReadout:$('stateReadout'), tauReadout:$('tauReadout'),
+    v0Readout:$('v0Readout'), notice:$('notice'), switchBlade:$('switchBlade'),
+    chargeDots:$('chargeDots'), recordBtn:$('recordBtn'), clearDataBtn:$('clearDataBtn'),
+    copyDataBtn:$('copyDataBtn'), dataBody:$('dataBody')
+  };
+
+  let elapsed = 0, running = false, charged = true, lastTs = null;
+  let voltageWasRead = false, currentWasRead = false, trial = 0;
+  let hiddenRevealed = false, nextPauseTime = 1;
+  let hiddenR = 220000, hiddenC = 220e-6;
+
+  const fixedR = () => Math.max(0.000001, Number(els.resistanceInput.value) * Number(els.resistanceUnit.value));
+  const fixedC = () => Math.max(1e-12, Number(els.capacitanceInput.value) * Number(els.capacitanceUnit.value));
+  const R = () => els.modeSelect.value === 'C' ? hiddenR : fixedR();
+  const C = () => els.modeSelect.value === 'R' ? hiddenC : fixedC();
+  const V0 = () => Number(els.initialVoltage.value);
+  const tau = () => R() * C();
+  const voltage = () => charged ? V0() * Math.exp(-elapsed / tau()) : 0;
+  const current = () => charged ? -voltage() / R() : 0;
+  const interval = () => Number(els.pauseInterval.value);
+
+  function trim(n){ return Number(n.toPrecision(4)).toString(); }
+  function niceResistance(ohms){
+    if(ohms >= 1e6) return `${trim(ohms/1e6)} MΩ`;
+    if(ohms >= 1e3) return `${trim(ohms/1e3)} kΩ`;
+    return `${trim(ohms)} Ω`;
+  }
+  function niceCapacitance(farads){
+    if(farads >= 1e-3) return `${trim(farads/1e-3)} mF`;
+    if(farads >= 1e-6) return `${trim(farads/1e-6)} µF`;
+    return `${trim(farads/1e-9)} nF`;
+  }
+  function hiddenName(){ return els.modeSelect.value === 'C' ? 'Resistance' : 'Capacitance'; }
+  function hiddenValue(){ return els.modeSelect.value === 'C' ? niceResistance(R()) : niceCapacitance(C()); }
+  function constantValue(){ return els.modeSelect.value === 'C' ? `C = ${niceCapacitance(C())}` : `R = ${niceResistance(R())}`; }
+
+  function secureRandomIndex(length){
+    if(window.crypto && window.crypto.getRandomValues){
+      const values = new Uint32Array(1);
+      window.crypto.getRandomValues(values);
+      return values[0] % length;
+    }
+    return Math.floor(Math.random()*length);
+  }
+  function chooseDifferent(values, previous){
+    if(values.length < 2) return values[0];
+    let choice = values[secureRandomIndex(values.length)];
+    while(choice === previous) choice = values[secureRandomIndex(values.length)];
+    return choice;
+  }
+  function generateHidden(){
+    const rChoices = [10,15,22,33,47,68,82,100,120,150,180,220,270,330,390,470,560,680,820].map(v=>v*1000);
+    const cChoices = [10,22,33,47,68,100,150,220,330,470,680,1000].map(v=>v*1e-6);
+
+    // Only regenerate the component that is unknown in the selected mode.
+    // sessionStorage prevents the same hidden value from appearing on consecutive reloads.
+    if(els.modeSelect.value === 'C'){
+      const previous = Number(sessionStorage.getItem('lastHiddenR')) || hiddenR;
+      hiddenR = chooseDifferent(rChoices, previous);
+      sessionStorage.setItem('lastHiddenR', String(hiddenR));
+    } else {
+      const previous = Number(sessionStorage.getItem('lastHiddenC')) || hiddenC;
+      hiddenC = chooseDifferent(cChoices, previous);
+      sessionStorage.setItem('lastHiddenC', String(hiddenC));
+    }
+
+    hiddenRevealed = false;
+    els.hiddenValueBox.style.display='none';
+    els.revealBtn.disabled = els.dataBody.rows.length === 0;
+    charge();
+  }
+  function applyMode(){
+    const constantC = els.modeSelect.value === 'C';
+    els.capacitanceControl.style.display = constantC ? 'grid' : 'none';
+    els.resistanceControl.style.display = constantC ? 'none' : 'grid';
+    generateHidden();
+    els.notice.textContent = `${constantC ? 'Capacitance' : 'Resistance'} is constant. ${constantC ? 'Resistance' : 'Capacitance'} is hidden.`;
+  }
+  function resetMeterScreens(){
+    voltageWasRead = false; currentWasRead = false;
+    els.voltageDisplay.textContent = running ? 'RUNNING' : 'CLICK';
+    els.currentDisplay.textContent = running ? 'RUNNING' : 'CLICK';
+  }
+  function updateLabels(){
+    els.resistorSvgText.textContent = (els.modeSelect.value === 'C' && !hiddenRevealed) ? '???' : niceResistance(R());
+    els.capacitorSvgText.textContent = (els.modeSelect.value === 'R' && !hiddenRevealed) ? '???' : niceCapacitance(C());
+    els.tauReadout.textContent = hiddenRevealed ? `${tau() < 0.01 ? tau().toExponential(2) : tau().toFixed(2)} s` : 'Hidden';
+    els.v0Readout.textContent = `${V0().toFixed(1)} V`;
+    els.initialVoltageLabel.textContent = `${V0().toFixed(1)} V`;
+  }
+  function updateState(){
+    els.timeReadout.textContent = `${elapsed.toFixed(2)} s`;
+    els.stateReadout.textContent = running ? `Discharging → pause at ${nextPauseTime.toFixed(2)} s` : (charged ? 'Paused' : 'Discharged');
+    els.switchBlade.setAttribute('x2', running ? '720' : '712');
+    els.switchBlade.setAttribute('y2', running ? '95' : '70');
+    els.pauseBtn.disabled = !running;
+    els.resumeBtn.disabled = running || !charged;
+    updateDots();
+  }
+  function updateDots(){
+    const count = running ? 12 : 0;
+    let s = '';
+    for(let i=0;i<count;i++){
+      const p = (elapsed*85 + i*70) % 1480; let x,y;
+      if(p < 750){ x=70+p; y=420; }
+      else if(p < 1075){ x=820; y=420-(p-750); }
+      else { x=820-(p-1075); y=95; }
+      s += `<circle cx="${x}" cy="${y}" r="5" fill="#ffe85b" stroke="#7c6412" stroke-width="1"/>`;
+    }
+    els.chargeDots.innerHTML = s;
+  }
+  function charge(){
+    running=false; charged=true; elapsed=0; lastTs=null; nextPauseTime=interval();
+    resetMeterScreens(); updateLabels(); updateState();
+    els.notice.textContent='Capacitor charged. Resume to begin discharging.';
+  }
+  function pause(auto=false){
+    if(!running) return;
+    running=false; lastTs=null; resetMeterScreens(); updateState();
+    els.notice.textContent = auto ? `Automatically paused at ${elapsed.toFixed(2)} s. Read both meters.` : 'Paused. Click the meters to reveal their readings.';
+  }
+  function resume(){
+    if(!charged) return;
+    nextPauseTime = Math.ceil((elapsed + 1e-9)/interval()) * interval();
+    running=true; lastTs=null; resetMeterScreens(); updateState();
+    els.notice.textContent=`Discharging. It will pause automatically at ${nextPauseTime.toFixed(2)} s.`;
+  }
+  function readVoltage(){
+    if(running){ els.notice.textContent='Pause the simulation before reading the voltmeter.'; return; }
+    voltageWasRead=true; els.voltageDisplay.textContent=`${voltage().toFixed(3)} V`; els.notice.textContent='Voltmeter reading shown.';
+  }
+  function readCurrent(){
+    if(running){ els.notice.textContent='Pause the simulation before reading the ammeter.'; return; }
+    currentWasRead=true; els.currentDisplay.textContent=`${(current()*1000).toFixed(3)} mA`;
+    els.notice.textContent='Ammeter reading shown. Negative indicates discharge direction.';
+  }
+  function record(){
+    if(running){ els.notice.textContent='Pause the simulation before recording a data point.'; return; }
+    if(!voltageWasRead || !currentWasRead){ els.notice.textContent='Read both meters before recording the point.'; return; }
+    trial++;
+    const hiddenCell = hiddenRevealed ? `${hiddenName()} = ${hiddenValue()}` : 'Hidden';
+    const row=document.createElement('tr');
+    row.innerHTML=`<td>${trial}</td><td>${elapsed.toFixed(2)}</td><td>${voltage().toFixed(4)}</td><td>${(current()*1000).toFixed(4)}</td><td>${constantValue()}</td><td class="hidden-cell">${hiddenCell}</td>`;
+    els.dataBody.appendChild(row);
+    els.revealBtn.disabled=false;
+    els.notice.textContent='Measurement recorded. Resume for the next automatic pause.';
+  }
+  function reveal(){
+    if(els.dataBody.rows.length===0){ els.notice.textContent='Record at least one data point before revealing the hidden value.'; return; }
+    hiddenRevealed=true;
+    els.hiddenValueBox.style.display='block';
+    els.hiddenValueBox.innerHTML=`<strong>${hiddenName()}:</strong> ${hiddenValue()}<br><strong>Time constant τ:</strong> ${trim(tau())} s`;
+    [...els.dataBody.querySelectorAll('.hidden-cell')].forEach(c=>c.textContent=`${hiddenName()} = ${hiddenValue()}`);
+    updateLabels();
+    els.notice.textContent='Hidden component value revealed.';
+  }
+  function componentChanged(){ hiddenRevealed=false; els.hiddenValueBox.style.display='none'; charge(); }
+  function copyData(){
+    const rows=[['Trial','Time (s)','Voltage (V)','Current (mA)','Constant Component','Hidden Component']];
+    [...els.dataBody.rows].forEach(r=>rows.push([...r.cells].map(c=>c.textContent)));
+    if(rows.length===1){ els.notice.textContent='There are no recorded data points to copy.'; return; }
+    const text=rows.map(r=>r.join('\t')).join('\n');
+    navigator.clipboard?.writeText(text).then(()=>els.notice.textContent='Data copied to the clipboard.',()=>fallbackCopy(text));
+  }
+  function fallbackCopy(text){
+    const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    els.notice.textContent='Data copied to the clipboard.';
+  }
+  function animate(ts){
+    if(running){
+      if(lastTs===null) lastTs=ts;
+      const dt=Math.min((ts-lastTs)/1000,0.1); elapsed+=dt; lastTs=ts;
+      if(elapsed >= nextPauseTime){ elapsed=nextPauseTime; pause(true); }
+      else if(voltage()<0.001){ running=false; charged=false; lastTs=null; resetMeterScreens(); els.notice.textContent='The capacitor is effectively discharged.'; }
+      updateState();
+    }
+    requestAnimationFrame(animate);
+  }
+
+  els.chargeBtn.addEventListener('click',charge);
+  els.pauseBtn.addEventListener('click',()=>pause(false));
+  els.resumeBtn.addEventListener('click',resume);
+  els.resetBtn.addEventListener('click',charge);
+  els.modeSelect.addEventListener('change',applyMode);
+  els.pauseInterval.addEventListener('change',charge);
+  els.newTrialBtn.addEventListener('click',generateHidden);
+  els.revealBtn.addEventListener('click',reveal);
+  [els.resistanceInput,els.resistanceUnit,els.capacitanceInput,els.capacitanceUnit].forEach(e=>e.addEventListener('change',componentChanged));
+  els.initialVoltage.addEventListener('input',()=>{charge();updateLabels();});
+  els.voltageHit.addEventListener('click',readVoltage);
+  els.currentHit.addEventListener('click',readCurrent);
+  els.recordBtn.addEventListener('click',record);
+  els.clearDataBtn.addEventListener('click',()=>{els.dataBody.innerHTML='';trial=0;els.revealBtn.disabled=true;hiddenRevealed=false;els.hiddenValueBox.style.display='none';updateLabels();els.notice.textContent='Data table cleared.';});
+  els.copyDataBtn.addEventListener('click',copyData);
+  $('switchGroup').addEventListener('click',()=>running?pause(false):resume());
+
+  applyMode();
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>

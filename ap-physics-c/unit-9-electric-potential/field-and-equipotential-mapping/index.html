@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Electric Field and Equipotential Mapping Lab</title>
+<style>
+:root{--bg:#eef3f7;--panel:#fff;--ink:#17212b;--muted:#667788;--line:#c7d2dd;--navy:#17395f;--gold:#f0b323;--green:#16845b;--red:#d6453d;--blue:#1d66b3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+header{background:var(--navy);color:#fff;padding:14px 18px}
+header h1{margin:0;font-size:24px}
+header p{margin:5px 0 0;font-size:14px;opacity:.9}
+.app{display:grid;grid-template-columns:280px minmax(520px,1fr) 340px;gap:12px;padding:12px;max-width:1500px;margin:auto}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+h2{font-size:17px;margin:0 0 10px}
+h3{font-size:14px;margin:14px 0 7px}
+button,select,input{font:inherit}
+button{border:1px solid #99a9b7;border-radius:8px;padding:9px 10px;background:#f8fafc;font-weight:700;cursor:pointer}
+button:hover{background:#eaf1f7}
+button.primary{background:#1e69b5;color:#fff;border-color:#1e69b5}
+button.danger{color:#9b241f}
+select,input[type=number]{width:100%;padding:8px;border:1px solid #aebdca;border-radius:8px;background:#fff}
+input[type=range]{width:100%}
+label{display:block;font-size:13px;font-weight:700;margin:9px 0 4px}
+.check{display:flex;gap:7px;align-items:center;font-size:13px;margin:8px 0}
+.check input{width:auto}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.stage{padding:0;overflow:hidden;position:relative;min-height:650px}
+canvas{display:block;width:100%;height:650px;touch-action:none;background:#fff}
+.overlay{position:absolute;left:10px;top:10px;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:12px;pointer-events:none}
+.metric{border:1px solid var(--line);border-radius:9px;padding:9px;margin:7px 0;background:#fbfcfe}
+.metric span{display:block;font-size:12px;color:var(--muted)}
+.metric b{font-size:16px}
+.hint{font-size:12px;color:var(--muted);line-height:1.45}
+.status{min-height:34px;font-size:12px;color:var(--green);padding-top:7px}
+table{border-collapse:collapse;width:100%;font-size:11px}
+th,td{border:1px solid #b7c3cf;padding:5px;text-align:right}
+th:first-child,td:first-child{text-align:center}
+.table-wrap{max-height:300px;overflow:auto}
+.potential-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.potential-row button.active{background:#17395f;color:white}
+@media(max-width:1100px){.app{grid-template-columns:250px 1fr}.right{grid-column:1/-1}}
+@media(max-width:760px){.app{display:block;padding:7px}.panel{margin-bottom:8px}.stage{min-height:500px}canvas{height:500px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Electric Field and Equipotential Mapping Lab</h1>
+  <p>Map equipotential lines between parallel plates, calculate electric field, and investigate a floating conductor.</p>
+</header>
+
+<main class="app">
+<section class="panel">
+  <h2>Lab setup</h2>
+  <label for="mode">Configuration</label>
+  <select id="mode">
+    <option value="plates">Part I — Parallel plates</option>
+    <option value="conductor">Part II — Plates with floating conductor</option>
+  </select>
+
+  <label for="voltage">Potential difference across plates</label>
+  <input id="voltage" type="range" min="4" max="20" step="1" value="12">
+  <div class="hint"><span id="voltageOut">12</span> V</div>
+
+  <label for="gap">Plate separation</label>
+  <input id="gap" type="range" min="0.8" max="2.4" step="0.1" value="1.8">
+  <div class="hint"><span id="gapOut">1.8</span> m</div>
+
+  <div id="conductorControls">
+    <label for="diameter">Floating conductor diameter</label>
+    <input id="diameter" type="range" min="0.25" max="0.9" step="0.05" value="0.5">
+    <div class="hint"><span id="diameterOut">0.50</span> m</div>
+  </div>
+
+  <h3>Equipotential target</h3>
+  <div class="potential-row">
+    <button data-v="2">2 V</button>
+    <button data-v="4">4 V</button>
+    <button data-v="6" class="active">6 V</button>
+    <button data-v="8">8 V</button>
+    <button data-v="10">10 V</button>
+    <button data-v="12">12 V</button>
+  </div>
+
+  <label class="check"><input id="showGrid" type="checkbox" checked> Show coordinate grid</label>
+  <label class="check"><input id="showField" type="checkbox"> Show electric field vectors</label>
+  <label class="check"><input id="showEquipotential" type="checkbox"> Show exact equipotential contours</label>
+
+  <h3>Student tools</h3>
+  <div class="hint">
+    Drag the yellow voltmeter probe. When the reading matches the selected target voltage, click <b>Mark Point</b>. Continue until the equipotential line is mapped.
+  </div>
+  <div class="btnrow">
+    <button id="markPoint" class="primary">Mark point</button>
+    <button id="undoPoint">Undo point</button>
+  </div>
+  <div class="btnrow">
+    <button id="clearMarks" class="danger">Clear marks</button>
+    <button id="resetProbe">Reset probe</button>
+  </div>
+</section>
+
+<section class="panel stage">
+  <canvas id="canvas" width="860" height="650" aria-label="Electric field and equipotential mapping workspace"></canvas>
+  <div class="overlay">
+    <b id="configLabel">Parallel plates</b>
+    <div>Positive plate on the left, negative plate on the right.</div>
+    <div>Move the probe to map equipotential points.</div>
+  </div>
+</section>
+
+<section class="panel right">
+  <h2>Voltmeter and field meter</h2>
+  <div class="metric"><span>Probe position</span><b id="positionReadout">(0.00, 0.00) m</b></div>
+  <div class="metric"><span>Electric potential</span><b id="potentialReadout">6.00 V</b></div>
+  <div class="metric"><span>Electric field magnitude</span><b id="fieldReadout">6.67 N/C</b></div>
+  <div class="metric"><span>Field components</span><b id="componentsReadout">Ex = 6.67, Ey = 0 N/C</b></div>
+  <div class="metric"><span>Target difference</span><b id="differenceReadout">0.00 V</b></div>
+
+  <div class="btnrow">
+    <button id="recordMeasurement" class="primary">Record measurement</button>
+    <button id="copyData">Copy data</button>
+  </div>
+  <div class="btnrow">
+    <button id="undoMeasurement">Undo last</button>
+    <button id="clearData" class="danger">Clear data</button>
+  </div>
+  <div id="status" class="status"></div>
+
+  <h3>Recorded data</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>x (m)</th><th>y (m)</th><th>V (V)</th><th>|E| (N/C)</th><th>Ex</th><th>Ey</th></tr></thead>
+      <tbody id="dataBody"></tbody>
+    </table>
+  </div>
+
+  <h3>Calculated values</h3>
+  <div class="metric"><span>Average uniform field between plates</span><b id="uniformField">6.67 N/C</b></div>
+  <div class="metric"><span>Voltage inside floating conductor</span><b id="insidePotential">—</b></div>
+  <div class="metric"><span>Field inside floating conductor</span><b id="insideField">—</b></div>
+</section>
+</main>
+
+<script>
+const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+const world={xmin:-2.4,xmax:2.4,ymin:-1.65,ymax:1.65};
+let probe={x:0,y:0},dragging=false,targetV=6,marks=[],records=[];
+const $=id=>document.getElementById(id);
+
+function size(){return {w:canvas.clientWidth,h:canvas.clientHeight}}
+function sx(x){const {w}=size();return (x-world.xmin)/(world.xmax-world.xmin)*w}
+function sy(y){const {h}=size();return h-(y-world.ymin)/(world.ymax-world.ymin)*h}
+function wx(px){const {w}=size();return world.xmin+px/w*(world.xmax-world.xmin)}
+function wy(py){const {h}=size();return world.ymin+(h-py)/h*(world.ymax-world.ymin)}
+
+function fit(){
+ const r=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);
+ canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);
+ ctx.setTransform(dpr,0,0,dpr,0,0);draw();
+}
+function platePositions(){
+ const g=+$('gap').value;
+ return {left:-g/2,right:g/2};
+}
+function conductor(){
+ return {x:0,y:0,r:+$('diameter').value/2};
+}
+function basePotential(x){
+ const V=+$('voltage').value,{left,right}=platePositions();
+ if(x<=left)return V;
+ if(x>=right)return 0;
+ return V*(right-x)/(right-left);
+}
+function potentialAt(x,y){
+ const mode=$('mode').value;
+ if(mode==='plates')return basePotential(x);
+ const c=conductor(),d=Math.hypot(x-c.x,y-c.y);
+ const Vc=basePotential(c.x);
+ if(d<=c.r)return Vc;
+
+ // Conducting-circle-inspired perturbation in a uniform field.
+ const V0=+$('voltage').value,{left,right}=platePositions(),E0=V0/(right-left);
+ const theta=Math.atan2(y-c.y,x-c.x);
+ const local=Vc-E0*(d-(c.r*c.r/d))*Math.cos(theta);
+ return Math.max(0,Math.min(V0,local));
+}
+function fieldAt(x,y){
+ const mode=$('mode').value;
+ const c=conductor();
+ if(mode==='conductor'&&Math.hypot(x-c.x,y-c.y)<=c.r)return {Ex:0,Ey:0,E:0};
+
+ const h=.004;
+ const Ex=-(potentialAt(x+h,y)-potentialAt(x-h,y))/(2*h);
+ const Ey=-(potentialAt(x,y+h)-potentialAt(x,y-h))/(2*h);
+ return {Ex,Ey,E:Math.hypot(Ex,Ey)};
+}
+function nice(v){const a=Math.abs(v);if(!isFinite(v))return '—';if(a>=1e4||a<.001)return v.toExponential(3);return v.toFixed(3)}
+function updateReadout(){
+ const V=potentialAt(probe.x,probe.y),f=fieldAt(probe.x,probe.y);
+ $('positionReadout').textContent=`(${probe.x.toFixed(2)}, ${probe.y.toFixed(2)}) m`;
+ $('potentialReadout').textContent=`${V.toFixed(2)} V`;
+ $('fieldReadout').textContent=`${nice(f.E)} N/C`;
+ $('componentsReadout').textContent=`Ex = ${nice(f.Ex)}, Ey = ${nice(f.Ey)} N/C`;
+ $('differenceReadout').textContent=`${Math.abs(V-targetV).toFixed(2)} V`;
+
+ const g=+$('gap').value,V0=+$('voltage').value;
+ $('uniformField').textContent=`${(V0/g).toFixed(3)} N/C`;
+ if($('mode').value==='conductor'){
+   const Vc=potentialAt(0,0),Fc=fieldAt(0,0).E;
+   $('insidePotential').textContent=`${Vc.toFixed(3)} V`;
+   $('insideField').textContent=`${Fc.toFixed(3)} N/C`;
+ }else{
+   $('insidePotential').textContent='—';$('insideField').textContent='—';
+ }
+}
+function drawGrid(){
+ const {w,h}=size();ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
+ if(!$('showGrid').checked)return;
+ ctx.strokeStyle='#e6edf3';ctx.lineWidth=1;
+ for(let x=-2.4;x<=2.401;x+=.2){ctx.beginPath();ctx.moveTo(sx(x),0);ctx.lineTo(sx(x),h);ctx.stroke()}
+ for(let y=-1.6;y<=1.601;y+=.2){ctx.beginPath();ctx.moveTo(0,sy(y));ctx.lineTo(w,sy(y));ctx.stroke()}
+}
+function drawPlates(){
+ const {left,right}=platePositions();
+ const top=sy(1.2),bottom=sy(-1.2),height=bottom-top;
+ ctx.fillStyle='#d6453d';ctx.fillRect(sx(left)-7,top,14,height);
+ ctx.fillStyle='#1d66b3';ctx.fillRect(sx(right)-7,top,14,height);
+ ctx.fillStyle='#fff';ctx.font='bold 18px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.fillText('+',sx(left),top+18);ctx.fillText('−',sx(right),top+18);
+ ctx.textAlign='start';ctx.textBaseline='alphabetic';
+}
+function drawConductor(){
+ if($('mode').value!=='conductor')return;
+ const c=conductor(),rp=Math.abs(sx(c.r)-sx(0));
+ ctx.beginPath();ctx.arc(sx(c.x),sy(c.y),rp,0,Math.PI*2);
+ ctx.fillStyle='#adb6bf';ctx.fill();ctx.strokeStyle='#4e5963';ctx.lineWidth=2;ctx.stroke();
+ ctx.fillStyle='#202a33';ctx.font='12px Arial';ctx.textAlign='center';ctx.fillText('floating conductor',sx(0),sy(0)+4);
+ ctx.textAlign='start';
+}
+function contourPoints(level){
+ const pts=[];
+ for(let yi=0;yi<85;yi++){
+   const y=world.ymin+(yi/84)*(world.ymax-world.ymin);
+   let prevX=world.xmin,prevV=potentialAt(prevX,y)-level;
+   for(let xi=1;xi<=220;xi++){
+     const x=world.xmin+(xi/220)*(world.xmax-world.xmin),dv=potentialAt(x,y)-level;
+     if(prevV===0||dv===0||prevV*dv<0){
+       const t=Math.abs(prevV)/(Math.abs(prevV)+Math.abs(dv));
+       pts.push({x:prevX+(x-prevX)*t,y});
+     }
+     prevX=x;prevV=dv;
+   }
+ }
+ return pts;
+}
+function drawContours(){
+ if(!$('showEquipotential').checked)return;
+ const levels=[2,4,6,8,10,12].filter(v=>v<=+$('voltage').value);
+ levels.forEach(level=>{
+   const pts=contourPoints(level);
+   ctx.fillStyle=level===targetV?'#16845b':'rgba(50,75,95,.5)';
+   pts.forEach(p=>ctx.fillRect(sx(p.x)-1,sy(p.y)-1,2,2));
+ });
+}
+function drawArrow(x,y,Ex,Ey,len=18,color='rgba(40,60,80,.55)',width=1.2){
+ const E=Math.hypot(Ex,Ey);if(E===0)return;
+ const ux=Ex/E,uy=Ey/E,x1=sx(x),y1=sy(y),x2=x1+ux*len,y2=y1-uy*len;
+ ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=width;
+ ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+ const a=Math.atan2(y2-y1,x2-x1),h=5;
+ ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-h*Math.cos(a-.55),y2-h*Math.sin(a-.55));ctx.lineTo(x2-h*Math.cos(a+.55),y2-h*Math.sin(a+.55));ctx.closePath();ctx.fill();
+}
+function drawFieldGrid(){
+ if(!$('showField').checked)return;
+ for(let x=-2.1;x<=2.101;x+=.35)for(let y=-1.4;y<=1.401;y+=.3){
+   const f=fieldAt(x,y);drawArrow(x,y,f.Ex,f.Ey);
+ }
+}
+function drawMarks(){
+ marks.forEach(m=>{
+   ctx.beginPath();ctx.arc(sx(m.x),sy(m.y),4,0,Math.PI*2);
+   ctx.fillStyle=Math.abs(m.v-targetV)<.15?'#16845b':'#d07b00';ctx.fill();
+ });
+}
+function drawProbe(){
+ const V=potentialAt(probe.x,probe.y),f=fieldAt(probe.x,probe.y);
+ drawArrow(probe.x,probe.y,f.Ex,f.Ey,38,'#a86d00',3);
+ ctx.beginPath();ctx.arc(sx(probe.x),sy(probe.y),8,0,Math.PI*2);
+ ctx.fillStyle='#f0b323';ctx.fill();ctx.strokeStyle='#715000';ctx.lineWidth=2;ctx.stroke();
+ ctx.fillStyle='#1f2933';ctx.font='11px Arial';ctx.fillText(`${V.toFixed(2)} V`,sx(probe.x)+10,sy(probe.y)-10);
+}
+function draw(){drawGrid();drawContours();drawFieldGrid();drawPlates();drawConductor();drawMarks();drawProbe();updateReadout();}
+function pointer(e){const r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top}}
+canvas.addEventListener('pointerdown',e=>{
+ const p=pointer(e);if(Math.hypot(p.x-sx(probe.x),p.y-sy(probe.y))<28){dragging=true;canvas.setPointerCapture(e.pointerId)}
+});
+canvas.addEventListener('pointermove',e=>{
+ if(!dragging)return;const p=pointer(e);probe.x=Math.max(world.xmin,Math.min(world.xmax,wx(p.x)));probe.y=Math.max(world.ymin,Math.min(world.ymax,wy(p.y)));draw();
+});
+canvas.addEventListener('pointerup',()=>dragging=false);
+canvas.addEventListener('pointercancel',()=>dragging=false);
+
+function renderTable(){
+ const b=$('dataBody');b.innerHTML='';
+ records.forEach((r,i)=>{
+  const tr=document.createElement('tr');
+  [i+1,r.x.toFixed(3),r.y.toFixed(3),r.v.toFixed(3),r.E.toFixed(3),r.Ex.toFixed(3),r.Ey.toFixed(3)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});
+  b.appendChild(tr);
+ });
+}
+function record(){
+ const v=potentialAt(probe.x,probe.y),f=fieldAt(probe.x,probe.y);
+ records.push({x:probe.x,y:probe.y,v,...f});renderTable();
+ $('status').textContent='Measurement recorded.';setTimeout(()=>$('status').textContent='',1200);
+}
+$('recordMeasurement').onclick=record;
+$('undoMeasurement').onclick=()=>{records.pop();renderTable()};
+$('clearData').onclick=()=>{records=[];renderTable()};
+$('markPoint').onclick=()=>{
+ const v=potentialAt(probe.x,probe.y);marks.push({x:probe.x,y:probe.y,v});draw();
+ $('status').textContent=Math.abs(v-targetV)<.15?'Point matches target potential.':'Point marked, but it is not close to the target voltage.';
+};
+$('undoPoint').onclick=()=>{marks.pop();draw()};
+$('clearMarks').onclick=()=>{marks=[];draw()};
+$('resetProbe').onclick=()=>{probe={x:0,y:0};draw()};
+$('copyData').onclick=()=>{
+ if(!records.length){$('status').textContent='Record at least one measurement first.';return}
+ const rows=[['Trial','x (m)','y (m)','Potential (V)','Field magnitude (N/C)','Ex (N/C)','Ey (N/C)']];
+ records.forEach((r,i)=>rows.push([i+1,r.x.toFixed(4),r.y.toFixed(4),r.v.toFixed(5),r.E.toFixed(5),r.Ex.toFixed(5),r.Ey.toFixed(5)]));
+ const text=rows.map(r=>r.join('\t')).join('\n');
+ const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();const ok=document.execCommand('copy');ta.remove();
+ $('status').textContent=ok?'Copied. Paste into Google Sheets.':'Copy failed.';
+};
+document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{
+ targetV=+b.dataset.v;document.querySelectorAll('[data-v]').forEach(x=>x.classList.toggle('active',x===b));draw();
+});
+['mode','voltage','gap','diameter','showGrid','showField','showEquipotential'].forEach(id=>$(id).addEventListener('input',()=>{
+ $('voltageOut').textContent=$('voltage').value;$('gapOut').textContent=(+$('gap').value).toFixed(1);$('diameterOut').textContent=(+$('diameter').value).toFixed(2);
+ $('conductorControls').style.display=$('mode').value==='conductor'?'block':'none';
+ $('configLabel').textContent=$('mode').value==='conductor'?'Parallel plates with floating conductor':'Parallel plates';
+ marks=[];records=[];renderTable();draw();
+}));
+window.addEventListener('resize',fit);
+$('conductorControls').style.display='none';
+requestAnimationFrame(fit);
+</script>
+</body>
+</html>
