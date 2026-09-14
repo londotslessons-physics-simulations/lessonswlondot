@@ -1,3 +1,157 @@
+Edit
+Edit
+Edit
+Today 3:09 PM
+what needs to be added to the github repository to include the catch in a cup lab
+
+Based on the GitHub structure we set up for your AP Physics 1 simulations, I’d add the Catch-in-a-Cup lab as a second simulation inside Unit 1, alongside the Inclined Plane Lab.
+
+Your repository should look roughly like this:
+
+lessonswlondot/
+│
+├── index.html
+│
+└── ap-physics-1/
+    │
+    ├── index.html
+    │
+    └── unit-1-kinematics/
+        │
+        ├── index.html
+        │
+        ├── inclined-plane-lab/
+        │   └── index.html
+        │
+        └── catch-in-a-cup-lab/
+            └── index.html
+1. Add the new simulation folder
+
+Inside:
+
+ap-physics-1/unit-1-kinematics/
+
+create:
+
+catch-in-a-cup-lab
+
+Then take the most recent simulation I made:
+
+Download the Catch-in-a-Cup simulation
+
+and rename it:
+
+index.html
+
+Put that file inside:
+
+ap-physics-1/unit-1-kinematics/catch-in-a-cup-lab/index.html
+
+That should make its GitHub Pages address:
+
+https://londotslessons-physics-simulations.github.io/lessonswlondot/ap-physics-1/unit-1-kinematics/catch-in-a-cup-lab/
+2. Update the Unit 1 index
+
+This is the important second piece. Your existing:
+
+ap-physics-1/unit-1-kinematics/index.html
+
+currently provides access to the Inclined Plane Lab. Add another simulation card/link for:
+
+Catch-in-a-Cup Lab
+
+with a relative link of:
+
+<a href="./catch-in-a-cup-lab/">Catch-in-a-Cup Lab</a>
+
+I would describe it on the Unit 1 page as:
+
+Catch-in-a-Cup Lab
+Measure a marble's launch speed with a photogate, use projectile-motion calculations to predict its landing location, and test the prediction by positioning a catch cup.
+
+What you actually need to upload
+
+So this addition requires only two repository changes:
+
+New file:
+ap-physics-1/unit-1-kinematics/catch-in-a-cup-lab/index.html
+Modified file:
+ap-physics-1/unit-1-kinematics/index.html
+
+You do not need to change the main site index or AP Physics 1 index as long as they already route students into the Unit 1 Kinematics page.
+
+If you upload your current Unit 1 index.html, I can add the Catch-in-a-Cup Lab card to it for you so it matches the existing Inclined Plane Lab formatting exactly.
+
+marble-photogate-catch-cup-lab-v4.html
+HTML
+index (1).html
+File
+Here is the unit 1 index
+
+I cleaned up the Unit 1 index and fixed the malformed nested <div> structure. The Catch-in-a-Cup card now sits correctly beside the Inclined Plane Lab card, and its link points to:
+
+./catch-in-a-cup-lab/
+
+Your original file already had the correct basic card content for the new lab.
+
+Download the corrected Unit 1 index
+
+For GitHub, rename this file to:
+
+index.html
+
+and use it to replace the current file inside:
+
+ap-physics-1/unit-1-kinematics/
+
+Then the simulation itself should be placed at:
+
+ap-physics-1/unit-1-kinematics/catch-in-a-cup-lab/index.html
+
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AP Physics 1 — Unit 1 Kinematics</title><style>
 :root{--purple:#462b7a;--yellow:#facf22;--white:#fefefe;--bg:#f5f3f9;--text:#241b33;--muted:#645d70;--line:#d9d1e5}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}header{background:var(--purple);color:white;border-bottom:6px solid var(--yellow)}.wrap{width:min(1180px,calc(100% - 30px));margin:auto}.head{padding:24px 0}.head h1{margin:0}.head p{margin:6px 0 0;color:#eee8f8}main{padding:34px 0 60px}.crumbs{margin-bottom:18px}.crumbs a{color:var(--purple);font-weight:700}.course,.unit{background:white;border:1px solid var(--line);border-radius:16px;margin:16px 0;overflow:hidden;box-shadow:0 8px 22px rgba(70,43,122,.09)}summary{cursor:pointer;list-style:none;font-weight:900;color:var(--purple)}summary::-webkit-details-marker{display:none}.course>summary{font-size:1.35rem;padding:20px 22px;background:#eee9f6}.unit>summary{font-size:1.05rem;padding:15px 18px;border-left:7px solid var(--yellow)}.inside{padding:0 18px 18px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:white;border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;min-height:180px}.card h3{margin:0;color:var(--purple)}.card p{color:var(--muted);flex:1}.btn{display:inline-block;text-align:center;background:var(--yellow);color:var(--purple);font-weight:900;text-decoration:none;padding:11px 14px;border-radius:9px}.empty{padding:14px 18px;color:var(--muted);font-style:italic}.folder-link{display:inline-block;margin:0 0 15px;color:var(--purple);font-weight:800}footer{background:#321d5e;color:white;padding:20px 0}@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.grid{grid-template-columns:1fr}}
-</style></head><body><header><div class="wrap head"><h1>AP Physics 1 — Unit 1: Kinematics</h1><p>Lessons With Londot Physics Simulations</p></div></header><main class="wrap"><div class="crumbs"><a href="../">← AP Physics 1</a></div><div class="grid"><div class="card"><h3>Inclined Plane Lab</h3><p>Investigate accelerated motion on an incline. Adjust the starting position, incline angle, and data collection interval, then collect either position-vs.-time or velocity-vs.-time data.</p><a class="btn" href="./inclined-plane-lab/">Launch Simulation</a></div><div class="grid"><div class="card"><h3>Catch In A Cup Lab</h3><p>Measure a marble's launch speed with a photogate, use projectile-motion calculations to predict its landing location, and test the prediction by positioning a catch cup.</p><a class="btn" href="./catch-in-a-cup-lab">Launch Simulation</a></div><div class="card"></main><footer><div class="wrap">Interactive investigations for physics students.</div></footer></body></html>
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap head">
+    <h1>AP Physics 1 — Unit 1: Kinematics</h1>
+    <p>Lessons With Londot Physics Simulations</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="crumbs">
+    <a href="../">← AP Physics 1</a>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Inclined Plane Lab</h3>
+      <p>
+        Investigate accelerated motion on an incline. Adjust the starting position,
+        incline angle, and data collection interval, then collect either
+        position-vs.-time or velocity-vs.-time data.
+      </p>
+      <a class="btn" href="./inclined-plane-lab/">Launch Simulation</a>
+    </div>
+
+    <div class="card">
+      <h3>Catch In A Cup Lab</h3>
+      <p>
+        Measure a marble's launch speed with a photogate, use projectile-motion
+        calculations to predict its landing location, and test the prediction by
+        positioning a catch cup.
+      </p>
+      <a class="btn" href="./catch-in-a-cup-lab/">Launch Simulation</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">Interactive investigations for physics students.</div>
+</footer>
+</body>
+</html>
+unit-1-kinematics-index.html
+HTML
