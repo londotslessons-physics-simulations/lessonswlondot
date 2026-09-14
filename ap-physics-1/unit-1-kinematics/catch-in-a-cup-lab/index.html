@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marble Photogate and Catch Cup Lab</title>
+<style>
+:root{
+  --navy:#173a5e; --blue:#2d6da3; --light:#eef5fb; --panel:#fff;
+  --border:#b8c7d5; --text:#1b2733; --muted:#66727e;
+  --good:#2f6e44; --warn:#8a5a1f;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f6f8;color:var(--text)}
+header{background:var(--navy);color:white;padding:18px 22px}
+header h1{margin:0;font-size:28px}
+header p{margin:6px 0 0;opacity:.92}
+.wrap{max-width:1340px;margin:18px auto;padding:0 14px 28px}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tab{border:1px solid var(--border);background:#fff;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:700}
+.tab.active{background:var(--blue);color:white;border-color:var(--blue)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}
+.card h2,.card h3{margin:0 0 8px}
+.subtle{color:var(--muted);font-size:14px}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.pill{border:1px solid var(--border);border-radius:7px;padding:7px 10px;background:#fff;font-size:14px}
+.scroll{overflow-x:auto}
+svg{display:block;width:100%;min-width:680px;background:white;border:1px solid var(--border);border-radius:8px}
+.control{margin-bottom:15px}
+label{display:block;font-weight:700;margin-bottom:5px}
+.range-row{display:flex;align-items:center;gap:10px}
+input[type=range]{width:100%}
+output{min-width:90px;text-align:right;font-weight:700}
+input[type=number],select{
+  width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:7px;
+  font-size:16px;background:#fff;
+}
+.buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+button{
+  min-height:42px;padding:9px 14px;border-radius:7px;border:1px solid var(--border);
+  background:#fff;font-size:15px;cursor:pointer
+}
+button.primary{background:var(--blue);border-color:var(--blue);color:white}
+button.record{background:var(--navy);border-color:var(--navy);color:white}
+button:disabled{opacity:.45;cursor:not-allowed}
+.note{margin-top:10px;padding:10px;border-radius:7px;border:1px solid var(--border);background:var(--light);font-size:14px}
+.bottom{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;margin-top:16px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px;border-bottom:1px solid #d9e0e6;text-align:right}
+th:first-child,td:first-child{text-align:left}
+td input{min-width:92px}
+.task ol{padding-left:20px;margin:8px 0 0}
+.task li{margin-bottom:7px}
+.answer{margin-top:8px;padding:10px;border:1px dashed var(--border);border-radius:7px;background:#fff}
+.eq{font-family:Georgia,"Times New Roman",serif;font-size:18px;text-align:center;margin:8px 0}
+.hidden{display:none}
+.status-good{color:var(--good);font-weight:700}
+.status-warn{color:var(--warn);font-weight:700}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.metric{border:1px solid var(--border);border-radius:7px;padding:9px;background:#fff}
+@media(max-width:970px){.layout,.bottom{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Marble Photogate and Catch Cup Lab</h1>
+  <p>Measure the marble's speed with a photogate, then use that experimental speed to predict where it will land.</p>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <button id="tab1" class="tab active">Part 1 — Measure the Launch Speed</button>
+    <button id="tab2" class="tab">Part 2 — Predict & Catch</button>
+  </div>
+
+  <div class="layout">
+    <section class="card">
+      <h2 id="partTitle">Part 1 — Measure the Launch Speed</h2>
+      <div id="partSubtitle" class="subtle">
+        A photogate is placed at the bottom of the ramp. Run three trials and use the marble's diameter and gate time to calculate speed.
+      </div>
+
+      <div class="readouts">
+        <div class="pill">Phase: <strong id="phaseRead">Ready</strong></div>
+        <div class="pill">Time: <strong id="timeRead">0.00</strong> s</div>
+        <div class="pill">Start: <strong id="startRead">2.00</strong> m</div>
+        <div class="pill">Diameter: <strong id="radiusRead">15</strong> mm</div>
+        <div class="pill">Table height: <strong id="heightRead">1.00</strong> m</div>
+      </div>
+
+      <div class="scroll">
+        <svg id="scene" viewBox="0 0 930 570" aria-label="Marble rolling down a ramp through a photogate and off a table">
+          <defs>
+            <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" fill="#555"></path>
+            </marker>
+          </defs>
+          <rect x="0" y="0" width="930" height="570" fill="#fff"/>
+          <g id="gridLayer"></g>
+          <g id="apparatusLayer"></g>
+          <g id="trajectoryLayer"></g>
+          <g id="measurementLayer"></g>
+          <g id="cupLayer"></g>
+          <g id="marbleLayer"></g>
+        </svg>
+      </div>
+    </section>
+
+    <aside class="card">
+      <h3>Controls</h3>
+
+      <div class="control">
+        <label for="startPos">Starting position on incline</label>
+        <div class="range-row">
+          <input id="startPos" type="range" min="0.50" max="3.00" step="0.10" value="2.00">
+          <output id="startOut">2.00 m</output>
+        </div>
+      </div>
+
+      <div class="control">
+        <label for="radius">Marble diameter</label>
+        <div class="range-row">
+          <input id="radius" type="range" min="5" max="20" step="1" value="15">
+          <output id="radiusOut">15 mm</output>
+        </div>
+      </div>
+
+      <div class="control">
+        <label for="tableHeight">Table height</label>
+        <div class="range-row">
+          <input id="tableHeight" type="range" min="0.50" max="1.50" step="0.05" value="1.00">
+          <output id="heightOut">1.00 m</output>
+        </div>
+      </div>
+
+      <div id="cupControl" class="control hidden">
+        <label for="cupPos">Cup position from table edge</label>
+        <div class="range-row">
+          <input id="cupPos" type="range" min="0.10" max="3.20" step="0.01" value="1.00">
+          <output id="cupOut">1.00 m</output>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button id="startBtn" class="primary">Start / Release</button>
+        <button id="pauseBtn">Pause</button>
+        <button id="resetBtn">Reset</button>
+        <button id="recordBtn" class="record" disabled>Record Trial</button>
+      </div>
+
+      <div id="part1Note" class="note">
+        <strong>Photogate measurement</strong>
+        <div class="eq">v = diameter ÷ photogate time</div>
+        The gate reports the amount of time the marble blocks the beam. Use the <strong>marble diameter</strong> for the distance traveled while blocking the gate.
+      </div>
+
+      <div id="part2Note" class="note hidden">
+        <strong>Prediction step</strong><br>
+        Use your average experimental launch speed from Part 1 and the table height to calculate the flight time and horizontal range. Then place the cup.
+      </div>
+
+      <div id="gateBox" class="note">
+        <strong>Photogate reading:</strong>
+        <div id="gateTimeRead" style="font-size:24px;font-weight:700;margin-top:5px">—</div>
+      </div>
+
+      <div id="catchBox" class="note hidden">
+        <strong>Catch result:</strong>
+        <div id="catchText" style="margin-top:5px">Place the cup at your predicted position.</div>
+      </div>
+    </aside>
+  </div>
+
+  <div id="part1Bottom" class="bottom">
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+        <div>
+          <h3>Part 1 — Photogate Data</h3>
+          <div class="subtle">Complete three trials without changing the starting position or marble diameter.</div>
+        </div>
+        <button id="clearDataBtn">Clear Data</button>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Trial</th>
+              <th>Diameter (mm)</th>
+              <th>Diameter (m)</th>
+              <th>Photogate Time (s)</th>
+              <th>Your Calculated Speed (m/s)</th>
+            </tr>
+          </thead>
+          <tbody id="gateBody"></tbody>
+        </table>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric">
+          <strong>Average speed from your calculations</strong>
+          <div id="avgSpeed" style="font-size:22px;margin-top:5px">—</div>
+        </div>
+        <div class="metric">
+          <strong>Trials completed</strong>
+          <div id="trialCount" style="font-size:22px;margin-top:5px">0 / 3</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card task">
+      <h3>Part 1 Student Task</h3>
+      <ol>
+        <li>Select a starting position and marble diameter.</li>
+        <li>Release the marble through the photogate.</li>
+        <li>Record the photogate time.</li>
+        <li>Repeat for three total trials.</li>
+        <li>For each trial, calculate speed using the marble diameter.</li>
+        <li>Enter each calculated speed in the table.</li>
+        <li>Use the average speed for Part 2.</li>
+      </ol>
+      <div class="answer">
+        <strong>Reminder:</strong><br>
+        Convert the diameter from centimeters to meters before calculating speed.
+      </div>
+    </section>
+  </div>
+
+  <div id="part2Bottom" class="bottom hidden">
+    <section class="card">
+      <h3>Part 2 — Prediction Calculations</h3>
+      <div class="subtle">The marble leaves the table horizontally. Use your experimental average speed, not a theoretical ramp speed.</div>
+
+      <div class="metric-grid">
+        <div class="metric">
+          <strong>Average launch speed</strong>
+          <div id="part2Avg" style="font-size:20px;margin-top:5px">—</div>
+        </div>
+        <div class="metric">
+          <strong>Table height</strong>
+          <div id="part2Height" style="font-size:20px;margin-top:5px">1.00 m</div>
+        </div>
+      </div>
+
+      <div class="answer">
+        <label for="studentFlight">Your calculated time in the air (s)</label>
+        <input id="studentFlight" type="number" min="0" step="0.001" placeholder="Enter your result">
+      </div>
+
+      <div class="answer">
+        <label for="studentRange">Your predicted horizontal range (m)</label>
+        <input id="studentRange" type="number" min="0" step="0.01" placeholder="Enter your result">
+      </div>
+
+      <div class="buttons">
+        <button id="setCupBtn">Move Cup to My Predicted Range</button>
+      </div>
+
+      <div class="note">
+        <div class="eq">Δy = ½gt²</div>
+        <div class="eq">Δx = v<sub>x</sub>t</div>
+      </div>
+    </section>
+
+    <section class="card task">
+      <h3>Part 2 Student Task</h3>
+      <ol>
+        <li>Set the table height.</li>
+        <li>Calculate the time the marble will be in the air.</li>
+        <li>Use your Part 1 average launch speed to calculate the horizontal range.</li>
+        <li>Enter your predicted range and move the cup.</li>
+        <li>Release the marble.</li>
+        <li>Compare the actual landing location with your prediction.</li>
+      </ol>
+      <div class="answer">
+        <strong>Experimental variation:</strong><br>
+        The real launch in Part 2 includes a small random variation, just like an actual lab. A correct prediction may not land exactly at the cup center.
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $=id=>document.getElementById(id);
+  const g=9.81;
+  const theta=15*Math.PI/180;
+  const flatLength=0.85;
+  const rampMax=3.0;
+  const edgeX=640, groundY=505, pxPerM=145;
+
+  const gridLayer=$('gridLayer'), apparatus=$('apparatusLayer'),
+        trajectory=$('trajectoryLayer'), measurements=$('measurementLayer'),
+        cupLayer=$('cupLayer'), marbleLayer=$('marbleLayer');
+
+  let part=1;
+  let startPos=2.0, diameterMm=15, tableHeight=1.00, cupPos=1.00;
+  let phase='ready', simTime=0, phaseTime=0, running=false, raf=null, lastStamp=null;
+  let currentGateTime=null, currentActualSpeed=null;
+  let part2LaunchSpeed=null;
+  let trials=[];
+
+  function svgEl(tag,attrs={}){
+    const e=document.createElementNS('http://www.w3.org/2000/svg',tag);
+    for(const [k,v] of Object.entries(attrs)) e.setAttribute(k,v);
+    return e;
+  }
+
+  function basePhysics(){
+    const aRamp=(5/7)*g*Math.sin(theta);
+    const rampTime=Math.sqrt(2*startPos/aRamp);
+    const idealSpeed=aRamp*rampTime;
+    const flatTime=flatLength/idealSpeed;
+    return {aRamp,rampTime,idealSpeed,flatTime};
+  }
+
+  function tableY(){return groundY-tableHeight*pxPerM}
+  function rampBottom(){return {x:edgeX-flatLength*pxPerM,y:tableY()}}
+  function rampPoint(s){
+    const b=rampBottom();
+    return {x:b.x-s*Math.cos(theta)*pxPerM,y:b.y-s*Math.sin(theta)*pxPerM};
+  }
+
+  function randomFraction(maxAbs){
+    return (Math.random()*2-1)*maxAbs;
+  }
+
+  function makeTrialSpeed(){
+    // Small physical trial-to-trial launch variation.
+    return basePhysics().idealSpeed*(1+randomFraction(0.018));
+  }
+
+  function makeGateTime(speed){
+    const diameterM=diameterMm/1000;
+    const ideal=diameterM/speed;
+    // Photogate timing variation of roughly ±1.2%.
+    return Math.max(0.0001,ideal*(1+randomFraction(0.012)));
+  }
+
+  function averageStudentSpeed(){
+    const vals=trials.map(t=>t.studentSpeed).filter(v=>Number.isFinite(v)&&v>0);
+    return vals.length===3 ? vals.reduce((a,b)=>a+b,0)/3 : null;
+  }
+
+  function drawGrid(){
+    gridLayer.innerHTML='';
+    for(let x=40;x<910;x+=40) gridLayer.appendChild(svgEl('line',{x1:x,y1:40,x2:x,y2:groundY,stroke:'#edf0f2'}));
+    for(let y=60;y<groundY;y+=40) gridLayer.appendChild(svgEl('line',{x1:40,y1:y,x2:900,y2:y,stroke:'#edf0f2'}));
+  }
+
+  function drawApparatus(){
+    apparatus.innerHTML='';
+    measurements.innerHTML='';
+    const ty=tableY(), rb=rampBottom(), rt=rampPoint(rampMax);
+
+    apparatus.appendChild(svgEl('line',{x1:35,y1:groundY,x2:900,y2:groundY,stroke:'#444','stroke-width':3}));
+    apparatus.appendChild(svgEl('line',{x1:rb.x,y1:ty,x2:edgeX,y2:ty,stroke:'#6b5136','stroke-width':10,'stroke-linecap':'round'}));
+    apparatus.appendChild(svgEl('line',{x1:edgeX-12,y1:ty,x2:edgeX-12,y2:groundY,stroke:'#666','stroke-width':8}));
+    apparatus.appendChild(svgEl('line',{x1:rb.x+20,y1:ty,x2:rb.x+20,y2:groundY,stroke:'#666','stroke-width':8}));
+    apparatus.appendChild(svgEl('line',{x1:rt.x,y1:rt.y,x2:rb.x,y2:rb.y,stroke:'#8a623b','stroke-width':12,'stroke-linecap':'round'}));
+
+    for(let s=0;s<=rampMax+1e-9;s+=0.5){
+      const p=rampPoint(s), nx=Math.sin(theta)*9, ny=-Math.cos(theta)*9;
+      apparatus.appendChild(svgEl('line',{x1:p.x-nx,y1:p.y-ny,x2:p.x+nx,y2:p.y+ny,stroke:'#333','stroke-width':2}));
+      const t=svgEl('text',{x:p.x-5,y:p.y+26,'font-size':'12',fill:'#555','text-anchor':'middle'});
+      t.textContent=s.toFixed(1)+' m'; apparatus.appendChild(t);
+    }
+
+    // Photogate at the ramp bottom.
+    const gateX=rb.x+10, gateTop=ty-56;
+    apparatus.appendChild(svgEl('line',{x1:gateX-16,y1:ty+4,x2:gateX-16,y2:gateTop,stroke:'#222','stroke-width':6}));
+    apparatus.appendChild(svgEl('line',{x1:gateX+16,y1:ty+4,x2:gateX+16,y2:gateTop,stroke:'#222','stroke-width':6}));
+    apparatus.appendChild(svgEl('line',{x1:gateX-15,y1:ty-18,x2:gateX+15,y2:ty-18,stroke:'#b22','stroke-width':2,'stroke-dasharray':'4 3'}));
+    const pg=svgEl('text',{x:gateX,y:gateTop-10,'font-size':'13',fill:'#222','text-anchor':'middle','font-weight':'bold'});
+    pg.textContent='PHOTOGATE'; apparatus.appendChild(pg);
+
+    const at=rampPoint(2.75);
+    const ang=svgEl('text',{x:at.x-8,y:at.y-18,'font-size':'15',fill:'#444','font-weight':'bold'});
+    ang.textContent='15°'; apparatus.appendChild(ang);
+
+    measurements.appendChild(svgEl('line',{x1:edgeX+35,y1:ty,x2:edgeX+35,y2:groundY,stroke:'#777','stroke-width':2,'marker-end':'url(#arrow)'}));
+    measurements.appendChild(svgEl('line',{x1:edgeX+35,y1:groundY,x2:edgeX+35,y2:ty,stroke:'#777','stroke-width':2,'marker-end':'url(#arrow)'}));
+    const ht=svgEl('text',{x:edgeX+48,y:(ty+groundY)/2,'font-size':'14',fill:'#555'});
+    ht.textContent='H = '+tableHeight.toFixed(2)+' m'; measurements.appendChild(ht);
+  }
+
+  function drawCup(){
+    cupLayer.innerHTML='';
+    if(part!==2) return;
+    const cx=edgeX+cupPos*pxPerM, cupW=36, cupH=40;
+    cupLayer.appendChild(svgEl('path',{
+      d:`M ${cx-cupW/2} ${groundY-cupH} L ${cx-cupW/2+5} ${groundY} L ${cx+cupW/2-5} ${groundY} L ${cx+cupW/2} ${groundY-cupH}`,
+      fill:'none',stroke:'#444','stroke-width':4
+    }));
+    const label=svgEl('text',{x:cx,y:groundY+28,'text-anchor':'middle','font-size':'13',fill:'#333'});
+    label.textContent='cup: '+cupPos.toFixed(2)+' m'; cupLayer.appendChild(label);
+  }
+
+  function activeSpeed(){
+    if(part===2 && part2LaunchSpeed) return part2LaunchSpeed;
+    return currentActualSpeed || basePhysics().idealSpeed;
+  }
+
+  function marblePosition(){
+    const P=basePhysics(), speed=activeSpeed();
+    const rampTime=Math.sqrt(2*startPos/P.aRamp);
+    const flatTime=flatLength/speed;
+
+    if(phase==='ready') return rampPoint(startPos);
+    if(phase==='ramp'){
+      const sTravel=Math.min(startPos,0.5*P.aRamp*phaseTime*phaseTime);
+      return rampPoint(startPos-sTravel);
+    }
+    if(phase==='table'){
+      const rb=rampBottom();
+      return {x:rb.x+Math.min(flatLength,speed*phaseTime)*pxPerM,y:tableY()};
+    }
+    if(phase==='done' && part===1){
+      const rb=rampBottom();
+      const diameterM=diameterMm/1000;
+      const stopDistance=Math.min(flatLength,0.12+diameterM);
+      return {x:rb.x+stopDistance*pxPerM,y:tableY()};
+    }
+    if(phase==='flight'||phase==='done'){
+      const flightTime=Math.sqrt(2*tableHeight/g);
+      const tf=phase==='done'?flightTime:Math.min(phaseTime,flightTime);
+      return {x:edgeX+speed*tf*pxPerM,y:Math.min(groundY,tableY()+0.5*g*tf*tf*pxPerM)};
+    }
+    return rampPoint(startPos);
+  }
+
+  function drawMarble(){
+    marbleLayer.innerHTML='';
+    const p=marblePosition();
+    // Visual radius scaled enough to notice size changes, but not physically to scale.
+    const rr=6+(diameterMm-5)*0.45;
+    marbleLayer.appendChild(svgEl('circle',{cx:p.x,cy:p.y-rr,r:rr,fill:'#3d6d96',stroke:'#173a5e','stroke-width':2}));
+  }
+
+  function drawTrajectory(){
+    trajectory.innerHTML='';
+    if(part!==2 || !(phase==='flight'||phase==='done')) return;
+    const speed=activeSpeed(), flightTime=Math.sqrt(2*tableHeight/g);
+    const maxT=phase==='done'?flightTime:Math.min(phaseTime,flightTime);
+    for(let tt=0;tt<=maxT+1e-9;tt+=0.04){
+      trajectory.appendChild(svgEl('circle',{
+        cx:edgeX+speed*tt*pxPerM,
+        cy:tableY()+0.5*g*tt*tt*pxPerM-8,
+        r:2.8,fill:'#999'
+      }));
+    }
+  }
+
+  function updateReadouts(){
+    $('phaseRead').textContent={ready:'Ready',ramp:'Rolling down incline',table:'Across table',flight:'In flight',done:'Complete'}[phase];
+    $('timeRead').textContent=simTime.toFixed(2);
+    $('startRead').textContent=startPos.toFixed(2);
+    $('radiusRead').textContent=diameterMm.toFixed(0);
+    $('heightRead').textContent=tableHeight.toFixed(2);
+    $('startOut').textContent=startPos.toFixed(2)+' m';
+    $('radiusOut').textContent=diameterMm.toFixed(0)+' mm';
+    $('heightOut').textContent=tableHeight.toFixed(2)+' m';
+    $('cupOut').textContent=cupPos.toFixed(2)+' m';
+    $('part2Height').textContent=tableHeight.toFixed(2)+' m';
+
+    const avg=averageStudentSpeed();
+    $('avgSpeed').textContent=avg?avg.toFixed(3)+' m/s':'Enter all 3 calculated speeds';
+    $('part2Avg').textContent=avg?avg.toFixed(3)+' m/s':'Complete Part 1 first';
+    $('trialCount').textContent=trials.length+' / 3';
+  }
+
+  function render(){
+    drawApparatus(); drawCup(); drawTrajectory(); drawMarble(); updateReadouts();
+  }
+
+  function advance(dt){
+    const P=basePhysics();
+    simTime+=dt; phaseTime+=dt;
+
+    if(phase==='ramp' && phaseTime>=P.rampTime){
+      if(currentActualSpeed===null) currentActualSpeed=makeTrialSpeed();
+      if(currentGateTime===null){
+        currentGateTime=makeGateTime(currentActualSpeed);
+        $('gateTimeRead').textContent=currentGateTime.toFixed(4)+' s';
+      }
+      phase='table';
+      phaseTime-=P.rampTime;
+    }
+
+    const speed=activeSpeed();
+    const flatTime=flatLength/speed;
+
+    if(phase==='table'){
+      if(part===1){
+        // Stop just after the marble has completely cleared the photogate.
+        // The photogate is near the ramp bottom, so only a short tabletop
+        // distance is needed after the beam is crossed.
+        const diameterM = diameterMm/1000;
+        const stopDistance = Math.min(flatLength, 0.12 + diameterM);
+        const stopTime = stopDistance / speed;
+        if(phaseTime >= stopTime){
+          phase='done';
+          phaseTime=stopTime;
+          running=false;
+          $('recordBtn').disabled=false;
+        }
+      }else if(phaseTime>=flatTime){
+        phase='flight';
+        phaseTime-=flatTime;
+      }
+    }
+
+    if(part===2 && phase==='flight'){
+      const flightTime=Math.sqrt(2*tableHeight/g);
+      if(phaseTime>=flightTime){
+        phase='done'; phaseTime=flightTime; running=false;
+        const actualRange=speed*flightTime;
+        const miss=Math.abs(cupPos-actualRange);
+        const caught=miss<=0.12;
+        $('catchText').innerHTML=caught
+          ? `<span class="status-good">Caught!</span> The marble landed ${miss.toFixed(2)} m from the cup center.`
+          : `<span class="status-warn">Missed.</span> The marble landed ${miss.toFixed(2)} m from the cup center.`;
+      }
+    }
+  }
+
+  function frame(ts){
+    if(!running) return;
+    if(lastStamp===null) lastStamp=ts;
+    const dt=Math.min(0.035,(ts-lastStamp)/1000);
+    lastStamp=ts;
+    advance(dt); render();
+    if(running) raf=requestAnimationFrame(frame);
+  }
+
+  function resetRun(){
+    running=false;
+    if(raf) cancelAnimationFrame(raf);
+    phase='ready'; simTime=0; phaseTime=0; lastStamp=null;
+    currentGateTime=null; currentActualSpeed=null; part2LaunchSpeed=null;
+    $('gateTimeRead').textContent='—';
+    $('recordBtn').disabled=true;
+    if(part===2) $('catchText').textContent='Place the cup at your predicted position.';
+    render();
+  }
+
+  function syncControls(){
+    startPos=Number($('startPos').value);
+    diameterMm=Number($('radius').value);
+    tableHeight=Number($('tableHeight').value);
+    cupPos=Number($('cupPos').value);
+    resetRun();
+  }
+
+  function renderTrialTable(){
+    const body=$('gateBody'); body.innerHTML='';
+    trials.forEach((t,i)=>{
+      const tr=document.createElement('tr');
+      const diameterM=t.diameterMm/1000;
+      tr.innerHTML=`
+        <td>${i+1}</td>
+        <td>${t.diameterMm.toFixed(0)}</td>
+        <td>${diameterM.toFixed(4)}</td>
+        <td>${t.gateTime.toFixed(4)}</td>
+        <td><input type="number" min="0" step="0.001" value="${Number.isFinite(t.studentSpeed)?t.studentSpeed:''}" data-speed-index="${i}" placeholder="calculate"></td>`;
+      body.appendChild(tr);
+    });
+
+    body.querySelectorAll('input[data-speed-index]').forEach(inp=>{
+      inp.addEventListener('input',()=>{
+        const idx=Number(inp.dataset.speedIndex);
+        const v=Number(inp.value);
+        trials[idx].studentSpeed=Number.isFinite(v)&&v>0?v:null;
+        updateReadouts();
+      });
+    });
+    updateReadouts();
+  }
+
+  function switchPart(next){
+    part=next;
+    resetRun();
+    const p1=part===1;
+    $('tab1').classList.toggle('active',p1);
+    $('tab2').classList.toggle('active',!p1);
+    $('partTitle').textContent=p1?'Part 1 — Measure the Launch Speed':'Part 2 — Predict & Catch';
+    $('partSubtitle').textContent=p1
+      ? "A photogate is placed at the bottom of the ramp. Run three trials and use the marble's diameter and gate time to calculate speed."
+      : 'Use your experimental average launch speed and the table height to predict where the marble will land.';
+    $('part1Note').classList.toggle('hidden',!p1);
+    $('part2Note').classList.toggle('hidden',p1);
+    $('gateBox').classList.toggle('hidden',!p1);
+    $('catchBox').classList.toggle('hidden',p1);
+    $('cupControl').classList.toggle('hidden',p1);
+    $('part1Bottom').classList.toggle('hidden',!p1);
+    $('part2Bottom').classList.toggle('hidden',p1);
+
+    // Part 2 preserves the Part 1 launch condition.
+    $('startPos').disabled=!p1;
+    $('radius').disabled=!p1;
+
+    if(!p1){
+      const avg=averageStudentSpeed();
+      if(!avg){
+        $('catchText').innerHTML='<span class="status-warn">Complete Part 1 and enter all three calculated speeds before testing Part 2.</span>';
+      }
+    }
+    render();
+  }
+
+  $('tab1').addEventListener('click',()=>switchPart(1));
+  $('tab2').addEventListener('click',()=>switchPart(2));
+  $('startPos').addEventListener('input',syncControls);
+  $('radius').addEventListener('input',syncControls);
+  $('tableHeight').addEventListener('input',syncControls);
+  $('cupPos').addEventListener('input',syncControls);
+
+  $('startBtn').addEventListener('click',()=>{
+    if(part===2){
+      const avg=averageStudentSpeed();
+      if(!avg){
+        $('catchText').innerHTML='<span class="status-warn">Enter your calculated speeds for all three Part 1 trials first.</span>';
+        return;
+      }
+      if(phase==='ready'){
+        // Actual Part 2 launch varies slightly around the student's experimental average.
+        part2LaunchSpeed=avg*(1+randomFraction(0.015));
+      }
+    }
+    if(phase==='done') resetRun();
+    if(running) return;
+    if(phase==='ready'){
+      phase='ramp'; simTime=0; phaseTime=0;
+      if(part===1) currentActualSpeed=makeTrialSpeed();
+    }
+    running=true; lastStamp=null; raf=requestAnimationFrame(frame);
+  });
+
+  $('pauseBtn').addEventListener('click',()=>{
+    running=false;
+    if(raf) cancelAnimationFrame(raf);
+  });
+
+  $('resetBtn').addEventListener('click',resetRun);
+
+  $('recordBtn').addEventListener('click',()=>{
+    if(part!==1 || phase!=='done' || currentGateTime===null || trials.length>=3) return;
+
+    // Lock setup after first recorded trial so all three repetitions match.
+    if(trials.length===0){
+      $('startPos').disabled=true;
+      $('radius').disabled=true;
+    }
+
+    trials.push({
+      diameterMm,
+      gateTime:currentGateTime,
+      studentSpeed:null
+    });
+    renderTrialTable();
+
+    if(trials.length<3){
+      resetRun();
+    }else{
+      $('recordBtn').disabled=true;
+      $('startPos').disabled=false;
+      $('radius').disabled=false;
+    }
+  });
+
+  $('clearDataBtn').addEventListener('click',()=>{
+    running=false;
+    if(raf) cancelAnimationFrame(raf);
+    trials=[];
+    renderTrialTable();
+    $('startPos').disabled=false;
+    $('radius').disabled=false;
+    phase='ready';
+    simTime=0;
+    phaseTime=0;
+    lastStamp=null;
+    currentGateTime=null;
+    currentActualSpeed=null;
+    part2LaunchSpeed=null;
+    $('gateTimeRead').textContent='—';
+    $('recordBtn').disabled=true;
+    render();
+  });
+
+  $('setCupBtn').addEventListener('click',()=>{
+    const predicted=Number($('studentRange').value);
+    if(!Number.isFinite(predicted)||predicted<=0){
+      $('catchText').innerHTML='<span class="status-warn">Enter your predicted horizontal range first.</span>';
+      return;
+    }
+    cupPos=Math.max(0.10,Math.min(3.20,predicted));
+    $('cupPos').value=cupPos;
+    $('cupOut').textContent=cupPos.toFixed(2)+' m';
+    $('catchText').textContent='Cup moved to '+cupPos.toFixed(2)+' m from the table edge. Release the marble when ready.';
+    drawCup();
+  });
+
+  drawGrid();
+  renderTrialTable();
+  switchPart(1);
+})();
+</script>
+</body>
+</html>
