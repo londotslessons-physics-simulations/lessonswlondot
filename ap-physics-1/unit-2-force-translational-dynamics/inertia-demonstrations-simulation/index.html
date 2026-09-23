@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inertia Demonstrations</title>
+<style>
+:root{--p:#462b7a;--y:#facf22;--bg:#f5f3f9;--t:#241b33;--m:#645d70;--l:#d9d1e5}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--t)}
+header{background:var(--p);color:#fff;padding:20px;border-bottom:6px solid var(--y)}h1{margin:0}header p{margin:6px 0 0}
+main{max-width:1150px;margin:auto;padding:18px}.tabs,.buttons,.readouts{display:flex;gap:8px;flex-wrap:wrap}
+.card{background:#fff;border:1px solid var(--l);border-radius:12px;padding:15px;margin-top:14px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:15px}
+button{min-height:44px;padding:9px 13px;border:1px solid var(--l);border-radius:8px;background:#fff;cursor:pointer}
+button.on,.primary{background:var(--y);color:var(--p);font-weight:700}
+svg{width:100%;display:block;border:1px solid var(--l);border-radius:9px;margin:10px 0}
+.pill{padding:7px 10px;border:1px solid var(--l);border-radius:8px}label{display:block;font-weight:700;margin-top:12px}
+input{width:100%}.note{margin-top:12px;padding:10px;border-left:5px solid var(--y);background:#f8f6fb}
+#physics{display:none;color:var(--m);margin-top:10px}@media(max-width:800px){.layout{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header><h1>Inertia Demonstrations</h1><p>Explore Newton's First Law with four classic demonstrations.</p></header>
+<main>
+<div class="tabs">
+<button class="tab on" data-d="cloth">Tablecloth Pull</button><button class="tab" data-d="coin">Card & Coin</button>
+<button class="tab" data-d="cart">Cart & Block</button><button class="tab" data-d="bus">Passenger in a Bus</button><button class="tab" data-d="boat">Walking on a Boat</button><button class="tab" data-d="balls">Light Ball + Heavy Ball</button>
+</div>
+<div class="layout">
+<section class="card"><h2 id="title">Tablecloth Pull</h2>
+<div class="readouts"><span class="pill">Action: <b id="speedRead">Fast</b></span><span class="pill">Result: <b id="result">Ready</b></span></div>
+<svg id="scene" viewBox="0 0 820 430" aria-label="Inertia demonstration"></svg>
+<div class="buttons"><button id="run" class="primary">Run Demonstration</button><button id="reset">Reset</button></div>
+<div class="note"><b>Think:</b> <span id="think">What happens to the dishes when the cloth is pulled quickly?</span><br>
+<button id="show" style="margin-top:9px">Show Physics</button><div id="physics"></div></div>
+</section>
+<aside class="card"><h3>Controls</h3><label>Action speed</label><input id="speed" type="range" min="1" max="3" step="1" value="3"><div id="speedOut" style="text-align:right;font-weight:bold">Fast</div>
+<div class="note"><b>Big idea:</b> An object tends to maintain its state of motion unless a net external force changes that motion.</div>
+<div class="note">Compare <b>slow</b> and <b>fast</b> trials. Describe what changes and why.</div></aside>
+</div></main>
+<script>
+(()=>{const $=x=>document.getElementById(x),S=$('scene');let d='cloth',raf,start;
+const I={
+cloth:['Tablecloth Pull','What happens to the dishes when the cloth is pulled quickly?','A quick pull gives friction little time to change the dishes’ motion. A slow pull lets friction act longer.'],
+coin:['Card & Coin','If the card is flicked sideways, where will the coin go?','The card moves sideways quickly while the coin tends to remain at rest. Gravity then pulls the coin into the cup.'],
+cart:['Cart & Block','What happens to the block when the cart suddenly accelerates?','The block tends to remain at rest while the cart accelerates beneath it. Friction eventually accelerates the block.'],
+bus:['Passenger in a Bus','Why does a passenger appear to lurch forward when a moving bus stops?','The bus slows, but the passenger tends to keep moving forward until another force changes the passenger’s motion.'],
+boat:['Walking on a Boat','As the person walks to the right, what should happen to the boat and to the center of mass of the person–boat system?','With negligible horizontal external force, the center of mass of the person–boat system remains fixed. As the person walks right relative to the boat, the boat moves left so the system center of mass stays in the same horizontal location.'],
+balls:['Light Ball on Heavy Ball','What happens to the light ball when the stacked balls hit the floor?','Just before impact, both balls are moving downward. The heavy lower ball rebounds from the floor and then collides with the light upper ball. During that collision, momentum and energy are transferred to the light ball, causing it to launch upward at a much greater speed. This is a dramatic collision demonstration often used alongside inertia and Newton’s laws.']};
+function E(tag,a,t){let e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(let k in a)e.setAttribute(k,a[k]);if(t)e.textContent=t;S.appendChild(e)}
+function name(){return ['','Slow','Medium','Fast'][+$('speed').value]}
+function draw(p=0){S.innerHTML='';E('rect',{width:820,height:430,fill:'#fff'});let q=+$('speed').value;
+if(d==='cloth'){E('rect',{x:70,y:315,width:680,height:18,fill:'#6f6258'});let cx=100+p*(q==1?190:430),shift=p*(q==1?175:q==2?65:15);E('rect',{x:cx,y:285,width:560,height:30,fill:'#ccc',stroke:'#555'});E('ellipse',{cx:330+shift,cy:278,rx:65,ry:13,fill:'#eee',stroke:'#555'});E('rect',{x:460+shift,y:225,width:55,height:55,fill:'#ddd',stroke:'#555'});E('text',{x:410,y:65,'text-anchor':'middle','font-size':20},'Pull cloth →')}
+if(d==='coin'){E('path',{d:'M350 320 L365 225 L455 225 L470 320',fill:'#eee',stroke:'#555','stroke-width':3});let cx=315+p*(q==1?120:390);E('rect',{x:cx,y:205,width:190,height:18,fill:'#facf22',stroke:'#555'});let x=410+(q==1?p*90:0),y=(p>.72&&q>1)?190+(p-.72)/.28*115:190;E('circle',{cx:x,cy:y,r:16,fill:'#aaa',stroke:'#444'});E('text',{x:410,y:65,'text-anchor':'middle','font-size':20},'Flick card →')}
+if(d==='cart'){let x=120+p*430,lag=(q==1?15:q==2?55:105)*p;E('rect',{x:x,y:285,width:250,height:55,rx:8,fill:'#bbb',stroke:'#444'});E('circle',{cx:x+45,cy:350,r:18,fill:'#555'});E('circle',{cx:x+205,cy:350,r:18,fill:'#555'});E('rect',{x:x+95-lag,y:225,width:65,height:60,fill:'#888',stroke:'#333'});E('text',{x:410,y:65,'text-anchor':'middle','font-size':20},'Cart accelerates →')}
+if(d==='bus'){E('rect',{x:70,y:165,width:680,height:180,rx:24,fill:'#ddd',stroke:'#444','stroke-width':3});E('circle',{cx:190,cy:355,r:28,fill:'#555'});E('circle',{cx:630,cy:355,r:28,fill:'#555'});let L=p*(q==1?8:q==2?18:30);E('circle',{cx:540+L*.35,cy:225,r:20,fill:'#aaa',stroke:'#444'});E('line',{x1:540,y1:247,x2:540+L,y2:305,stroke:'#444','stroke-width':8});E('line',{x1:540+L,y1:305,x2:520+L,y2:335,stroke:'#444','stroke-width':7});E('line',{x1:540+L,y1:305,x2:565+L,y2:335,stroke:'#444','stroke-width':7});E('text',{x:410,y:80,'text-anchor':'middle','font-size':20},'Moving bus → brakes')} 
+if(d==='boat'){
+  // Treat the person and boat as one isolated horizontal system.
+  // Chosen display masses: person 70 kg, boat 140 kg.
+  // If the person walks distance u relative to the boat, boat displacement is -mp/(mp+mb)*u.
+  let mp=70, mb=140, u=240*p, boatShift=-(mp/(mp+mb))*u;
+  let bx=170+boatShift, deckY=290;
+  // water
+  E('line',{x1:40,y1:350,x2:780,y2:350,stroke:'#777','stroke-width':3});
+  E('path',{d:'M40 365 Q70 350 100 365 T160 365 T220 365 T280 365 T340 365 T400 365 T460 365 T520 365 T580 365 T640 365 T700 365 T780 365',fill:'none',stroke:'#aaa','stroke-width':2});
+  // boat
+  E('path',{d:`M${bx} ${deckY} L${bx+420} ${deckY} L${bx+370} 345 L${bx+55} 345 Z`,fill:'#b8b8b8',stroke:'#444','stroke-width':3});
+  E('line',{x1:bx+20,y1:deckY,x2:bx+400,y2:deckY,stroke:'#444','stroke-width':5});
+  // person position relative to boat
+  let px=bx+95+u, footY=deckY-2;
+  E('circle',{cx:px,cy:footY-105,r:18,fill:'#999',stroke:'#333','stroke-width':2});
+  E('line',{x1:px,y1:footY-87,x2:px,y2:footY-42,stroke:'#333','stroke-width':7});
+  E('line',{x1:px,y1:footY-70,x2:px-24,y2:footY-48,stroke:'#333','stroke-width':6});
+  E('line',{x1:px,y1:footY-70,x2:px+25,y2:footY-55,stroke:'#333','stroke-width':6});
+  E('line',{x1:px,y1:footY-42,x2:px-20,y2:footY,stroke:'#333','stroke-width':7});
+  E('line',{x1:px,y1:footY-42,x2:px+22,y2:footY,stroke:'#333','stroke-width':7});
+  // fixed system COM marker
+  let comX=410;
+  E('line',{x1:comX,y1:90,x2:comX,y2:365,stroke:'#462b7a','stroke-width':2,'stroke-dasharray':'7 6'});
+  E('circle',{cx:comX,cy:125,r:11,fill:'#facf22',stroke:'#462b7a','stroke-width':3});
+  E('line',{x1:comX-16,y1:125,x2:comX+16,y2:125,stroke:'#462b7a','stroke-width':2});
+  E('line',{x1:comX,y1:109,x2:comX,y2:141,stroke:'#462b7a','stroke-width':2});
+  E('text',{x:comX,y:78,'text-anchor':'middle','font-size':18,fill:'#462b7a','font-weight':'bold'},'System Center of Mass');
+  E('text',{x:410,y:405,'text-anchor':'middle','font-size':17,fill:'#645d70'},'Person walks right →   Boat moves left ←');
+}
+if(d==='balls'){
+  // Two stacked balls are dropped. The lower, heavier ball rebounds from the floor
+  // and transfers momentum/energy to the lighter upper ball.
+  let floorY=365, heavyR=48, lightR=20;
+  E('line',{x1:70,y1:floorY,x2:750,y2:floorY,stroke:'#555','stroke-width':5});
+  E('text',{x:90,y:395,'font-size':15,fill:'#645d70'},'floor');
+  let hy, ly;
+  if(p<0.58){
+    let z=p/0.58;
+    hy=135 + 175*z*z;
+    ly=hy-heavyR-lightR-3;
+  }else if(p<0.70){
+    let z=(p-0.58)/0.12;
+    hy=310-38*z;
+    ly=239-15*z;
+  }else{
+    let z=(p-0.70)/0.30;
+    hy=272-45*z+35*z*z;
+    ly=224-230*z;
+  }
+  E('circle',{cx:410,cy:hy,r:heavyR,fill:'#777',stroke:'#333','stroke-width':3});
+  E('circle',{cx:410,cy:ly,r:lightR,fill:'#d8d8d8',stroke:'#333','stroke-width':3});
+  E('text',{x:410,y:hy+6,'text-anchor':'middle','font-size':15,fill:'#fff','font-weight':'bold'},'HEAVY');
+  E('text',{x:410,y:ly+5,'text-anchor':'middle','font-size':11,fill:'#241b33','font-weight':'bold'},'LIGHT');
+  if(p<0.58){
+    E('text',{x:410,y:65,'text-anchor':'middle','font-size':20,fill:'#462b7a'},'Drop the stacked balls');
+    E('line',{x1:500,y1:110,x2:500,y2:180,stroke:'#462b7a','stroke-width':4});
+    E('polygon',{points:'500,190 491,174 509,174',fill:'#462b7a'});
+  }else{
+    E('text',{x:410,y:65,'text-anchor':'middle','font-size':20,fill:'#462b7a'},'Heavy ball rebounds → light ball launches');
+    E('line',{x1:505,y1:210,x2:505,y2:125,stroke:'#462b7a','stroke-width':4});
+    E('polygon',{points:'505,112 496,130 514,130',fill:'#462b7a'});
+  }
+}}
+function reset(){cancelAnimationFrame(raf);start=null;$('result').textContent='Ready';draw()}
+function frame(t){if(start==null)start=t;let dur=[0,2200,1400,750][+$('speed').value],p=Math.min(1,(t-start)/dur);draw(p);if(p<1)raf=requestAnimationFrame(frame);else $('result').textContent={cloth:+$('speed').value==1?'Dishes move':'Dishes nearly stay put',coin:+$('speed').value==1?'Coin moves sideways':'Coin drops into cup',cart:'Block lags behind',bus:'Passenger continues forward',boat:'Boat moves opposite; COM stays fixed',balls:'Light ball launches upward'}[d]}
+$('run').onclick=()=>{reset();raf=requestAnimationFrame(frame)};$('reset').onclick=reset;
+$('speed').oninput=()=>{$('speedOut').textContent=name();$('speedRead').textContent=name();reset()};
+$('show').onclick=()=>{let e=$('physics');e.textContent=I[d][2];e.style.display=e.style.display==='block'?'none':'block'};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));b.classList.add('on');d=b.dataset.d;$('title').textContent=I[d][0];$('think').textContent=I[d][1];$('physics').style.display='none';reset()});draw()})();
+</script></body></html>
