@@ -1,28 +1,223 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Friction Pull Lab</title>
-<style>body{font-family:Arial;margin:0;background:#f3f6f8;color:#17212b}header{background:#173a5e;color:white;padding:18px}main{max-width:1100px;margin:auto;padding:16px}.grid{display:grid;grid-template-columns:2fr 1fr;gap:14px}.card{background:white;border:1px solid #b8c7d5;border-radius:10px;padding:14px;margin-bottom:14px}.row,.buttons{display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid #b8c7d5;border-radius:7px;padding:7px}label{display:block;font-weight:bold;margin:12px 0 5px}input[type=range],select{width:100%}select{padding:9px}.buttons button{padding:10px;border:1px solid #b8c7d5;border-radius:7px;background:white}.buttons .primary{background:#2d6da3;color:white}.measure{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{border:1px solid #b8c7d5;border-radius:8px;padding:10px}.value{font-size:26px;font-weight:bold}svg{width:100%;border:1px solid #b8c7d5}table{width:100%;border-collapse:collapse}th,td{padding:7px;border-bottom:1px solid #ddd;text-align:right}th:first-child,td:first-child{text-align:left}@media(max-width:800px){.grid{grid-template-columns:1fr}}</style></head>
-<body><header><h1>Friction Pull Lab</h1><p>Pull a block with a force sensor to determine static and kinetic friction coefficients for unidentified surfaces.</p></header><main><div class="grid"><section class="card"><h2>Experimental Pull</h2><p>The student pulls horizontally on the force sensor attached to the block. The simulation increases the pull until motion begins, then maintains the force needed for constant velocity.</p><div class="row"><span class="pill">Surface: <b id="sr">Unknown A</b></span><span class="pill">Mass: <b id="mr"></b> kg</span><span class="pill">Normal: <b id="nr"></b> N</span><span class="pill">State: <b id="state">Ready</b></span></div><svg viewBox="0 0 850 360"><g id="scene"></g></svg><div class="measure"><div class="metric"><b>Force when motion begins</b><div class="value" id="fs">—</div><small>Maximum static friction</small></div><div class="metric"><b>Force at constant velocity</b><div class="value" id="fk">—</div><small>Kinetic friction</small></div></div></section>
-<aside class="card"><h3>Controls</h3><label>Unknown surface</label><select id="surface"><option value="0">Unknown A</option><option value="1">Unknown B</option><option value="2">Unknown C</option><option value="3">Unknown D</option><option value="4">Unknown E</option></select><label>Added mass</label><input id="add" type="range" min="0" max="2" step=".1" value="0"><div id="ao">0.00 kg</div><div class="buttons"><button id="run" class="primary">Start Pull</button><button id="reset">Reset</button><button id="record" disabled>Record Trial</button><button id="clear">Clear Data</button></div><p>Choose your own added masses. Surface identities and coefficients remain hidden.</p></aside></div>
-<section class="card"><h3>Experimental Data</h3><table><thead><tr><th>Trial</th><th>Surface</th><th>Added Mass</th><th>Total Mass</th><th>Normal Force</th><th>Max Static Friction</th><th>Kinetic Friction</th><th>μs</th><th>μk</th></tr></thead><tbody id="body"></tbody></table></section></main>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modified Atwood Machine Lab</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#17212b}
+header{background:#173a5e;color:white;padding:18px 22px}
+header h1{margin:0;font-size:28px} header p{margin:6px 0 0}
+main{max-width:1250px;margin:18px auto;padding:0 14px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px}
+.card{background:white;border:1px solid #b8c7d5;border-radius:10px;padding:14px;margin-bottom:16px}
+.card h2,.card h3{margin:0 0 8px}.subtle{font-size:14px;color:#66727e}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.pill{border:1px solid #b8c7d5;border-radius:7px;padding:7px 10px}
+svg{display:block;width:100%;background:white;border:1px solid #b8c7d5;border-radius:8px}
+.control{margin-bottom:14px}.control label{display:block;font-weight:bold;margin-bottom:5px}
+.range{display:flex;align-items:center;gap:10px}.range input{width:100%}.range output{min-width:90px;text-align:right;font-weight:bold}
+select{width:100%;padding:9px;border:1px solid #b8c7d5;border-radius:7px;background:white;font-size:16px}
+.buttons{display:flex;gap:8px;flex-wrap:wrap}
+button{min-height:42px;padding:9px 14px;border:1px solid #b8c7d5;border-radius:7px;background:white;font-size:15px;cursor:pointer}
+.primary{background:#2d6da3;color:white;border-color:#2d6da3}
+.note{margin-top:10px;padding:10px;border:1px solid #b8c7d5;border-radius:7px;background:#eef5fb;font-size:14px}
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:right}th:first-child,td:first-child{text-align:left}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>Newton's Laws — Modified Atwood Machine</h1><p>Investigate how driving force, system mass, incline angle, and friction affect acceleration.</p></header>
+<main>
+<div class="layout">
+<section class="card">
+<h2>Experimental Setup</h2>
+<div class="subtle">A block on a track is connected by a light string over a pulley to a hanging mass.</div>
+<div class="readouts">
+<span class="pill">Track: <b id="modeRead">Horizontal</b></span>
+<span class="pill">Block: <b id="blockRead">1.00</b> kg</span>
+<span class="pill">Hanging: <b id="hangRead">0.20</b> kg</span>
+<span class="pill">Angle: <b id="angleRead">0</b>°</span>
+<span class="pill">Time: <b id="timeRead">0.00</b> s</span>
+</div>
+<svg viewBox="0 0 900 470" aria-label="Modified Atwood machine"><g id="scene"></g></svg>
+</section>
+
+<aside class="card">
+<h3>Controls</h3>
+<div class="control"><label for="mode">Track orientation</label><select id="mode"><option value="horizontal">Horizontal Track</option><option value="incline">Inclined Track</option></select></div>
+<div class="control"><label for="blockMass">Block mass</label><div class="range"><input id="blockMass" type="range" min="0.5" max="4" step="0.1" value="1"><output id="blockOut">1.0 kg</output></div></div>
+<div class="control"><label for="hangMass">Hanging mass</label><div class="range"><input id="hangMass" type="range" min="0.05" max="1.5" step="0.05" value="0.20"><output id="hangOut">0.20 kg</output></div></div>
+
+<div id="inclineControls" class="hidden">
+<div class="control"><label for="angle">Incline angle</label><div class="range"><input id="angle" type="range" min="0" max="40" step="1" value="15"><output id="angleOut">15°</output></div></div>
+</div>
+
+<div class="control"><label for="friction">Friction</label><select id="friction"><option value="off">Frictionless</option><option value="on">Include kinetic friction</option></select></div>
+<div id="frictionControls" class="hidden control"><label for="mu">Coefficient of kinetic friction, μk</label><div class="range"><input id="mu" type="range" min="0.00" max="0.50" step="0.01" value="0.15"><output id="muOut">0.15</output></div></div>
+
+<div class="control"><label for="interval">Data interval</label><select id="interval"><option value="0.10">0.10 s</option><option value="0.20">0.20 s</option><option value="0.25">0.25 s</option><option value="0.50">0.50 s</option></select></div>
+
+<div class="buttons"><button id="start" class="primary">Release System</button><button id="pause">Pause</button><button id="reset">Reset Trial</button><button id="newTrial">New Trial</button><button id="clear">Clear Data</button></div>
+<div class="note"><b>Inclined mode:</b> students can set the track anywhere from 0° to 40°.</div>
+<div class="note"><b>Friction:</b> optional on either track. Acceleration remains hidden so students determine it from the motion data.</div>
+</aside>
+</div>
+
+<section class="card">
+<h3>Raw Motion Data</h3>
+<div class="subtle">Positive position is toward the pulley for the block. Students can use velocity-time data to determine acceleration.</div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Trial</th><th>Track</th><th>Block Mass (kg)</th><th>Hanging Mass (kg)</th><th>Angle (°)</th><th>μk setting</th><th>Time (s)</th><th>Position (m)</th><th>Velocity (m/s)</th></tr></thead>
+<tbody id="body"></tbody></table></div>
+</section>
+</main>
+
 <script>
-const $=x=>document.getElementById(x),g=9.81,B=.5,S=[[.52,.37],[.34,.23],[.67,.49],[.44,.30],[.28,.18]];let si=0,a=0,F=0,x=0,phase='ready',raf,start,FS,FK,rows=[],trial=1;
-function P(){let M=B+a,N=M*g,c=S[si];return{M,N,fs:c[0]*N,fk:c[1]*N}}function noise(v){return v*(1+(Math.random()*2-1)*.018)}
-function draw(){let p=P();$('sr').textContent='Unknown '+String.fromCharCode(65+si);$('mr').textContent=p.M.toFixed(2);$('nr').textContent=p.N.toFixed(2);$('ao').textContent=a.toFixed(2)+' kg';$('state').textContent=phase;let bx=200+Math.min(x,300);let sensorX=bx+285;
-$('scene').innerHTML=
-'<line x1="40" y1="285" x2="810" y2="285" stroke="#555" stroke-width="6"/>'+
-'<rect x="'+bx+'" y="205" width="180" height="80" rx="5" fill="#aaa" stroke="#333" stroke-width="2"/>'+
-'<text x="'+(bx+90)+'" y="246" text-anchor="middle" font-size="17">BLOCK</text>'+
-'<text x="'+(bx+90)+'" y="268" text-anchor="middle" font-size="14">'+p.M.toFixed(2)+' kg total</text>'+
-'<line x1="'+(bx+180)+'" y1="245" x2="'+(sensorX-45)+'" y2="245" stroke="#333" stroke-width="3"/>'+
-'<circle cx="'+(bx+180)+'" cy="245" r="5" fill="#333"/>'+
-'<rect x="'+(sensorX-45)+'" y="215" width="110" height="60" rx="10" fill="#eef5fb" stroke="#173a5e" stroke-width="3"/>'+
-'<text x="'+(sensorX+10)+'" y="238" text-anchor="middle" font-size="12" font-weight="bold">FORCE SENSOR</text>'+
-'<text x="'+(sensorX+10)+'" y="260" text-anchor="middle" font-size="16">'+F.toFixed(2)+' N</text>'+
-'<line x1="'+(sensorX+65)+'" y1="245" x2="'+(sensorX+125)+'" y2="245" stroke="#2d6da3" stroke-width="5"/>'+
-'<polygon points="'+(sensorX+125)+',245 '+(sensorX+111)+',237 '+(sensorX+111)+',253" fill="#2d6da3"/>'+
-'<text x="'+(sensorX+95)+'" y="225" text-anchor="middle" font-size="13" fill="#2d6da3">PULL</text>'+
-'<text x="55" y="55" font-size="18">Sensor reading: '+F.toFixed(2)+' N</text>'}
-function step(t){if(start==null)start=t;let z=(t-start)/1000;if(z<2.6){phase='At rest — increasing pull';F=FS*z/2.6}else if(z<3){phase='Motion begins';F=FS;x=(z-2.6)*80;$('fs').textContent=FS.toFixed(2)+' N'}else if(z<4.2){phase='Adjusting pull';F=FS+(FK-FS)*(z-3)/1.2;x=32+(z-3)*70}else if(z<5.8){phase='Constant velocity';F=FK;x=116+(z-4.2)*70;$('fk').textContent=FK.toFixed(2)+' N'}else{phase='Trial complete';F=FK;$('record').disabled=false;draw();return}draw();raf=requestAnimationFrame(step)}
-function reset(){if(raf)cancelAnimationFrame(raf);phase='Ready';F=x=0;start=null;FS=FK=null;$('fs').textContent=$('fk').textContent='—';$('record').disabled=true;draw()}
-function render(){$('body').innerHTML='';rows.forEach(r=>{let tr=document.createElement('tr');tr.innerHTML='<td>'+r.i+'</td><td>Unknown '+String.fromCharCode(65+r.si)+'</td><td>'+r.a.toFixed(2)+'</td><td>'+r.M.toFixed(2)+'</td><td>'+r.N.toFixed(2)+'</td><td>'+r.fs.toFixed(2)+'</td><td>'+r.fk.toFixed(2)+'</td><td></td><td></td>';$('body').appendChild(tr)})}
-$('surface').onchange=()=>{si=+$('surface').value;reset()};$('add').oninput=()=>{a=+$('add').value;reset()};$('run').onclick=()=>{reset();let p=P();FS=noise(p.fs);FK=noise(p.fk);phase='At rest — increasing pull';start=null;raf=requestAnimationFrame(step)};$('reset').onclick=reset;$('record').onclick=()=>{let p=P();rows.push({i:trial++,si,a,M:p.M,N:p.N,fs:FS,fk:FK});render();$('record').disabled=true};$('clear').onclick=()=>{rows=[];trial=1;render();reset()};draw();render();
-</script></body></html>
+(function(){
+const $=id=>document.getElementById(id);
+const g=9.81;
+let mode='horizontal', M=1.0, mh=0.20, angle=15, frictionOn=false, mu=0.15, sampleDt=0.10;
+let t=0,x=0,v=0,nextSample=0,running=false,lastStamp=null,raf=null,trial=1,rows=[];
+
+function rad(d){return d*Math.PI/180}
+
+function systemAcceleration(){
+  let drive;
+  let normal;
+  if(mode==='horizontal'){
+    drive=mh*g;
+    normal=M*g;
+  }else{
+    drive=mh*g-M*g*Math.sin(rad(angle));
+    normal=M*g*Math.cos(rad(angle));
+  }
+  if(frictionOn){
+    const fk=mu*normal;
+    if(Math.abs(drive)<=fk && Math.abs(v)<0.001) return 0;
+    const direction=Math.abs(v)>0.001 ? Math.sign(v) : Math.sign(drive);
+    drive-=direction*fk;
+  }
+  return drive/(M+mh);
+}
+
+function draw(){
+  $('modeRead').textContent=mode==='horizontal'?'Horizontal':'Inclined';
+  $('blockRead').textContent=M.toFixed(2);
+  $('hangRead').textContent=mh.toFixed(2);
+  $('angleRead').textContent=mode==='horizontal'?'0':angle.toFixed(0);
+  $('timeRead').textContent=t.toFixed(2);
+  $('blockOut').textContent=M.toFixed(1)+' kg';
+  $('hangOut').textContent=mh.toFixed(2)+' kg';
+  $('angleOut').textContent=angle.toFixed(0)+'°';
+  $('muOut').textContent=mu.toFixed(2);
+
+  const s=$('scene');
+  if(mode==='horizontal'){
+    const bx=150+Math.max(-100,Math.min(380,x*95));
+    const pulleyX=700, pulleyY=275;
+    const hangingY=325+Math.max(-80,Math.min(80,x*75));
+    s.innerHTML=
+      '<line x1="55" y1="330" x2="725" y2="330" stroke="#666" stroke-width="10"/>'+
+      '<rect x="'+bx+'" y="250" width="135" height="80" rx="5" fill="#9ca5ac" stroke="#333" stroke-width="2"/>'+
+      '<text x="'+(bx+67)+'" y="294" text-anchor="middle" font-size="16">'+M.toFixed(1)+' kg</text>'+
+      '<circle cx="'+pulleyX+'" cy="'+pulleyY+'" r="27" fill="#eee" stroke="#333" stroke-width="4"/>'+
+      '<line x1="'+(bx+135)+'" y1="275" x2="673" y2="275" stroke="#333" stroke-width="3"/>'+
+      '<path d="M673 275 Q700 248 727 275 L727 '+hangingY+'" fill="none" stroke="#333" stroke-width="3"/>'+
+      '<rect x="697" y="'+hangingY+'" width="60" height="58" fill="#777" stroke="#333" stroke-width="2"/>'+
+      '<text x="727" y="'+(hangingY+34)+'" text-anchor="middle" fill="white" font-size="13">'+mh.toFixed(2)+' kg</text>';
+  }else{
+    const x0=90,y0=360,L=600;
+    const x1=x0+L*Math.cos(rad(angle)), y1=y0-L*Math.sin(rad(angle));
+    const frac=.28+Math.max(-.18,Math.min(.48,x/5));
+    const bx=x0+L*frac*Math.cos(rad(angle)), by=y0-L*frac*Math.sin(rad(angle));
+    const hangingY=y1+85+Math.max(-70,Math.min(90,x*70));
+    s.innerHTML=
+      '<line x1="45" y1="360" x2="825" y2="360" stroke="#555" stroke-width="4"/>'+
+      '<line x1="'+x0+'" y1="'+y0+'" x2="'+x1+'" y2="'+y1+'" stroke="#777" stroke-width="13"/>'+
+      '<circle cx="'+x1+'" cy="'+y1+'" r="25" fill="#eee" stroke="#333" stroke-width="4"/>'+
+      '<rect x="'+(bx-55)+'" y="'+(by-52)+'" width="110" height="52" rx="4" fill="#9ca5ac" stroke="#333" stroke-width="2" transform="rotate('+(-angle)+' '+bx+' '+by+')"/>'+
+      '<text x="'+bx+'" y="'+(by-24)+'" text-anchor="middle" font-size="14" transform="rotate('+(-angle)+' '+bx+' '+by+')">'+M.toFixed(1)+' kg</text>'+
+      '<line x1="'+bx+'" y1="'+(by-28)+'" x2="'+x1+'" y2="'+y1+'" stroke="#333" stroke-width="3"/>'+
+      '<line x1="'+(x1+25)+'" y1="'+y1+'" x2="'+(x1+25)+'" y2="'+hangingY+'" stroke="#333" stroke-width="3"/>'+
+      '<rect x="'+(x1-5)+'" y="'+hangingY+'" width="60" height="56" fill="#777" stroke="#333" stroke-width="2"/>'+
+      '<text x="'+(x1+25)+'" y="'+(hangingY+33)+'" text-anchor="middle" fill="white" font-size="13">'+mh.toFixed(2)+' kg</text>'+
+      '<text x="65" y="65" font-size="18">θ = '+angle.toFixed(0)+'°</text>';
+  }
+}
+
+function render(){
+  $('body').innerHTML='';
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>'+r.trial+'</td><td>'+r.mode+'</td><td>'+r.M.toFixed(2)+'</td><td>'+r.mh.toFixed(2)+'</td><td>'+r.angle.toFixed(0)+'</td><td>'+r.mu+'</td><td>'+r.t.toFixed(2)+'</td><td>'+r.x.toFixed(3)+'</td><td>'+r.v.toFixed(3)+'</td>';
+    $('body').appendChild(tr);
+  });
+}
+
+function sample(){
+  rows.push({trial,mode:mode==='horizontal'?'Horizontal':'Inclined',M, mh, angle:mode==='horizontal'?0:angle, mu:frictionOn?mu.toFixed(2):'—',t,x,v});
+  render();
+}
+
+function frame(ts){
+  if(!running)return;
+  if(lastStamp===null)lastStamp=ts;
+  const dt=Math.min(0.03,(ts-lastStamp)/1000);
+  lastStamp=ts;
+  const a=systemAcceleration();
+  v+=a*dt;
+  x+=v*dt;
+  t+=dt;
+  while(t+1e-9>=nextSample){sample();nextSample+=sampleDt}
+  draw();
+  if(Math.abs(x)>=4 || t>=6){running=false;return}
+  raf=requestAnimationFrame(frame);
+}
+
+function resetTrial(){
+  running=false;
+  if(raf)cancelAnimationFrame(raf);
+  t=0;x=0;v=0;nextSample=0;lastStamp=null;
+  draw();
+}
+
+function sync(){
+  mode=$('mode').value;
+  M=Number($('blockMass').value);
+  mh=Number($('hangMass').value);
+  angle=Number($('angle').value);
+  frictionOn=$('friction').value==='on';
+  mu=Number($('mu').value);
+  sampleDt=Number($('interval').value);
+  $('inclineControls').classList.toggle('hidden',mode!=='incline');
+  $('frictionControls').classList.toggle('hidden',!frictionOn);
+  resetTrial();
+}
+
+$('mode').addEventListener('change',sync);
+$('blockMass').addEventListener('input',sync);
+$('hangMass').addEventListener('input',sync);
+$('angle').addEventListener('input',sync);
+$('friction').addEventListener('change',sync);
+$('mu').addEventListener('input',sync);
+$('interval').addEventListener('change',sync);
+
+$('start').addEventListener('click',function(){
+  if(running)return;
+  if(t===0)sample();
+  running=true;lastStamp=null;raf=requestAnimationFrame(frame);
+});
+$('pause').addEventListener('click',function(){running=false;if(raf)cancelAnimationFrame(raf)});
+$('reset').addEventListener('click',resetTrial);
+$('newTrial').addEventListener('click',function(){resetTrial();trial++});
+$('clear').addEventListener('click',function(){rows=[];trial=1;render();resetTrial()});
+
+sync();
+render();
+})();
+</script>
+</body>
+</html>
