@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Static Equilibrium Lab Simulation</title>
+<style>
+:root{
+  --navy:#173a5e;--blue:#2d6da3;--light:#eef5fb;--panel:#fff;
+  --border:#b8c7d5;--text:#1b2733;--muted:#687480;--good:#2e6d44;--warn:#985b1f;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f6f8;color:var(--text)}
+header{background:var(--navy);color:#fff;padding:18px 22px}
+header h1{margin:0;font-size:28px}
+header p{margin:6px 0 0;opacity:.92}
+.wrap{max-width:1320px;margin:18px auto;padding:0 14px 30px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px}
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px}
+.card h2,.card h3{margin:0 0 8px}
+.subtle{font-size:14px;color:var(--muted)}
+.readouts{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.pill{border:1px solid var(--border);border-radius:7px;padding:7px 10px;background:#fff;font-size:14px}
+.scroll{overflow-x:auto}
+svg{width:100%;min-width:680px;display:block;border:1px solid var(--border);border-radius:8px;background:#fff}
+.control{margin-bottom:14px}
+label{display:block;font-weight:700;margin-bottom:5px}
+.range-row{display:flex;gap:10px;align-items:center}
+input[type=range]{width:100%}
+output{min-width:86px;text-align:right;font-weight:700}
+select,input[type=number]{width:100%;padding:9px;border:1px solid var(--border);border-radius:7px;background:#fff;font-size:16px}
+.buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+button{min-height:42px;padding:9px 14px;border-radius:7px;border:1px solid var(--border);background:#fff;font-size:15px;cursor:pointer}
+button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+button.record{background:var(--navy);color:#fff;border-color:var(--navy)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.note{margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:7px;background:var(--light);font-size:14px}
+.status-good{color:var(--good);font-weight:700}
+.status-warn{color:var(--warn);font-weight:700}
+.bottom{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;margin-top:16px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px;border-bottom:1px solid #d9e0e6;text-align:right}
+th:first-child,td:first-child{text-align:left}
+.task ol{margin:8px 0 0;padding-left:20px}.task li{margin-bottom:7px}
+.eq{font-family:Georgia,"Times New Roman",serif;font-size:18px;text-align:center;margin:8px 0}
+@media(max-width:950px){.layout,.bottom{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Static Equilibrium Lab</h1>
+  <p>Use force components and static equilibrium to determine the mass of a suspended object.</p>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+    <section class="card">
+      <h2>Experimental Setup</h2>
+      <div class="subtle">Adjust the hook until the two spring scales read the same tension. Then record the trial.</div>
+
+      <div class="readouts">
+        <div class="pill">Separation: <strong id="sepRead">30</strong> cm</div>
+        <div class="pill">Hook height: <strong id="heightRead">—</strong> cm</div>
+        <div class="pill">Left tension: <strong id="leftRead">—</strong> N</div>
+        <div class="pill">Right tension: <strong id="rightRead">—</strong> N</div>
+      </div>
+
+      <div class="scroll">
+        <svg id="scene" viewBox="0 0 900 570" aria-label="Static equilibrium apparatus with two spring scales and a hanging mass">
+          <rect x="0" y="0" width="900" height="570" fill="#fff"/>
+          <g id="gridLayer"></g>
+          <g id="apparatusLayer"></g>
+          <g id="forceLayer"></g>
+        </svg>
+      </div>
+    </section>
+
+    <aside class="card">
+      <h3>Controls</h3>
+
+      <div class="control">
+        <label for="beamHeight">Horizontal beam height above table</label>
+        <div class="range-row">
+          <input id="beamHeight" type="range" min="70" max="100" step="1" value="85">
+          <output id="beamHeightOut">85 cm</output>
+        </div>
+      </div>
+
+      <div class="control">
+        <label for="separation">Clamp separation</label>
+        <div class="range-row">
+          <input id="separation" type="range" min="15" max="65" step="5" value="30">
+          <output id="separationOut">30 cm</output>
+        </div>
+        <div class="subtle" style="margin-top:5px">
+          Choose any separation from 15 cm to 65 cm in 5 cm increments.
+        </div>
+      </div>
+
+      <div class="control">
+        <label for="offset">Hook position relative to center</label>
+        <div class="range-row">
+          <input id="offset" type="range" min="-15" max="15" step="0.1" value="6">
+          <output id="offsetOut">+6.0 cm</output>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button id="randomizeBtn">New Unknown Mass</button>
+        <button id="recordBtn" class="record" disabled>Record Trial</button>
+        <button id="clearBtn">Clear Data</button>
+      </div>
+
+      <div class="note">
+        <strong>Goal:</strong> move the suspended hook until the two spring scales have the same reading.
+        The simulation provides the geometry measurements, but <strong>you must calculate θ and sin θ</strong> for your analysis.
+      </div>
+
+      <div class="note">
+        <strong>Balance status:</strong>
+        <div id="balanceStatus" style="margin-top:5px">Adjust the hook position.</div>
+      </div>
+
+      <div class="note">
+        <strong>Unknown suspended mass:</strong><br>
+        Hidden during the experiment. Use your graph to determine it.
+      </div>
+    </aside>
+  </div>
+
+  <div class="bottom">
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div>
+          <h3>Data Table</h3>
+          <div class="subtle">Collect at least five balanced trials using different clamp separations of your choice.</div>
+        </div>
+        <div class="pill">Unique trials recorded: <strong id="countRead">0</strong></div>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Separation (cm)</th>
+              <th>Beam Height (cm)</th>
+              <th>Hook Height (cm)</th>
+              <th>Tension (N)</th>
+              <th>Horizontal Δx (cm)</th>
+              <th>Vertical Δy (cm)</th>
+            </tr>
+          </thead>
+          <tbody id="dataBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card task">
+      <h3>Student Task</h3>
+      <ol>
+        <li>Record the beam height.</li>
+        <li>Choose a clamp separation between 15 cm and 65 cm.</li>
+        <li>Move the hook until both spring scales match.</li>
+        <li>Record the hook height and tension.</li>
+        <li>Repeat for at least five different clamp separations of your choice.</li>
+        <li>Calculate Δx = separation ÷ 2.</li>
+        <li>Calculate Δy = beam height − hook height.</li>
+        <li>Use Δx and Δy to determine the string angle θ for each trial.</li>
+        <li>Calculate sin θ for each trial.</li>
+        <li>Use your calculated sin θ to determine the vertical component T sin θ.</li>
+        <li>Use at least five balanced data points and 2T sin θ = mg to calculate the unknown mass.</li>
+        <li>Enter your calculated mass and check your answer.</li>
+      </ol>
+      <div class="note">
+        <div class="eq">tan θ = Δy / Δx</div>
+        <div class="eq">ΣF<sub>y</sub> = 0</div>
+        <div class="eq">2T sin θ = mg</div>
+        Determine θ from your measured geometry, then calculate sin θ yourself before using the equilibrium equation.
+      </div>
+
+      <div class="note">
+        <strong>Determine the Unknown Mass</strong>
+        <p style="margin:7px 0">Use your experimental data and equilibrium equation to calculate the object's mass.</p>
+        <label for="massGuess">Your calculated mass (kg)</label>
+        <input id="massGuess" type="number" min="0" step="0.001" placeholder="Enter mass in kg">
+        <div class="buttons">
+          <button id="checkMassBtn" class="primary">Check My Answer</button>
+        </div>
+        <div class="subtle" style="margin-top:8px">The answer checker unlocks after you record at least 5 balanced data points.</div>
+        <div id="massFeedback" style="margin-top:8px" aria-live="polite">Record at least 5 data points before checking your answer.</div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $=id=>document.getElementById(id);
+  const g=9.81;
+  const scene=$('scene'), grid=$('gridLayer'), apparatus=$('apparatusLayer'), forces=$('forceLayer');
+
+  let beamHeight=85, separation=30, offset=6;
+  let unknownMass=0.350; // kg, randomized later
+  let recorded=new Map();
+  let noiseSeed=Math.random();
+
+  const pxPerCm=5.2;
+  const tableY=500;
+  const centerX=450;
+  const nominalHalfString=45; // cm, source-inspired approximate string geometry
+
+  function svgEl(tag,attrs={}){
+    const e=document.createElementNS('http://www.w3.org/2000/svg',tag);
+    Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));
+    return e;
+  }
+
+  function signed(v){return (v>=0?'+':'')+v.toFixed(1)+' cm'}
+
+  function geometry(){
+    const half=separation/2;
+    const drop=Math.sqrt(Math.max(100, nominalHalfString*nominalHalfString-half*half));
+    const hookHeight=beamHeight-drop;
+    const leftDx=half+offset;
+    const rightDx=half-offset;
+    const aL=Math.atan2(drop,leftDx);
+    const aR=Math.atan2(drop,rightDx);
+
+    // Equilibrium: TL cos(aL)=TR cos(aR)
+    // TL sin(aL)+TR sin(aR)=mg
+    const ratio=Math.cos(aR)/Math.cos(aL);
+    const TR=unknownMass*g/(ratio*Math.sin(aL)+Math.sin(aR));
+    const TL=ratio*TR;
+
+    // small, stable-looking scale variation
+    const n1=(Math.sin(noiseSeed*31.7+separation*0.7+offset*0.31))*0.006;
+    const n2=(Math.cos(noiseSeed*27.2+separation*0.5-offset*0.29))*0.006;
+    return {half,drop,hookHeight,aL,aR,TL:TL+n1,TR:TR+n2};
+  }
+
+  function drawGrid(){
+    grid.innerHTML='';
+    for(let x=50;x<850;x+=50) grid.appendChild(svgEl('line',{x1:x,y1:50,x2:x,y2:tableY,stroke:'#eef1f3'}));
+    for(let y=70;y<tableY;y+=50) grid.appendChild(svgEl('line',{x1:50,y1:y,x2:850,y2:y,stroke:'#eef1f3'}));
+  }
+
+  function draw(){
+    apparatus.innerHTML='';forces.innerHTML='';
+    const geom=geometry();
+    const beamY=tableY-beamHeight*pxPerCm;
+    const hookY=tableY-geom.hookHeight*pxPerCm;
+    const lx=centerX-separation*pxPerCm/2;
+    const rx=centerX+separation*pxPerCm/2;
+    const hx=centerX+offset*pxPerCm;
+
+    // table and beam
+    apparatus.appendChild(svgEl('line',{x1:65,y1:tableY,x2:835,y2:tableY,stroke:'#555','stroke-width':5}));
+    apparatus.appendChild(svgEl('line',{x1:170,y1:beamY,x2:730,y2:beamY,stroke:'#555','stroke-width':10,'stroke-linecap':'round'}));
+    apparatus.appendChild(svgEl('line',{x1:190,y1:beamY,x2:190,y2:tableY,stroke:'#888','stroke-width':8}));
+    apparatus.appendChild(svgEl('line',{x1:710,y1:beamY,x2:710,y2:tableY,stroke:'#888','stroke-width':8}));
+
+    // strings
+    apparatus.appendChild(svgEl('line',{x1:lx,y1:beamY,x2:hx,y2:hookY,stroke:'#333','stroke-width':3}));
+    apparatus.appendChild(svgEl('line',{x1:rx,y1:beamY,x2:hx,y2:hookY,stroke:'#333','stroke-width':3}));
+
+    // spring scales
+    function scaleAt(x1,y1,x2,y2,label){
+      const mx=x1+(x2-x1)*0.38,my=y1+(y2-y1)*0.38;
+      const ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
+      const r=svgEl('rect',{x:mx-32,y:my-10,width:64,height:20,rx:5,fill:'#eef5fb',stroke:'#173a5e','stroke-width':2,transform:`rotate(${ang} ${mx} ${my})`});
+      apparatus.appendChild(r);
+      const t=svgEl('text',{x:mx,y:my+4,'text-anchor':'middle','font-size':'12',fill:'#173a5e','font-weight':'bold',transform:`rotate(${ang} ${mx} ${my})`});
+      t.textContent=label; apparatus.appendChild(t);
+    }
+    scaleAt(lx,beamY,hx,hookY,'L');
+    scaleAt(rx,beamY,hx,hookY,'R');
+
+    // clamps
+    [lx,rx].forEach(x=>apparatus.appendChild(svgEl('rect',{x:x-8,y:beamY-8,width:16,height:16,fill:'#222'})));
+
+    // hook and mass
+    apparatus.appendChild(svgEl('circle',{cx:hx,cy:hookY,r:6,fill:'#222'}));
+    apparatus.appendChild(svgEl('line',{x1:hx,y1:hookY+6,x2:hx,y2:hookY+36,stroke:'#222','stroke-width':3}));
+    apparatus.appendChild(svgEl('rect',{x:hx-23,y:hookY+36,width:46,height:42,rx:7,fill:'#7d8792',stroke:'#333','stroke-width':2}));
+    const qm=svgEl('text',{x:hx,y:hookY+63,'text-anchor':'middle','font-size':'20',fill:'#fff','font-weight':'bold'});
+    qm.textContent='?';apparatus.appendChild(qm);
+
+    // separation measurement
+    const sy=beamY-35;
+    apparatus.appendChild(svgEl('line',{x1:lx,y1:sy,x2:rx,y2:sy,stroke:'#666','stroke-width':2}));
+    apparatus.appendChild(svgEl('line',{x1:lx,y1:sy-6,x2:lx,y2:sy+6,stroke:'#666','stroke-width':2}));
+    apparatus.appendChild(svgEl('line',{x1:rx,y1:sy-6,x2:rx,y2:sy+6,stroke:'#666','stroke-width':2}));
+    const st=svgEl('text',{x:centerX,y:sy-8,'text-anchor':'middle','font-size':'13',fill:'#444'});
+    st.textContent=separation+' cm';apparatus.appendChild(st);
+
+    // height ruler
+    apparatus.appendChild(svgEl('line',{x1:115,y1:beamY,x2:115,y2:tableY,stroke:'#777','stroke-width':2}));
+    const bh=svgEl('text',{x:95,y:(beamY+tableY)/2,transform:`rotate(-90 95 ${(beamY+tableY)/2})`,'text-anchor':'middle','font-size':'13',fill:'#555'});
+    bh.textContent='beam height = '+beamHeight+' cm';apparatus.appendChild(bh);
+
+    $('sepRead').textContent=separation;
+    $('separationOut').textContent=separation+' cm';
+    $('heightRead').textContent=geom.hookHeight.toFixed(1);
+    $('leftRead').textContent=geom.TL.toFixed(2);
+    $('rightRead').textContent=geom.TR.toFixed(2);
+    $('beamHeightOut').textContent=beamHeight+' cm';
+    $('offsetOut').textContent=signed(offset);
+
+    const diff=Math.abs(geom.TL-geom.TR);
+    const balanced=diff<=0.02;
+    const alreadyRecorded=recorded.has(separation);
+    $('recordBtn').disabled=!balanced || alreadyRecorded;
+
+    if(alreadyRecorded){
+      $('balanceStatus').innerHTML=`<span class="status-warn">Already recorded.</span> Choose a different clamp separation for a new data point.`;
+    }else if(balanced){
+      $('balanceStatus').innerHTML=`<span class="status-good">Balanced.</span> The spring scales match within 0.02 N.`;
+    }else{
+      $('balanceStatus').innerHTML=`<span class="status-warn">Not balanced.</span> Difference = ${diff.toFixed(2)} N.`;
+    }
+  }
+
+  function renderTable(){
+    const body=$('dataBody');body.innerHTML='';
+    [...recorded.keys()].sort((a,b)=>a-b).forEach(sep=>{
+      const r=recorded.get(sep);
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${sep}</td><td>${r.beam.toFixed(1)}</td><td>${r.hook.toFixed(1)}</td><td>${r.tension.toFixed(2)}</td><td>${r.dx.toFixed(1)}</td><td>${r.dy.toFixed(1)}</td>`;
+      body.appendChild(tr);
+    });
+    $('countRead').textContent=recorded.size;
+    const checkBtn=$('checkMassBtn');
+    if(checkBtn){
+      checkBtn.disabled=recorded.size<5;
+    }
+  }
+
+  $('beamHeight').addEventListener('input',()=>{
+    beamHeight=Number($('beamHeight').value);noiseSeed=Math.random();draw();
+  });
+  $('separation').addEventListener('input',()=>{
+    separation=Number($('separation').value);
+    offset=6;
+    $('offset').value=6;
+    noiseSeed=Math.random();
+    draw();
+  });
+  $('offset').addEventListener('input',()=>{
+    offset=Number($('offset').value);draw();
+  });
+  $('randomizeBtn').addEventListener('click',()=>{
+    unknownMass=0.25+Math.random()*0.25;
+    recorded.clear();
+    $('massGuess').value='';
+    $('massFeedback').textContent='Record at least 5 data points before checking your answer.';
+    renderTable();noiseSeed=Math.random();draw();
+  });
+  $('clearBtn').addEventListener('click',()=>{
+    recorded.clear();renderTable();draw();
+  });
+  $('recordBtn').addEventListener('click',()=>{
+    const geom=geometry();
+    const dx=separation/2;
+    const dy=beamHeight-geom.hookHeight;
+    const tension=(geom.TL+geom.TR)/2;
+    recorded.set(separation,{beam:beamHeight,hook:geom.hookHeight,tension,dx,dy});
+    renderTable();draw();
+  });
+
+  $('checkMassBtn').addEventListener('click',()=>{
+    const guess=Number($('massGuess').value);
+    if(!Number.isFinite(guess) || guess<=0){
+      $('massFeedback').innerHTML='<span class="status-warn">Enter a positive mass in kilograms.</span>';
+      return;
+    }
+    if(recorded.size<5){
+      $('massFeedback').innerHTML='<span class="status-warn">Collect at least five balanced trials before checking your mass.</span>';
+      return;
+    }
+
+    const percentError=Math.abs(guess-unknownMass)/unknownMass*100;
+    if(percentError<=5){
+      $('massFeedback').innerHTML=`<span class="status-good">Correct.</span> Your value is within 5% of the actual mass. Actual mass = ${unknownMass.toFixed(3)} kg.`;
+    }else{
+      $('massFeedback').innerHTML=`<span class="status-warn">Not quite.</span> Recheck your angle, sin θ, and vertical force equation. Your answer is ${percentError.toFixed(1)}% from the actual value.`;
+    }
+  });
+
+  drawGrid();renderTable();draw();
+})();
+</script>
+</body>
+</html>
