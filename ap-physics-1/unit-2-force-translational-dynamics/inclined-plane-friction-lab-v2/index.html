@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inclined Plane Friction Investigation</title>
+<style>
+:root{--navy:#173a5e;--blue:#2d6da3;--light:#eef5fb;--border:#b8c7d5;--text:#1b2733;--muted:#66727e;--good:#2f6e44;--warn:#955b1c}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f6f8;color:var(--text)}
+header{background:var(--navy);color:#fff;padding:18px 22px}header h1{margin:0}header p{margin:6px 0 0}
+.wrap{max-width:1250px;margin:18px auto;padding:0 14px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:15px}
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:15px}.card h2,.card h3{margin:0 0 8px}.subtle{color:var(--muted);font-size:14px}
+.row,.buttons{display:flex;gap:8px;flex-wrap:wrap}.pill{padding:7px 10px;border:1px solid var(--border);border-radius:7px;margin:8px 0}
+label{display:block;font-weight:bold;margin:12px 0 5px}.range{display:flex;align-items:center;gap:9px}input[type=range]{width:100%}output{min-width:80px;text-align:right;font-weight:bold}
+select{width:100%;padding:9px;border:1px solid var(--border);border-radius:7px;font-size:16px;background:#fff}
+button{min-height:42px;padding:9px 14px;border:1px solid var(--border);border-radius:7px;background:#fff;font-size:15px;cursor:pointer}.primary{background:var(--blue);color:#fff}.record{background:var(--navy);color:#fff}button:disabled{opacity:.45;cursor:not-allowed}
+.note{padding:10px;background:var(--light);border:1px solid var(--border);border-radius:7px;margin-top:10px;font-size:14px}.good{color:var(--good);font-weight:bold}.warn{color:var(--warn);font-weight:bold}
+svg{width:100%;display:block;border:1px solid var(--border);border-radius:8px;background:#fff}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.metric{border:1px solid var(--border);border-radius:8px;padding:9px}.value{font-size:22px;font-weight:bold}
+.tables{display:grid;grid-template-columns:1fr 1fr;gap:15px}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:7px;border-bottom:1px solid #ddd;text-align:right}th:first-child,td:first-child{text-align:left}
+@media(max-width:850px){.layout,.tables{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header><h1>Inclined Plane Friction Investigation</h1><p>Determine static and kinetic friction coefficients for unidentified surface interactions.</p></header>
+<div class="wrap">
+<div class="layout">
+<section class="card"><h2>Simulation Window</h2><div class="subtle">For static friction, let the simulation slowly raise the incline until motion begins. For kinetic friction, choose a sliding angle and measure the acceleration.</div>
+<div class="row"><span class="pill">Angle: <b id="angleRead">5.0</b>°</span><span class="pill">Mass: <b id="massRead">1.00</b> kg</span><span class="pill">State: <b id="stateRead">Ready</b></span></div>
+<svg viewBox="0 0 850 450"><g id="scene"></g></svg>
+<div class="metrics">
+<div class="metric"><b>Angle when motion begins</b><div class="value" id="criticalRead">—</div></div>
+<div class="metric"><b>Sliding acceleration</b><div class="value" id="accelRead">—</div></div>
+<div class="metric"><b>Sliding angle</b><div class="value" id="slideAngleRead">—</div></div>
+</div></section>
+
+<aside class="card"><h3>Controls</h3>
+<label>Unknown surface interaction</label><select id="surface"><option value="0">Unknown A</option><option value="1">Unknown B</option><option value="2">Unknown C</option><option value="3">Unknown D</option><option value="4">Unknown E</option></select>
+<label>Block mass</label><div class="range"><input id="mass" type="range" min=".5" max="2.5" step=".1" value="1"><output id="massOut">1.0 kg</output></div>
+<label>Sliding angle</label><div class="range"><input id="angle" type="range" min="5" max="50" step=".5" value="30"><output id="angleOut">30.0°</output></div>
+
+<div class="buttons">
+<button id="raise" class="primary">Raise Incline Slowly</button>
+<button id="stopRaise">Stop Raising</button>
+<button id="release">Release Block</button>
+<button id="reset">Reset</button>
+</div>
+<div class="buttons">
+<button id="recordStatic" class="record" disabled>Record Static Trial</button>
+<button id="recordKinetic" class="record" disabled>Record Kinetic Trial</button>
+<button id="clear">Clear Data</button>
+</div>
+
+<div class="note"><b>Static trial:</b> press <b>Raise Incline Slowly</b>. The ramp increases by 0.1° at a time and automatically stops when the block begins to move.</div>
+<div class="note"><b>Kinetic trial:</b> choose an angle above the critical angle and press <b>Release Block</b>. The simulation measures the block's acceleration down the incline.</div>
+<div class="note"><b>Status:</b><div id="status">Ready for a trial.</div></div>
+</aside></div>
+
+<div class="tables">
+<section class="card"><h3>Static Friction Data</h3><div class="subtle">Students use the critical-angle measurements to determine μ<sub>s</sub>.</div>
+<table><thead><tr><th>Trial</th><th>Surface</th><th>Mass (kg)</th><th>Critical Angle (°)</th><th>μ<sub>s</sub></th></tr></thead><tbody id="staticBody"></tbody></table></section>
+<section class="card"><h3>Kinetic Friction Data</h3><div class="subtle">Students use the sliding angle and acceleration to determine μ<sub>k</sub>.</div>
+<table><thead><tr><th>Trial</th><th>Surface</th><th>Mass (kg)</th><th>Angle (°)</th><th>Acceleration (m/s²)</th><th>μ<sub>k</sub></th></tr></thead><tbody id="kineticBody"></tbody></table></section>
+</div>
+</div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id),g=9.81;
+const surfaces=[[.50,.34],[.32,.21],[.68,.48],[.43,.29],[.27,.17]];
+let si=0,mass=1,displayAngle=5,raiseTimer=null,slideRaf=null,slideStart=null,pos=0;
+let criticalMeasurement=null,kineticMeasurement=null,kineticAngle=null;
+let staticRows=[],kineticRows=[],staticTrial=1,kineticTrial=1;
+
+const rad=d=>d*Math.PI/180;
+const noise=(v,p=.01)=>v*(1+(Math.random()*2-1)*p);
+function physics(angle){let c=surfaces[si];return{critical:Math.atan(c[0])*180/Math.PI,a:g*(Math.sin(rad(angle))-c[1]*Math.cos(rad(angle)))}}
+
+function draw(){
+ $('angleRead').textContent=displayAngle.toFixed(1);
+ $('massRead').textContent=mass.toFixed(2);
+ $('massOut').textContent=mass.toFixed(1)+' kg';
+ $('angleOut').textContent=(+$('angle').value).toFixed(1)+'°';
+
+ const A=displayAngle,x0=100,y0=355,L=570;
+ const x1=x0+L*Math.cos(rad(A)),y1=y0-L*Math.sin(rad(A));
+ const s=Math.min(pos,1),bx=x1-L*.75*s*Math.cos(rad(A)),by=y1+L*.75*s*Math.sin(rad(A));
+ $('scene').innerHTML=
+ '<line x1="40" y1="355" x2="800" y2="355" stroke="#555" stroke-width="4"/>'+
+ '<line x1="'+x0+'" y1="'+y0+'" x2="'+x1+'" y2="'+y1+'" stroke="#8a623b" stroke-width="14"/>'+
+ '<rect x="'+(bx-36)+'" y="'+(by-44)+'" width="72" height="44" rx="4" fill="#999" stroke="#333" stroke-width="2" transform="rotate('+(-A)+' '+bx+' '+by+')"/>'+
+ '<text x="70" y="70" font-size="18">θ = '+A.toFixed(1)+'°</text>';
+}
+
+function stopAll(){
+ if(raiseTimer){clearInterval(raiseTimer);raiseTimer=null}
+ if(slideRaf){cancelAnimationFrame(slideRaf);slideRaf=null}
+}
+
+function resetVisual(){
+ stopAll();pos=0;displayAngle=5;slideStart=null;kineticMeasurement=null;kineticAngle=null;
+ $('accelRead').textContent='—';$('slideAngleRead').textContent='—';$('recordKinetic').disabled=true;
+ $('stateRead').textContent='Ready';$('status').textContent='Ready for a trial.';draw();
+}
+
+function renderTables(){
+ $('staticBody').innerHTML='';
+ staticRows.forEach(r=>{let tr=document.createElement('tr');tr.innerHTML='<td>'+r.trial+'</td><td>Unknown '+String.fromCharCode(65+r.si)+'</td><td>'+r.mass.toFixed(2)+'</td><td>'+r.angle.toFixed(1)+'</td><td></td>';$('staticBody').appendChild(tr)});
+ $('kineticBody').innerHTML='';
+ kineticRows.forEach(r=>{let tr=document.createElement('tr');tr.innerHTML='<td>'+r.trial+'</td><td>Unknown '+String.fromCharCode(65+r.si)+'</td><td>'+r.mass.toFixed(2)+'</td><td>'+r.angle.toFixed(1)+'</td><td>'+r.a.toFixed(2)+'</td><td></td>';$('kineticBody').appendChild(tr)});
+}
+
+$('raise').addEventListener('click',()=>{
+ stopAll();pos=0;displayAngle=5;criticalMeasurement=null;$('criticalRead').textContent='—';$('recordStatic').disabled=true;
+ $('stateRead').textContent='Raising incline';$('status').textContent='The incline is increasing slowly. The block is still at rest.';draw();
+ const trueCritical=physics(0).critical;
+ raiseTimer=setInterval(()=>{
+   displayAngle=Math.min(50,displayAngle+.1);
+   if(displayAngle>=trueCritical){
+     clearInterval(raiseTimer);raiseTimer=null;
+     criticalMeasurement=noise(displayAngle,.004);
+     displayAngle=criticalMeasurement;
+     $('criticalRead').textContent=criticalMeasurement.toFixed(1)+'°';
+     $('stateRead').textContent='Motion begins';
+     $('status').innerHTML='<span class="good">The block just began to move. Record the critical angle.</span>';
+     $('recordStatic').disabled=false;
+   }
+   draw();
+ },70);
+});
+
+$('stopRaise').addEventListener('click',()=>{
+ if(raiseTimer){clearInterval(raiseTimer);raiseTimer=null;$('stateRead').textContent='Stopped';$('status').textContent='Incline raising paused before motion began.'}
+});
+
+function slideFrame(ts){
+ if(slideStart===null)slideStart=ts;
+ const t=(ts-slideStart)/1000;
+ pos=Math.min(1,.5*Math.max(0,kineticMeasurement)*t*t/3);
+ $('stateRead').textContent='Sliding';
+ if(pos>=1){
+   $('stateRead').textContent='Bottom';
+   $('status').innerHTML='<span class="good">Sliding trial complete. Record the acceleration and angle.</span>';
+   $('recordKinetic').disabled=false;draw();return;
+ }
+ draw();slideRaf=requestAnimationFrame(slideFrame);
+}
+
+$('release').addEventListener('click',()=>{
+ stopAll();pos=0;kineticAngle=+$('angle').value;
+ const p=physics(kineticAngle);
+ if(p.a<=0){
+   displayAngle=kineticAngle;$('stateRead').textContent='Does not slide';$('status').innerHTML='<span class="warn">The selected angle is too small for sustained sliding. Choose a larger angle.</span>';draw();return;
+ }
+ displayAngle=kineticAngle;kineticMeasurement=noise(p.a,.018);
+ $('accelRead').textContent=kineticMeasurement.toFixed(2)+' m/s²';
+ $('slideAngleRead').textContent=kineticAngle.toFixed(1)+'°';
+ $('recordKinetic').disabled=true;slideStart=null;draw();slideRaf=requestAnimationFrame(slideFrame);
+});
+
+$('recordStatic').addEventListener('click',()=>{
+ if(criticalMeasurement===null)return;
+ staticRows.push({trial:staticTrial++,si,mass,angle:criticalMeasurement});renderTables();$('recordStatic').disabled=true;
+});
+
+$('recordKinetic').addEventListener('click',()=>{
+ if(kineticMeasurement===null)return;
+ kineticRows.push({trial:kineticTrial++,si,mass,angle:kineticAngle,a:kineticMeasurement});renderTables();$('recordKinetic').disabled=true;
+});
+
+$('surface').addEventListener('change',()=>{si=+$('surface').value;criticalMeasurement=null;$('criticalRead').textContent='—';$('recordStatic').disabled=true;resetVisual()});
+$('mass').addEventListener('input',()=>{mass=+$('mass').value;resetVisual()});
+$('angle').addEventListener('input',()=>{if(!slideRaf&&!raiseTimer){displayAngle=+$('angle').value;draw()}});
+$('reset').addEventListener('click',resetVisual);
+$('clear').addEventListener('click',()=>{staticRows=[];kineticRows=[];staticTrial=1;kineticTrial=1;renderTables();criticalMeasurement=null;$('criticalRead').textContent='—';$('recordStatic').disabled=true;resetVisual()});
+
+renderTables();draw();
+})();
+</script></body></html>
