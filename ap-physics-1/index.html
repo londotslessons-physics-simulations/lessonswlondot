@@ -1,3 +1,323 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AP Physics 1</title><style>
-:root{--purple:#462b7a;--yellow:#facf22;--white:#fefefe;--bg:#f5f3f9;--text:#241b33;--muted:#645d70;--line:#d9d1e5}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}header{background:var(--purple);color:white;border-bottom:6px solid var(--yellow)}.wrap{width:min(1180px,calc(100% - 30px));margin:auto}.head{padding:24px 0}.head h1{margin:0}.head p{margin:6px 0 0;color:#eee8f8}main{padding:34px 0 60px}.crumbs{margin-bottom:18px}.crumbs a{color:var(--purple);font-weight:700}.course,.unit{background:white;border:1px solid var(--line);border-radius:16px;margin:16px 0;overflow:hidden;box-shadow:0 8px 22px rgba(70,43,122,.09)}summary{cursor:pointer;list-style:none;font-weight:900;color:var(--purple)}summary::-webkit-details-marker{display:none}.course>summary{font-size:1.35rem;padding:20px 22px;background:#eee9f6}.unit>summary{font-size:1.05rem;padding:15px 18px;border-left:7px solid var(--yellow)}.inside{padding:0 18px 18px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:white;border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;min-height:180px}.card h3{margin:0;color:var(--purple)}.card p{color:var(--muted);flex:1}.btn{display:inline-block;text-align:center;background:var(--yellow);color:var(--purple);font-weight:900;text-decoration:none;padding:11px 14px;border-radius:9px}.empty{padding:14px 18px;color:var(--muted);font-style:italic}.folder-link{display:inline-block;margin:0 0 15px;color:var(--purple);font-weight:800}footer{background:#321d5e;color:white;padding:20px 0}@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.grid{grid-template-columns:1fr}}
-</style></head><body><header><div class="wrap head"><h1>AP Physics 1</h1><p>Lessons With Londot Physics Simulations</p></div></header><main class="wrap"><div class="crumbs"><a href="../">← Home</a></div><details class="unit" open><summary>📁 Unit 1 — Kinematics</summary><div class="inside"><a class="btn" href="unit-1-kinematics/">Open Unit</a></div></details><details class="unit" open><summary>📁 Unit 2 — Force and Translational Dynamics</summary><div class="inside"><div class="empty">Simulations coming soon.</div></div></details><details class="unit" open><summary>📁 Unit 3 — Work, Energy, and Power</summary><div class="inside"><div class="empty">Simulations coming soon.</div></div></details><details class="unit" open><summary>📁 Unit 4 — Linear Momentum</summary><div class="inside"><div class="empty">Simulations coming soon.</div></div></details><details class="unit" open><summary>📁 Unit 5 — Torque and Rotational Dynamics</summary><div class="inside"><div class="empty">Simulations coming soon.</div></div></details><details class="unit" open><summary>📁 Unit 6 — Energy and Momentum of Rotating Systems</summary><div class="inside"><div class="empty">Simulations coming soon.</div></div></details><details class="unit" open><summary>📁 Unit 7 — Oscillations</summary><div class="inside"><div class="empty">Simulations coming soon.</div></div></details><details class="unit" open><summary>📁 Unit 8 — Fluids</summary><div class="inside"><div class="empty">Simulations coming soon.</div></div></details></main><footer><div class="wrap">Interactive investigations for physics students.</div></footer></body></html>
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>AP Physics 1 — Physics Simulations</title>
+
+  <style>
+    :root {
+      --purple: #462b7a;
+      --yellow: #facf22;
+      --white: #fefefe;
+      --bg: #f5f3f9;
+      --text: #241b33;
+      --muted: #645d70;
+      --line: #d9d1e5;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: var(--purple);
+      color: white;
+      border-bottom: 6px solid var(--yellow);
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 30px));
+      margin: auto;
+    }
+
+    .head {
+      padding: 24px 0;
+    }
+
+    .head h1 {
+      margin: 0;
+    }
+
+    .head p {
+      margin: 6px 0 0;
+      color: #eee8f8;
+    }
+
+    main {
+      padding: 34px 0 60px;
+    }
+
+    .crumbs {
+      margin-bottom: 18px;
+    }
+
+    .crumbs a {
+      color: var(--purple);
+      font-weight: 700;
+    }
+
+    .unit {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      margin: 16px 0;
+      overflow: hidden;
+      box-shadow: 0 8px 22px rgba(70, 43, 122, 0.09);
+    }
+
+    summary {
+      cursor: pointer;
+      list-style: none;
+      font-weight: 900;
+      color: var(--purple);
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .unit > summary {
+      font-size: 1.05rem;
+      padding: 15px 18px;
+      border-left: 7px solid var(--yellow);
+    }
+
+    .inside {
+      padding: 0 18px 18px;
+    }
+
+    .btn {
+      display: inline-block;
+      text-align: center;
+      background: var(--yellow);
+      color: var(--purple);
+      font-weight: 900;
+      text-decoration: none;
+      padding: 11px 14px;
+      border-radius: 9px;
+    }
+
+    .btn:hover {
+      filter: brightness(0.97);
+    }
+
+    .empty {
+      padding: 14px 18px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    footer {
+      background: #321d5e;
+      color: white;
+      padding: 20px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ==================== PAGE HEADER ==================== -->
+  <header>
+    <div class="wrap head">
+      <h1>AP Physics 1</h1>
+      <p>Lessons With Londot Physics Simulations</p>
+    </div>
+  </header>
+
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="wrap">
+
+    <div class="crumbs">
+      <a href="../">← Home</a>
+    </div>
+
+
+    <!-- =====================================================
+         UNIT 1 — KINEMATICS
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 1 — Kinematics
+      </summary>
+
+      <div class="inside">
+        <a class="btn" href="unit-1-kinematics/">
+          Open Unit
+        </a>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 2 — FORCE AND TRANSLATIONAL DYNAMICS
+
+         Current Unit 2 labs:
+           • Static Equilibrium
+           • Friction — Force Sensor
+           • Friction on an Incline
+           • Newton's Laws — Modified Atwood Machine
+           • Circular Motion
+           • Universal Gravitation
+           • Hooke's Law — Unknown Spring
+
+         The individual lab links are kept on the Unit 2 index page.
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 2 — Force and Translational Dynamics
+      </summary>
+
+      <div class="inside">
+        <a class="btn" href="unit-2-force-translational-dynamics/">
+          Open Unit
+        </a>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 3 — WORK, ENERGY, AND POWER
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 3 — Work, Energy, and Power
+      </summary>
+
+      <div class="inside">
+        <div class="empty">
+          Simulations coming soon.
+        </div>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 4 — LINEAR MOMENTUM
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 4 — Linear Momentum
+      </summary>
+
+      <div class="inside">
+        <div class="empty">
+          Simulations coming soon.
+        </div>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 5 — TORQUE AND ROTATIONAL DYNAMICS
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 5 — Torque and Rotational Dynamics
+      </summary>
+
+      <div class="inside">
+        <div class="empty">
+          Simulations coming soon.
+        </div>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 6 — ENERGY AND MOMENTUM OF ROTATING SYSTEMS
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 6 — Energy and Momentum of Rotating Systems
+      </summary>
+
+      <div class="inside">
+        <div class="empty">
+          Simulations coming soon.
+        </div>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 7 — OSCILLATIONS
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 7 — Oscillations
+      </summary>
+
+      <div class="inside">
+        <div class="empty">
+          Simulations coming soon.
+        </div>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 8 — FLUIDS
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 8 — Fluids
+      </summary>
+
+      <div class="inside">
+        <div class="empty">
+          Simulations coming soon.
+        </div>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         ADD NEW AP PHYSICS 1 UNITS ABOVE THIS LINE
+
+         To add a new unit:
+           1. Copy one complete <details class="unit"> block.
+           2. Change the unit number and title.
+           3. Change the folder name in href="".
+         ===================================================== -->
+
+  </main>
+
+
+  <!-- ==================== PAGE FOOTER ==================== -->
+  <footer>
+    <div class="wrap">
+      Interactive investigations for physics students.
+    </div>
+  </footer>
+
+</body>
+
+</html>
