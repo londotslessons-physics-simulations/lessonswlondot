@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>AP Physics 1 — Unit 2 Force and Translational Dynamics</title>
+  <title>AP Physics 1 — Physics Simulations</title>
 
   <style>
     :root {
@@ -66,34 +66,34 @@
       font-weight: 700;
     }
 
-    /* Simulation card grid */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    /* Individual simulation card */
-    .card {
+    .unit {
       background: white;
       border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      min-height: 180px;
+      border-radius: 16px;
+      margin: 16px 0;
+      overflow: hidden;
       box-shadow: 0 8px 22px rgba(70, 43, 122, 0.09);
     }
 
-    .card h3 {
-      margin: 0;
+    summary {
+      cursor: pointer;
+      list-style: none;
+      font-weight: 900;
       color: var(--purple);
     }
 
-    .card p {
-      color: var(--muted);
-      flex: 1;
-      line-height: 1.5;
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .unit > summary {
+      font-size: 1.05rem;
+      padding: 15px 18px;
+      border-left: 7px solid var(--yellow);
+    }
+
+    .inside {
+      padding: 0 18px 18px;
     }
 
     .btn {
@@ -111,22 +111,16 @@
       filter: brightness(0.97);
     }
 
+    .empty {
+      padding: 14px 18px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
     footer {
       background: #321d5e;
       color: white;
       padding: 20px 0;
-    }
-
-    @media (max-width: 850px) {
-      .grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 560px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
@@ -136,7 +130,7 @@
   <!-- ==================== PAGE HEADER ==================== -->
   <header>
     <div class="wrap head">
-      <h1>AP Physics 1 — Unit 2: Force and Translational Dynamics</h1>
+      <h1>AP Physics 1</h1>
       <p>Lessons With Londot Physics Simulations</p>
     </div>
   </header>
@@ -146,131 +140,173 @@
   <main class="wrap">
 
     <div class="crumbs">
-      <a href="../">← AP Physics 1</a>
+      <a href="../">← Home</a>
     </div>
 
 
     <!-- =====================================================
-         SIMULATION CARDS
-         Add new simulations INSIDE this grid.
-         Copy one complete .card block and change:
-           1. Simulation title
-           2. Description
-           3. HTML filename in href=""
+         UNIT 1 — KINEMATICS
          ===================================================== -->
-    <div class="grid">
+    <details class="unit" open>
 
-      <!-- =========================================================
-           SIMULATION CARD: Static Equilibrium
-           To add another simulation, copy this entire card block.
-           ========================================================= -->
-      <div class="card">
-        <h3>Static Equilibrium</h3>
+      <summary>
+        📁 Unit 1 — Kinematics
+      </summary>
 
-        <p>
-          Choose the clamp separation, measure the angles and tensions, calculate the sine of each angle, and determine the unknown mass.
-        </p>
-
-        <a class="btn" href="static-equilibrium-lab-simulation-ap1-student-sin.html">
-          Launch Simulation
-        </a>
-      </div>
-      <!-- =========================================================
-           SIMULATION CARD: Friction — Force Sensor
-           To add another simulation, copy this entire card block.
-           ========================================================= -->
-      <div class="card">
-        <h3>Friction — Force Sensor</h3>
-
-        <p>
-          Pull a block with a force sensor. Record the maximum static friction and the kinetic friction at constant velocity to determine both coefficients of friction.
-        </p>
-
-        <a class="btn" href="friction-force-sensor-pull-lab.html">
-          Launch Simulation
-        </a>
-      </div>
-      <!-- =========================================================
-           SIMULATION CARD: Friction on an Incline
-           To add another simulation, copy this entire card block.
-           ========================================================= -->
-      <div class="card">
-        <h3>Friction on an Incline</h3>
-
-        <p>
-          Increase the incline angle to find where a block begins to move, then investigate its sliding motion to determine the coefficients of friction.
-        </p>
-
-        <a class="btn" href="inclined-plane-friction-lab-v2.html">
-          Launch Simulation
-        </a>
-      </div>
-      <!-- =========================================================
-           SIMULATION CARD: Newton's Laws — Modified Atwood Machine
-           To add another simulation, copy this entire card block.
-           ========================================================= -->
-      <div class="card">
-        <h3>Newton's Laws — Modified Atwood Machine</h3>
-
-        <p>
-          Investigate a cart connected to a hanging mass and use measured acceleration to explore the relationship among net force, total mass, and acceleration.
-        </p>
-
-        <a class="btn" href="modified-atwood-newtons-laws-lab-v3.html">
-          Launch Simulation
-        </a>
-      </div>
-      <!-- =========================================================
-           SIMULATION CARD: Circular Motion
-           To add another simulation, copy this entire card block.
-           ========================================================= -->
-      <div class="card">
-        <h3>Circular Motion</h3>
-
-        <p>
-          Use a string-through-a-tube apparatus to investigate how inward force depends on rotating mass, speed, and radius.
-        </p>
-
-        <a class="btn" href="circular-force-lab-simulation-v3.html">
-          Launch Simulation
-        </a>
-      </div>
-      <!-- =========================================================
-           SIMULATION CARD: Universal Gravitation
-           To add another simulation, copy this entire card block.
-           ========================================================= -->
-      <div class="card">
-        <h3>Universal Gravitation</h3>
-
-        <p>
-          Change two masses and their separation, measure gravitational force, and use a linearized graph to determine the universal gravitational constant.
-        </p>
-
-        <a class="btn" href="universal-gravitation-lab-simulation-v3.html">
-          Launch Simulation
-        </a>
-      </div>
-      <!-- =========================================================
-           SIMULATION CARD: Hooke's Law — Unknown Spring
-           To add another simulation, copy this entire card block.
-           ========================================================= -->
-      <div class="card">
-        <h3>Hooke's Law — Unknown Spring</h3>
-
-        <p>
-          Add masses to an unknown spring, measure force and extension, graph the data, and determine the spring constant from the slope.
-        </p>
-
-        <a class="btn" href="hookes-law-unknown-spring-lab.html">
-          Launch Simulation
+      <div class="inside">
+        <a class="btn" href="unit-1-kinematics/">
+          Open Unit
         </a>
       </div>
 
-      <!-- =========================================================
-           ADD NEW SIMULATION CARDS ABOVE THIS LINE
-           ========================================================= -->
+    </details>
 
-    </div>
+
+    <!-- =====================================================
+         UNIT 2 — FORCE AND TRANSLATIONAL DYNAMICS
+
+         Current Unit 2 labs:
+           • Static Equilibrium
+           • Friction — Force Sensor
+           • Friction on an Incline
+           • Newton's Laws — Modified Atwood Machine
+           • Circular Motion
+           • Universal Gravitation
+           • Hooke's Law — Unknown Spring
+
+         The individual lab links are kept on the Unit 2 index page.
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 2 — Force and Translational Dynamics
+      </summary>
+
+      <div class="inside">
+        <a class="btn" href="unit-2-force-translational-dynamics/">
+          Open Unit
+        </a>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 3 — WORK, ENERGY, AND POWER
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 3 — Work, Energy, and Power
+      </summary>
+
+      <div class="inside">
+        <div class="empty">
+          Simulations coming soon.
+        </div>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 4 — LINEAR MOMENTUM
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 4 — Linear Momentum
+      </summary>
+
+      <div class="inside">
+        <div class="empty">
+          Simulations coming soon.
+        </div>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 5 — TORQUE AND ROTATIONAL DYNAMICS
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 5 — Torque and Rotational Dynamics
+      </summary>
+
+      <div class="inside">
+        <div class="empty">
+          Simulations coming soon.
+        </div>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 6 — ENERGY AND MOMENTUM OF ROTATING SYSTEMS
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 6 — Energy and Momentum of Rotating Systems
+      </summary>
+
+      <div class="inside">
+        <div class="empty">
+          Simulations coming soon.
+        </div>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 7 — OSCILLATIONS
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 7 — Oscillations
+      </summary>
+
+      <div class="inside">
+        <div class="empty">
+          Simulations coming soon.
+        </div>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         UNIT 8 — FLUIDS
+         ===================================================== -->
+    <details class="unit" open>
+
+      <summary>
+        📁 Unit 8 — Fluids
+      </summary>
+
+      <div class="inside">
+        <div class="empty">
+          Simulations coming soon.
+        </div>
+      </div>
+
+    </details>
+
+
+    <!-- =====================================================
+         ADD NEW AP PHYSICS 1 UNITS ABOVE THIS LINE
+
+         To add a new unit:
+           1. Copy one complete <details class="unit"> block.
+           2. Change the unit number and title.
+           3. Change the folder name in href="".
+         ===================================================== -->
 
   </main>
 
@@ -285,4 +321,3 @@
 </body>
 
 </html>
-unit-2-index-clean-indented.html
