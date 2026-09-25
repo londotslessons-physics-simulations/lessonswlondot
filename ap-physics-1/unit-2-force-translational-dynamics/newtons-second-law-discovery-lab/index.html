@@ -1,0 +1,160 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Newton's Second Law Discovery Lab</title><style>
+:root{--p:#462b7a;--y:#facf22;--bg:#f5f3f9;--line:#d9d1e5}*{box-sizing:border-box}body{margin:0;font-family:Arial;background:var(--bg);color:#241b33}header{background:var(--p);color:white;border-bottom:6px solid var(--y);padding:20px}header h1{margin:0}.wrap{max-width:1100px;margin:auto;padding:18px}.grid{display:grid;grid-template-columns:1fr 330px;gap:16px}.card{background:white;border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:16px}h2,h3{color:var(--p);margin-top:0}svg{width:100%;border:1px solid var(--line);border-radius:8px}label{display:block;font-weight:bold;margin-top:12px}input{width:100%}.val{text-align:right;color:var(--p);font-weight:bold}button{min-height:44px;padding:9px 12px;margin:3px;border:1px solid var(--line);border-radius:8px;background:white}.primary{background:var(--y);color:var(--p);font-weight:bold}.active{background:var(--p);color:white}.note{border-left:5px solid var(--y);padding:10px;background:#faf8fc;margin-top:12px}.table{overflow:auto}table{border-collapse:collapse;width:100%;min-width:700px}th,td{border:1px solid var(--line);padding:7px;text-align:center}th{background:#eee9f5;color:var(--p)}.parttabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.parttab{font-weight:bold;font-size:16px}
+.parttab.active{background:var(--p);color:white}
+.parttab.locked{opacity:.5;cursor:not-allowed}
+.hidden{display:none!important}
+.progress{font-size:13px;color:#645d70;margin-top:8px}
+.complete{color:#2f6b3b;font-weight:bold}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+</style></head><body><header><h1>Newton's Second Law Discovery Lab</h1><p>Collect motion data to discover how acceleration depends on net force and mass.</p></header><div class="wrap">
+<div class="parttabs">
+<button id="tabA" class="parttab active">Part A — Vary Force</button>
+<button id="tabB" class="parttab locked" disabled>Part B — Vary Mass 🔒</button>
+</div>
+<div class="note" style="margin-bottom:10px"><b>Important:</b> Complete both parts in one sitting. Refreshing the page generates a new constant mass and a new constant force.</div>
+<div id="progressMsg" class="note" style="margin-bottom:16px"><b>Part A:</b> Record at least 5 different force trials to unlock Part B.</div>
+<div class="grid"><main>
+<div class="card"><h2>Cart Investigation</h2><p><b id="read">t = 0.00 s | x = 0.00 m | v = 0.00 m/s | measured a = —</b></p><svg id="scene" viewBox="0 0 900 340"></svg><button id="run" class="primary">Run Trial</button><button id="pause">Pause</button><button id="reset">Reset Trial</button><button id="record">Record Trial</button><button id="new">New Trial</button><div class="note"><b>Discovery goal:</b> Complete two separate investigations. In Part A, mass stays constant while force changes. In Part B, force stays constant while mass changes. Record the acceleration for every trial.</div></div>
+<div class="card" id="partAData">
+<h2>Part A — Constant Mass, Vary the Force</h2>
+<p>Use the constant mass assigned by the simulation, then select different net forces and record the measured acceleration.</p>
+<div class="table"><table>
+<thead><tr><th>Trial</th><th>Mass (kg)</th><th>Net Force (N)</th><th>Acceleration (m/s²)</th></tr></thead>
+<tbody id="forceData"></tbody></table></div>
+<button id="clearForce">Clear Part A Data</button>
+</div>
+
+<div class="card hidden" id="partBData">
+<h2>Part B — Constant Force, Vary the Mass</h2>
+<p>Use the constant net force assigned by the simulation, then select different total masses and record the measured acceleration.</p>
+<div class="table"><table>
+<thead><tr><th>Trial</th><th>Net Force (N)</th><th>Mass (kg)</th><th>Acceleration (m/s²)</th></tr></thead>
+<tbody id="massData"></tbody></table></div>
+<button id="clearMass">Clear Part B Data</button>
+</div>
+</main><aside><div class="card">
+<h3 id="controlTitle">Part A — Choose Your Constant Mass</h3>
+<p id="help">The simulation assigns your constant mass for Part A. Use this same value for every Part A trial.</p>
+
+<div id="setupA">
+<label>Assigned constant mass for Part A</label>
+<div class="note" style="font-size:20px;text-align:center"><b id="assignedMassV">— kg</b></div>
+<button id="lockMass" class="primary">Use Assigned Mass</button>
+</div>
+
+<div id="setupB" class="hidden">
+<label>Assigned constant net force for Part B</label>
+<div class="note" style="font-size:20px;text-align:center"><b id="assignedForceV">— N</b></div>
+<button id="lockForce" class="primary">Use Assigned Force</button>
+</div>
+
+<div id="trialControls" class="hidden">
+<label>Cart + added mass</label>
+<input id="mass" type="range" min=".5" max="3" step=".25" value="1.5">
+<div class="val"><span id="massv">1.50</span> kg</div>
+<label>Net horizontal force</label>
+<input id="force" type="range" min="1" max="10" step=".5" value="3">
+<div class="val"><span id="forcev">3.0</span> N</div>
+<div id="control" class="note"></div>
+</div>
+</div>
+<div class="card"><h3>Analysis Challenge</h3><p>What relationship exists between net force and acceleration?</p><p>What relationship exists between mass and acceleration?</p><p>Which relationship requires linearization?</p><p>Use your graphs to propose one equation connecting all three quantities.</p></div><button id="fm" class="hidden"></button><button id="mm" class="hidden"></button>
+</aside></div></div>
+<script>
+(()=>{const $=i=>document.getElementById(i),S=$('scene');let mode='force',forceTrial=1,massTrial=1,forceRows=[],massRows=[],running=false,lockedMass=null,lockedForce=null;
+const MASS_CHOICES=[0.75,1.00,1.25,1.50,1.75,2.00,2.25,2.50,2.75];
+const FORCE_CHOICES=[2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0];
+const assignedMass=MASS_CHOICES[Math.floor(Math.random()*MASS_CHOICES.length)];
+const assignedForce=FORCE_CHOICES[Math.floor(Math.random()*FORCE_CHOICES.length)];
+let raf=null,last=null,t=0,x=0,v=0,done=false,ameas=null;
+const V=()=>({m:+$('mass').value,F:+$('force').value});function E(n,a,z){let q=document.createElementNS('http://www.w3.org/2000/svg',n);Object.entries(a).forEach(([k,w])=>q.setAttribute(k,w));if(z!==undefined)q.textContent=z;S.appendChild(q)}
+function draw(){let a=V();S.innerHTML='';E('rect',{width:900,height:340,fill:'white'});E('line',{x1:65,y1:265,x2:835,y2:265,stroke:'#555','stroke-width':5});for(let i=0;i<=4;i++){let q=110+i*165;E('line',{x1:q,y1:265,x2:q,y2:278,stroke:'#555','stroke-width':2});E('text',{x:q,y:300,'text-anchor':'middle'},i+' m')}let c=110+Math.min(x,4.1)*165;E('rect',{x:c-60,y:210,width:120,height:48,rx:8,fill:'#aaa',stroke:'#333','stroke-width':3});E('circle',{cx:c-38,cy:267,r:13,fill:'#444'});E('circle',{cx:c+38,cy:267,r:13,fill:'#444'});E('text',{x:c,y:240,'text-anchor':'middle',fill:'white'},a.m.toFixed(2)+' kg');E('line',{x1:c+68,y1:232,x2:c+145,y2:232,stroke:'#462b7a','stroke-width':5});E('polygon',{points:(c+155)+',232 '+(c+137)+',221 '+(c+137)+',243',fill:'#462b7a'});E('text',{x:c+105,y:205,'text-anchor':'middle',fill:'#462b7a'},'Fnet = '+a.F.toFixed(1)+' N');$('read').textContent='t = '+t.toFixed(2)+' s | x = '+x.toFixed(2)+' m | v = '+v.toFixed(2)+' m/s | measured a = '+(ameas===null?'—':ameas.toFixed(2)+' m/s²')}
+function reset(){running=false;if(raf)cancelAnimationFrame(raf);last=null;t=0;x=0;v=0;done=false;ameas=null;draw()}function frame(ts){if(!running)return;if(last==null)last=ts;let dt=Math.min(.025,(ts-last)/1000);last=ts,a=V(),acc=a.F/a.m;v+=acc*dt;x+=v*dt;t+=dt;if(x>=4){x=4;running=false;done=true;ameas=acc*(1+(Math.random()*2-1)*.018);draw();return}draw();raf=requestAnimationFrame(frame)}
+function labels(){$('massv').textContent=V().m.toFixed(2);$('forcev').textContent=V().F.toFixed(1)}
+function render(){
+ $('forceData').innerHTML='';
+ forceRows.forEach(r=>{let tr=document.createElement('tr');tr.innerHTML='<td>'+r.n+'</td><td>'+r.m.toFixed(2)+'</td><td>'+r.F.toFixed(1)+'</td><td>'+r.a.toFixed(2)+'</td>';$('forceData').appendChild(tr)});
+ $('massData').innerHTML='';
+ massRows.forEach(r=>{let tr=document.createElement('tr');tr.innerHTML='<td>'+r.n+'</td><td>'+r.F.toFixed(1)+'</td><td>'+r.m.toFixed(2)+'</td><td>'+r.a.toFixed(2)+'</td>';$('massData').appendChild(tr)});
+ updateUnlock();
+}
+function setMode(m){
+ mode=m;reset();
+ const isA=m==='force';
+ $('setupA').classList.toggle('hidden',!isA);
+ $('setupB').classList.toggle('hidden',isA);
+ $('trialControls').classList.add('hidden');
+ if(isA){
+   lockedMass=null;
+   $('lockMass').disabled=false;
+   $('assignedMassV').textContent=assignedMass.toFixed(2)+' kg';
+   $('controlTitle').textContent='Part A — Choose Your Constant Mass';
+   $('help').textContent='The simulation assigns your constant mass for Part A. Use this same value for every Part A trial.';
+ }else{
+   lockedForce=null;
+   $('lockForce').disabled=false;
+   $('assignedForceV').textContent=assignedForce.toFixed(1)+' N';
+   $('controlTitle').textContent='Part B — Choose Your Constant Force';
+   $('help').textContent='The simulation assigns your constant net force for Part B. Use this same value for every Part B trial.';
+ }
+ labels();draw();
+}
+function lockPartA(){
+ lockedMass=assignedMass;
+ $('mass').value=lockedMass;
+ $('mass').disabled=true;
+ $('force').disabled=false;
+ $('lockMass').disabled=true;
+ $('trialControls').classList.remove('hidden');
+ $('control').innerHTML='<b>Controlled variable:</b> Mass = '+lockedMass.toFixed(2)+' kg. Change only the net force between trials.';
+ $('help').textContent='Your assigned mass is locked. Change the net force and collect at least five trials.';
+ labels();reset();
+}
+function lockPartB(){
+ lockedForce=assignedForce;
+ $('force').value=lockedForce;
+ $('force').disabled=true;
+ $('mass').disabled=false;
+ $('lockForce').disabled=true;
+ $('trialControls').classList.remove('hidden');
+ $('control').innerHTML='<b>Controlled variable:</b> Net force = '+lockedForce.toFixed(1)+' N. Change only the mass between trials.';
+ $('help').textContent='Your assigned force is locked. Change the mass and collect your trials.';
+ labels();reset();
+}
+function updateUnlock(){
+ let unlocked=forceRows.length>=5;
+ $('tabB').disabled=!unlocked;
+ $('tabB').classList.toggle('locked',!unlocked);
+ $('tabB').textContent=unlocked?'Part B — Vary Mass':'Part B — Vary Mass 🔒';
+ if(mode==='force'){
+   $('progressMsg').innerHTML=unlocked
+    ?'<span class="complete">✓ Part A complete.</span> Part B is now unlocked.'
+    :'<b>Part A:</b> Record '+(5-forceRows.length)+' more different force trial'+(5-forceRows.length===1?'':'s')+' to unlock Part B.';
+ }
+}
+function showPart(part){
+ if(part==='B' && forceRows.length<5)return;
+ let isA=part==='A';
+ $('tabA').classList.toggle('active',isA);
+ $('tabB').classList.toggle('active',!isA);
+ $('partAData').classList.toggle('hidden',!isA);
+ $('partBData').classList.toggle('hidden',isA);
+ setMode(isA?'force':'mass');
+ $('progressMsg').innerHTML=isA
+   ?(forceRows.length>=5?'<span class="complete">✓ Part A complete.</span> Part B is unlocked.':'<b>Part A:</b> Record at least 5 different force trials to unlock Part B.')
+   :'<b>Part B:</b> Use your assigned constant net force, then vary the total mass.';
+}
+$('run').onclick=()=>{if(running||done)return;running=true;last=null;raf=requestAnimationFrame(frame)};
+$('pause').onclick=()=>{running=false;cancelAnimationFrame(raf)};
+$('reset').onclick=reset;
+$('new').onclick=()=>{reset()};
+$('record').onclick=()=>{if(!done)return;if(mode==='force'&&lockedMass===null)return;if(mode==='mass'&&lockedForce===null)return;let a=V();if(mode==='force'){forceRows.push({n:forceTrial++,m:a.m,F:a.F,a:ameas})}else{massRows.push({n:massTrial++,m:a.m,F:a.F,a:ameas})}render();reset()};
+$('clearForce').onclick=()=>{forceRows=[];forceTrial=1;showPart('A');render()};
+$('clearMass').onclick=()=>{massRows=[];massTrial=1;render()};
+$('tabA').onclick=()=>showPart('A');$('tabB').onclick=()=>showPart('B');$('mass').oninput=()=>{labels();reset()};
+$('force').oninput=()=>{labels();reset()};
+$('lockMass').onclick=lockPartA;
+$('lockForce').onclick=lockPartB;
+setMode('force');render()})();
+</script></body></html>
