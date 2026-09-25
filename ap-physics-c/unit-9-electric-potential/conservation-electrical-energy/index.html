@@ -1,1 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Conservation of Electrical Energy Lab</title>
+<style>
+:root{--ink:#172033;--muted:#64748b;--line:#d7dee8;--panel:#fff;--soft:#f6f8fb;--accent:#1d4ed8;--accent2:#dbeafe;--pos:#ef4444;--neg:#2563eb}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#eef2f7}
+header{background:#172033;color:white;padding:18px 20px} header h1{margin:0;font-size:clamp(1.3rem,3vw,2rem)} header p{margin:5px 0 0;color:#dbe3ee}
+main{max-width:1180px;margin:auto;padding:18px}.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.8fr);gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}.card h2,.card h3{margin:0 0 6px}.sub{color:var(--muted);font-size:.92rem;margin:0 0 12px}
+svg{width:100%;height:auto;display:block;background:#fafafa;border:1px solid var(--line);border-radius:10px}
+.controls label{display:block;font-weight:650;font-size:.9rem;margin-top:15px}.row{display:flex;justify-content:space-between;gap:12px;align-items:center}
+input[type=range],select{width:100%;min-height:44px;font-size:16px}select{padding:8px;border:1px solid var(--line);border-radius:8px;background:white}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}button{min-height:44px;padding:9px 14px;border:1px solid var(--line);border-radius:9px;background:white;color:var(--ink);font-weight:700;font-size:.95rem;cursor:pointer}
+button.primary{background:var(--accent);color:white;border-color:var(--accent)}button:disabled{opacity:.45;cursor:not-allowed}
+.readout{background:var(--soft);border-radius:10px;padding:11px;margin-top:16px;font-size:.9rem}.readout div{display:flex;justify-content:space-between;gap:12px;padding:4px 0}
+.status{font-size:.9rem;color:var(--muted);min-height:1.4em;margin-top:9px}.tableWrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:850px;font-size:.88rem}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:center}th{background:var(--soft)}
+.analysis{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.energyBox{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.metric{background:var(--soft);border-radius:10px;padding:12px;text-align:center}.metric small{display:block;color:var(--muted);margin-bottom:5px}.metric strong{font-size:1.05rem}
+ol{padding-left:22px;margin-bottom:0}li{margin:8px 0}.formula{font-family:Georgia,serif;font-size:1.08rem}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:4px 9px;font-size:.8rem}
+@media(max-width:800px){.grid,.analysis{grid-template-columns:1fr}.energyBox{grid-template-columns:1fr}.card{padding:13px}main{padding:10px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 auto 16px;max-width:1180px;padding:0 18px}
+.tabbtn{background:white}.tabbtn.active{background:var(--accent);color:white;border-color:var(--accent)}
+.tabpanel[hidden]{display:none}.workGrid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.85fr);gap:16px}
+.eqline{stroke:#94a3b8;stroke-width:2;stroke-dasharray:5 5}.eqline.selected{stroke:#172033;stroke-width:4;stroke-dasharray:none}
+.chargeDot{fill:#fbbf24;stroke:#172033;stroke-width:2}.workResult{font-size:1.15rem;font-weight:800}
+@media(max-width:800px){.workGrid{grid-template-columns:1fr}.tabs{padding:0 10px}}
+</style>
+</head>
+<body>
+<header><h1>Conservation of Electrical Energy Lab</h1><p>AP Physics C: Electricity &amp; Magnetism</p></header>
+<nav class="tabs" aria-label="Simulation sections">
+<button type="button" class="tabbtn active" id="tabEnergy" aria-controls="energyPanel" aria-selected="true">1. Conservation of Electrical Energy</button>
+<button type="button" class="tabbtn" id="tabWork" aria-controls="workPanel" aria-selected="false">2. Work Between Equipotential Lines</button>
+</nav>
+<main>
+<section id="energyPanel" class="tabpanel">
+<div class="grid">
+<section class="card">
+<div class="row"><div><h2>Parallel-Plate Experiment</h2><p class="sub">Release a charged particle from rest and collect evidence for conservation of energy.</p></div><span id="badge" class="pill">Ready</span></div>
+<svg id="sim" viewBox="0 0 760 365" role="img" aria-label="Charged particle between parallel plates">
+<defs><marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#64748b"/></marker></defs>
+<text x="380" y="30" text-anchor="middle" font-size="16">Uniform Electric Field</text>
+<rect x="85" y="60" width="20" height="225" rx="3" fill="#ef4444"/><rect x="655" y="60" width="20" height="225" rx="3" fill="#2563eb"/>
+<text id="lp" x="95" y="48" text-anchor="middle" font-size="15">+120 V</text><text x="665" y="48" text-anchor="middle" font-size="15">0 V</text>
+<g stroke="#64748b" stroke-width="2" marker-end="url(#arr)"><line x1="145" y1="105" x2="615" y2="105"/><line x1="145" y1="175" x2="615" y2="175"/><line x1="145" y1="245" x2="615" y2="245"/></g>
+<text x="380" y="92" text-anchor="middle" font-size="13">E</text><line x1="105" y1="310" x2="655" y2="310" stroke="#94a3b8" stroke-width="2"/>
+<g id="ticks"></g>
+<circle id="particle" cx="298" cy="175" r="16" fill="#fbbf24" stroke="#172033" stroke-width="2"/><text id="psign" x="298" y="181" text-anchor="middle" font-size="19" font-weight="800">+</text>
+<line id="marker" x1="298" y1="291" x2="298" y2="326" stroke="#172033" stroke-width="2" stroke-dasharray="5 4"/><text id="releaseText" x="298" y="350" text-anchor="middle" font-size="13">release</text>
+</svg>
+<div class="actions"><button class="primary" id="release">Release Particle</button><button id="reset">Reset Motion</button><button id="record" disabled>Record Trial</button></div>
+<div id="msg" class="status" aria-live="polite">Choose the experimental conditions, then release the particle.</div>
+</section>
+<aside class="card controls">
+<h3>Experimental Controls</h3><p class="sub">Change one or more variables between trials.</p>
+<label>Particle charge sign</label><select id="sign"><option value="1">Positive (+)</option><option value="-1">Negative (−)</option></select>
+<label>Mystery charge</label><div class="status"><strong>Unknown |q|</strong><br><span class="sub">A charge has been assigned automatically for this simulation session.</span></div><input id="q" type="range" min=".5" max="5" step=".5" value="2" hidden><span id="qOut" hidden>?</span><p class="sub">The magnitude of the charge is unknown. The particle mass is assigned once and remains constant. Use your measurements and conservation of energy to determine |q|.</p>
+<label>Particle mass</label>
+<div class="status"><strong id="mOut">Assigned at start</strong><br><span class="sub">The particle mass stays constant for the entire activity.</span></div>
+<input id="mass" type="range" min="1" max="10" step="1" value="5" hidden>
+<label><span class="row"><span>Potential difference</span><span id="vOut">120 V</span></span></label><input id="voltage" type="range" min="40" max="240" step="20" value="120">
+<label><span class="row"><span>Starting potential, V<sub>i</sub></span><span id="startVOut">80 V</span></span></label>
+<input id="startV" type="range" min="0" max="120" step="10" value="80">
+<div class="row" style="font-size:.82rem;color:var(--muted);margin-top:-5px"><span>0 V</span><span id="startVMax">120 V</span></div>
+<p class="sub" style="margin-top:7px">Drag the slider to select the starting potential. The particle moves automatically to the matching position between the plates.</p>
+<div class="readout"><div><span>V<sub>i</sub></span><strong id="vi">78.0 V</strong></div><div><span>V<sub>f</sub></span><strong id="vf">0.0 V</strong></div><div><span>v<sub>i</sub></span><strong>0 m/s</strong></div><div><span>v<sub>f</sub></span><strong id="speed">—</strong></div></div>
+</aside>
+</div>
+
+<section class="card" style="margin-top:16px">
+<div class="row"><div><h3>Student Data Table</h3><p class="sub">The simulation records measured quantities. Students calculate ΔV, ΔU, and ΔK.</p></div><strong id="count">0 / 10 trials</strong></div>
+<div class="tableWrap"><table><thead><tr><th>Trial</th><th>Mystery</th><th>Your |q| (μC)</th><th>m (g)</th><th>V<sub>i</sub> (V)</th><th>V<sub>f</sub> (V)</th><th>v<sub>f</sub> (m/s)</th><th>ΔV (V)</th><th>ΔU (J)</th><th>ΔK (J)</th></tr></thead><tbody id="body"><tr><td colspan="9" style="color:#64748b">No trials recorded yet.</td></tr></tbody></table></div>
+</section>
+
+<section class="card" id="chargeReveal1" style="margin-top:16px">
+<div class="row"><div><h3>Mystery Charge Reveal</h3><p class="sub" id="revealStatus1">Collect at least 10 data points before revealing your charge.</p></div><button type="button" id="revealCharge1" disabled>Reveal Charge</button></div>
+<div id="revealedCharge1" class="status" style="display:none;margin-top:10px"></div>
+</section><div class="analysis">
+<section class="card"><h3>Energy Check</h3><p class="sub">The check unlocks after at least five trials so students must first analyze their own data.</p>
+<div class="energyBox"><div class="metric"><small>ΔU</small><strong id="du">Hidden</strong></div><div class="metric"><small>ΔK</small><strong id="dk">Hidden</strong></div><div class="metric"><small>ΔK + ΔU</small><strong id="total">Hidden</strong></div></div>
+<button id="reveal" style="margin-top:12px" disabled>Reveal Most Recent Trial</button><div id="hint" class="status">Record 10 trials to unlock.</div></section>
+<section class="card"><h3>Investigation Questions</h3><ol><li>How does ΔK compare with ΔU?</li><li>What happens to final speed as |ΔV| increases?</li><li>For the same q and ΔV, how does mass affect final speed?</li><li>Reverse the sign of q. What happens to the direction of motion and to the electric potential?</li><li>Use your data to write a conservation-of-energy equation for the particle.</li></ol><p class="formula">K<sub>i</sub> + U<sub>i</sub> = K<sub>f</sub> + U<sub>f</sub></p></section>
+</div>
+
+</section>
+<section id="workPanel" class="tabpanel" hidden>
+<div class="workGrid">
+<section class="card">
+<h2>Work Done Moving a Point Charge</h2>
+<p class="sub">Move a point charge between equipotential lines. Compare the change in electric potential energy with the work done by the electric field and by an external agent.</p>
+<svg id="workSvg" viewBox="0 0 760 390" role="img" aria-label="Point charge moving between vertical equipotential lines">
+<defs><marker id="workArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#172033"/></marker></defs>
+<text x="380" y="28" text-anchor="middle" font-size="15">Equipotential Lines</text>
+<g id="eqLines"></g>
+<line id="moveArrow" x1="160" y1="210" x2="600" y2="210" stroke="#172033" stroke-width="3" marker-end="url(#workArrow)"/>
+<circle id="workCharge" class="chargeDot" cx="160" cy="210" r="17"/><text id="workSign" x="160" y="216" text-anchor="middle" font-size="19" font-weight="800">+</text>
+<text id="moveLabel" x="380" y="195" text-anchor="middle" font-size="13">move charge</text>
+</svg>
+<div class="actions"><button type="button" class="primary" id="moveChargeBtn">Move Charge</button><button type="button" id="resetWorkBtn">Reset</button><button type="button" id="recordWorkBtn" disabled>Record Trial</button></div>
+<div id="workMsg" class="status" aria-live="polite">Choose the charge and the initial and final equipotential lines.</div>
+</section>
+<aside class="card controls">
+<h3>Work Controls</h3>
+<label>Charge sign</label><div class="status"><strong>Unknown sign</strong><br><span class="sub">Determine the sign from the work and potential change.</span></div><input id="workChargeSign" value="1" hidden>
+<label>Mystery charge</label><div class="status"><strong>Unknown |q|</strong><br><span class="sub">A different charge has been assigned automatically for this simulation session.</span></div><input id="workQ" type="range" min=".5" max="5" step=".5" value="2" hidden><span id="workQOut" hidden>?</span><p class="sub">The magnitude is hidden. Determine |q| from the work and potential data.</p>
+<label>Initial potential, V<sub>i</sub></label><select id="workVi"><option>100</option><option>80</option><option selected>60</option><option>40</option><option>20</option><option>0</option></select>
+<label>Final potential, V<sub>f</sub></label><select id="workVf"><option selected>100</option><option>80</option><option>60</option><option>40</option><option>20</option><option>0</option></select><label class="row" style="justify-content:flex-start;gap:9px;margin-top:14px"><input id="sameLine" type="checkbox" style="width:20px;height:20px;min-height:20px"><span>Move along the same equipotential line</span></label>
+<p class="sub" style="margin-top:6px">Use this to test a path where V<sub>f</sub> = V<sub>i</sub>, but the particle still moves through space.</p>
+<div class="readout">
+<div><span>ΔV = V<sub>f</sub> − V<sub>i</sub></span><strong id="workDV">+40 V</strong></div>
+<div><span>ΔU = qΔV</span><strong id="workDU">Calculate</strong></div>
+<div><span>Work by electric field</span><strong id="workField">Calculate</strong></div>
+<div><span>Work done moving charge</span><strong id="workExt">Run trial</strong></div>
+</div>
+<p class="sub" style="margin-top:8px">*For a slow move with no change in kinetic energy.</p>
+<button type="button" id="checkWorkBtn">Show Energy Relationships</button>
+</aside>
+</div>
+
+<section class="card" style="margin-top:16px">
+<div class="row"><div><h3>Work Investigation Data</h3><p class="sub">The simulation reports the work done moving the charge. Use the measured work and the potential data to determine the unknown charge.</p></div><strong id="workCount">0 trials</strong></div>
+<div class="tableWrap"><table style="min-width:620px"><thead><tr><th>Trial</th><th>Mystery</th><th>Your |q| (μC)</th><th>V<sub>i</sub> (V)</th><th>V<sub>f</sub> (V)</th><th>Work Done (J)</th></tr></thead><tbody id="workBody"><tr><td colspan="6" style="color:#64748b">No trials recorded yet.</td></tr></tbody></table></div>
+</section>
+
+<section class="card" id="chargeReveal2" style="margin-top:16px">
+<div class="row"><div><h3>Mystery Charge Reveal</h3><p class="sub" id="revealStatus2">Collect at least 10 data points before revealing your charge.</p></div><button type="button" id="revealCharge2" disabled>Reveal Charge</button></div>
+<div id="revealedCharge2" class="status" style="display:none;margin-top:10px"></div>
+</section><div class="analysis">
+<section class="card"><h3>Sign Convention</h3><p class="formula">ΔU = qΔV</p><p class="formula">W<sub>electric field</sub> = −ΔU</p><p class="formula">W<sub>external</sub> = +ΔU &nbsp; <small>(slow move)</small></p><p class="sub">A positive value means that agent does positive work. A negative value means that agent does negative work.</p></section>
+<section class="card"><h3>Investigation Questions</h3><ol><li>For a positive charge, when does electric potential energy increase?</li><li>How does reversing the sign of the charge change ΔU?</li><li>When does the electric field do positive work?</li><li>Compare W<sub>field</sub> and W<sub>ext</sub> for a slow move.</li><li>Does the path between two equipotential lines affect the work? Explain using electric potential.</li></ol></section>
+</div>
+</section>
+</main>
+<script>
+const sessionQ1=(Math.floor(Math.random()*451)+50)/100;
+const sessionMass=(Math.floor(Math.random()*19)+2)/2;
+const sessionSign=Math.random()<0.5?-1:1;
+</script>
+<script>
+(()=>{const $=id=>document.getElementById(id), e={q:$("q"),m:$("mass"),V:$("voltage"),startV:$("startV"),sign:$("sign"),qO:$("qOut"),mO:$("mOut"),vO:$("vOut"),startVO:$("startVOut"),startVMax:$("startVMax"),vi:$("vi"),vf:$("vf"),speed:$("speed"),p:$("particle"),ps:$("psign"),mk:$("marker"),rt:$("releaseText"),lp:$("lp"),ticks:$("ticks"),release:$("release"),reset:$("reset"),record:$("record"),msg:$("msg"),badge:$("badge"),body:$("body"),count:$("count"),reveal:$("reveal"),du:$("du"),dk:$("dk"),total:$("total"),hint:$("hint")};let trials=[],last=null,raf=null;const L=105,R=655,W=550;
+function calc(){const q=+e.q.value*1e-6*(+e.sign.value),m=sessionMass/1000,V=+e.V.value,Vi=Math.max(0,Math.min(V,+e.startV.value)),f=1-(Vi/V),positive=q>0,Vf=positive?0:V,dV=Vf-Vi,dU=q*dV,dK=-dU,vf=Math.sqrt(Math.max(0,2*dK/m));return{q,m,V,f,Vi,Vf,dV,dU,dK,vf,positive,mystery:"Unknown"}}
+function ticks(V){e.ticks.innerHTML="";for(let i=0;i<=5;i++){let x=L+W*i/5,val=V*(1-i/5);e.ticks.insertAdjacentHTML("beforeend",`<line x1="${x}" y1="304" x2="${x}" y2="316" stroke="#64748b"/><text x="${x}" y="337" text-anchor="middle" font-size="12">${Math.round(val)} V</text>`)}}
+function update(){if(raf)cancelAnimationFrame(raf);raf=null;let a=calc(),px=L+W*a.f;e.qO.textContent=Math.abs(a.q*1e6).toFixed(1)+" μC";e.mO.textContent=(a.m*1000).toFixed(1)+" g";e.vO.textContent=a.V+" V";e.startVO.textContent=a.Vi.toFixed(0)+" V";e.vi.textContent=a.Vi.toFixed(1)+" V";e.vf.textContent=a.Vf.toFixed(1)+" V";e.speed.textContent="—";e.lp.textContent="+"+a.V+" V";[e.p,e.ps].forEach(z=>z.setAttribute("cx",px));e.ps.setAttribute("x",px);e.ps.textContent=a.positive?"+":"−";e.mk.setAttribute("x1",px);e.mk.setAttribute("x2",px);e.rt.setAttribute("x",px);e.record.disabled=true;e.release.disabled=false;e.badge.textContent="Ready";e.msg.textContent="Choose the experimental conditions, then release the particle.";last=null;ticks(a.V)}
+function release(){let a=calc(),s=L+W*a.f,end=a.positive?R:L,t0=performance.now(),dur=Math.max(650,Math.min(1800,1200/(a.vf+.4)));e.release.disabled=true;e.record.disabled=true;e.badge.textContent="Moving";function step(t){let u=Math.min(1,(t-t0)/dur),z=u*u,x=s+(end-s)*z;e.p.setAttribute("cx",x);e.ps.setAttribute("x",x);if(u<1)raf=requestAnimationFrame(step);else{raf=null;last=a;e.speed.textContent=a.vf.toFixed(3)+" m/s";e.record.disabled=false;e.release.disabled=false;e.badge.textContent="Complete";e.msg.textContent="Motion complete. Record this trial before changing the controls."}}raf=requestAnimationFrame(step)}
+function render(){e.body.innerHTML="";if(!trials.length)e.body.innerHTML='<tr><td colspan="9" style="color:#64748b">No trials recorded yet.</td></tr>';else trials.forEach((t,i)=>{e.body.insertAdjacentHTML("beforeend",`<tr><td>${i+1}</td><td>${(t.q*1e6).toFixed(1)}</td><td>${(t.m*1000).toFixed(1)}</td><td>${t.Vi.toFixed(1)}</td><td>${t.Vf.toFixed(1)}</td><td>${t.vf.toFixed(3)}</td><td>_____</td><td>_____</td><td>_____</td></tr>`)});e.count.textContent=trials.length+" / 10 trials";if(trials.length>=10){e.reveal.disabled=false;e.hint.textContent="Energy check unlocked."}}
+function record(){if(!last)return;trials.push(last);render();e.record.disabled=true;e.msg.textContent="Trial "+trials.length+" recorded. Change a variable and run another trial."}
+function reveal(){if(trials.length<10)return;let t=trials.at(-1);e.du.textContent=t.dU.toExponential(3)+" J";e.dk.textContent=t.dK.toExponential(3)+" J";e.total.textContent=(t.dU+t.dK).toExponential(2)+" J";e.hint.textContent="Compare these values with your calculations for Trial "+trials.length+"."}
+function syncStartRange(){let V=+e.V.value;e.startV.max=V;e.startV.step=5;if(+e.startV.value>V)e.startV.value=V;e.startVMax.textContent=V.toFixed(0)+" V";update()}
+[e.startV].forEach(z=>z.addEventListener("input",update));e.V.addEventListener("input",syncStartRange);e.release.addEventListener("click",release);e.reset.addEventListener("click",update);e.record.addEventListener("click",record);e.reveal.addEventListener("click",reveal);syncStartRange();render()})();
+</script>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const tabE=$("tabEnergy"),tabW=$("tabWork"),energy=$("energyPanel"),work=$("workPanel");
+function show(which){const isE=which==="e";energy.hidden=!isE;work.hidden=isE;tabE.classList.toggle("active",isE);tabW.classList.toggle("active",!isE);tabE.setAttribute("aria-selected",isE);tabW.setAttribute("aria-selected",!isE)}
+tabE.addEventListener("click",()=>show("e"));tabW.addEventListener("click",()=>show("w"));
+
+let sessionQ2=(Math.floor(Math.random()*451)+50)/100;
+if(Math.abs(sessionQ2-sessionQ1)<0.05) sessionQ2=sessionQ2<4.95?sessionQ2+0.07:sessionQ2-0.07;
+const q=$("workQ"),sgn=$("workChargeSign"),vi=$("workVi"),vf=$("workVf"),same=$("sameLine"),qout=$("workQOut"),dvout=$("workDV"),duout=$("workDU"),fieldout=$("workField"),extout=$("workExt"),lines=$("eqLines"),dot=$("workCharge"),signText=$("workSign"),arrow=$("moveArrow"),label=$("moveLabel"),move=$("moveChargeBtn"),reset=$("resetWorkBtn"),check=$("checkWorkBtn"),record=$("recordWorkBtn"),msg=$("workMsg"),body=$("workBody"),count=$("workCount");
+let trials=[],last=null,raf=null;
+const potentials=[100,80,60,40,20,0], xs=[105,215,325,435,545,655];
+function xFor(V){return xs[potentials.indexOf(Number(V))]}
+function vals(){q.value=sessionQ2;let charge=sessionQ2*1e-6*sessionSign,Vi=Number(vi.value),Vf=Number(vf.value),dV=Vf-Vi,dU=charge*dV;return{charge,Vi,Vf,dV,dU,Wf:-dU,We:dU,mystery:"Unknown"}}
+function drawLines(){lines.innerHTML="";potentials.forEach((V,i)=>{let selected=V===Number(vi.value)||V===Number(vf.value);lines.insertAdjacentHTML("beforeend",`<line x1="${xs[i]}" y1="55" x2="${xs[i]}" y2="325" class="eqline${selected?" selected":""}"/><text x="${xs[i]}" y="350" text-anchor="middle" font-size="13">${V} V</text>`)});}
+function updateWork(){if(raf)cancelAnimationFrame(raf);raf=null;if(same.checked){vf.value=vi.value;vf.disabled=true}else vf.disabled=false;let a=vals(),x=xFor(a.Vi),xf=xFor(a.Vf);qout.textContent=Math.abs(a.charge*1e6).toFixed(1)+" μC";dvout.textContent=(a.dV>=0?"+":"")+a.dV+" V";duout.textContent="Calculate";fieldout.textContent="Calculate";extout.textContent="Run trial";dot.setAttribute("cx",x);dot.setAttribute("cy",same.checked?145:210);signText.setAttribute("x",x);signText.setAttribute("y",same.checked?151:216);signText.textContent=a.charge>0?"+":"−";arrow.setAttribute("x1",x);arrow.setAttribute("y1",same.checked?145:210);arrow.setAttribute("x2",same.checked?x:xf);arrow.setAttribute("y2",same.checked?275:210);label.setAttribute("x",same.checked?x+55:(x+xf)/2);label.setAttribute("y",same.checked?210:195);record.disabled=true;move.disabled=false;last=null;msg.textContent=same.checked?"Ready to move along the "+a.Vi+" V equipotential line.":"Ready to move the charge.";drawLines()}
+function moveCharge(){let a=vals(),samePath=same.checked;if(!samePath&&a.Vi===a.Vf){msg.textContent="For a same-potential trial, check “Move along the same equipotential line.”";return}let x0=xFor(a.Vi),x1=xFor(a.Vf),y0=samePath?145:210,y1=samePath?275:210,t0=performance.now();move.disabled=true;function step(t){let u=Math.min(1,(t-t0)/850),z=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2,x=x0+(x1-x0)*z,y=y0+(y1-y0)*z;dot.setAttribute("cx",x);dot.setAttribute("cy",y);signText.setAttribute("x",x);signText.setAttribute("y",y+6);if(u<1)raf=requestAnimationFrame(step);else{raf=null;last={...a,samePath};extout.textContent=a.We.toExponential(3)+" J";record.disabled=false;move.disabled=false;msg.textContent=samePath?"Move complete. The measured work is 0 J because the charge stayed on one equipotential line. Record the trial.":"Move complete. The work done moving the charge is shown in the measurements. Use it with Vi and Vf to solve for the unknown charge."}}raf=requestAnimationFrame(step)}
+function checkCalc(){let a=last||vals();duout.textContent=a.dU.toExponential(3)+" J";fieldout.textContent=a.Wf.toExponential(3)+" J";extout.textContent=a.We.toExponential(3)+" J"}
+function renderWork(){body.innerHTML="";if(!trials.length)body.innerHTML='<tr><td colspan="6" style="color:#64748b">No trials recorded yet.</td></tr>';else trials.forEach((a,i)=>body.insertAdjacentHTML("beforeend",`<tr><td>${i+1}</td><td>${a.mystery||"Mystery"}</td><td class="blank">________</td><td>${a.Vi}</td><td>${a.Vf}</td><td>${a.We.toExponential(3)}</td></tr>`));count.textContent=trials.length+" trial"+(trials.length===1?"":"s")}
+function recordTrial(){if(!last)return;trials.push(last);renderWork();record.disabled=true;msg.textContent="Trial recorded. Change the charge or potentials for another trial."}
+[vi,vf].forEach(el=>el.addEventListener("input",updateWork));same.addEventListener("change",updateWork);move.addEventListener("click",moveCharge);reset.addEventListener("click",updateWork);check.addEventListener("click",checkCalc);record.addEventListener("click",recordTrial);updateWork();renderWork();
+})();
+</script>
+
+<script>
+(()=>{
+const signName=()=>sessionSign>0?"positive (+)":"negative (−)";
+function dataRows(tbody){return [...tbody.querySelectorAll("tr")].filter(r=>r.children.length>1&&!/No trials/i.test(r.textContent)).length}
+const b1=document.getElementById("revealCharge1"),s1=document.getElementById("revealStatus1"),o1=document.getElementById("revealedCharge1"),tb1=document.getElementById("body"),rec1=document.getElementById("record");
+const b2=document.getElementById("revealCharge2"),s2=document.getElementById("revealStatus2"),o2=document.getElementById("revealedCharge2"),tb2=document.getElementById("workBody"),rec2=document.getElementById("recordWorkBtn");
+function refresh(){
+ const n1=tb1?dataRows(tb1):0,n2=tb2?dataRows(tb2):0;
+ if(b1){b1.disabled=n1<10;s1.textContent=n1>=10?"10+ data points collected. You may now reveal the mystery charge.":`${n1}/10 data points collected. Collect ${10-n1} more.`}
+ if(b2){b2.disabled=n2<10;s2.textContent=n2>=10?"10+ data points collected. You may now reveal the mystery charge.":`${n2}/10 data points collected. Collect ${10-n2} more.`}
+}
+if(b1)b1.addEventListener("click",()=>{o1.style.display="block";o1.innerHTML=`<strong>Charge revealed:</strong> ${sessionQ1.toFixed(2)} μC, ${signName()}.`;b1.disabled=true});
+if(b2)b2.addEventListener("click",()=>{o2.style.display="block";o2.innerHTML=`<strong>Charge revealed:</strong> ${sessionQ2.toFixed(2)} μC, ${signName()}.`;b2.disabled=true});
+[rec1,rec2].filter(Boolean).forEach(x=>x.addEventListener("click",()=>setTimeout(refresh,0)));
+refresh();
+})();
+</script>
+</body></html>
