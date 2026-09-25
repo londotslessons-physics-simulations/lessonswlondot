@@ -1,3 +1,107 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AP Physics C</title><style>
-:root{--purple:#462b7a;--yellow:#facf22;--white:#fefefe;--bg:#f5f3f9;--text:#241b33;--muted:#645d70;--line:#d9d1e5}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}header{background:var(--purple);color:white;border-bottom:6px solid var(--yellow)}.wrap{width:min(1180px,calc(100% - 30px));margin:auto}.head{padding:24px 0}.head h1{margin:0}.head p{margin:6px 0 0;color:#eee8f8}main{padding:34px 0 60px}.crumbs{margin-bottom:18px}.crumbs a{color:var(--purple);font-weight:700}.course,.unit{background:white;border:1px solid var(--line);border-radius:16px;margin:16px 0;overflow:hidden;box-shadow:0 8px 22px rgba(70,43,122,.09)}summary{cursor:pointer;list-style:none;font-weight:900;color:var(--purple)}summary::-webkit-details-marker{display:none}.course>summary{font-size:1.35rem;padding:20px 22px;background:#eee9f6}.unit>summary{font-size:1.05rem;padding:15px 18px;border-left:7px solid var(--yellow)}.inside{padding:0 18px 18px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:white;border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;min-height:180px}.card h3{margin:0;color:var(--purple)}.card p{color:var(--muted);flex:1}.btn{display:inline-block;text-align:center;background:var(--yellow);color:var(--purple);font-weight:900;text-decoration:none;padding:11px 14px;border-radius:9px}.empty{padding:14px 18px;color:var(--muted);font-style:italic}.folder-link{display:inline-block;margin:0 0 15px;color:var(--purple);font-weight:800}footer{background:#321d5e;color:white;padding:20px 0}@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.grid{grid-template-columns:1fr}}
-</style></head><body><header><div class="wrap head"><h1>AP Physics C</h1><p>Lessons With Londot Physics Simulations</p></div></header><main class="wrap"><div class="crumbs"><a href="../">← Home</a></div><details class="unit" open><summary>📁 Unit 8 — Electric Charges, Fields &amp; Gauss’s Law</summary><div class="inside"><a class="btn" href="unit-8-electric-charges-fields-gauss-law/">Open Unit</a></div></details><details class="unit" open><summary>📁 Unit 9 — Electric Potential</summary><div class="inside"><a class="btn" href="unit-9-electric-potential/">Open Unit</a></div></details><details class="unit" open><summary>📁 Unit 10 — Conductors &amp; Capacitors</summary><div class="inside"><a class="btn" href="unit-10-conductors-capacitors/">Open Unit</a></div></details><details class="unit" open><summary>📁 Unit 11 — Electric Circuits</summary><div class="inside"><a class="btn" href="unit-11-electric-circuits/">Open Unit</a></div></details><details class="unit" open><summary>📁 Unit 12 — Magnetic Fields &amp; Electromagnetism</summary><div class="inside"><a class="btn" href="unit-12-magnetic-fields-electromagnetism/">Open Unit</a></div></details><details class="unit" open><summary>📁 Unit 13 — Electromagnetic Induction</summary><div class="inside"><a class="btn" href="unit-13-electromagnetic-induction/">Open Unit</a></div></details></main><footer><div class="wrap">Interactive investigations for physics students.</div></footer></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unit 9 — Electric Potential</title>
+  <style>
+    :root {
+      --purple:#462b7a; --yellow:#facf22; --bg:#f5f3f9;
+      --text:#241b33; --muted:#645d70; --line:#d9d1e5;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Arial,Helvetica,sans-serif; background:var(--bg); color:var(--text); }
+    header { background:var(--purple); color:white; border-bottom:6px solid var(--yellow); }
+    .wrap { width:min(1180px,calc(100% - 30px)); margin:auto; }
+    .head { padding:24px 0; }
+    .head h1 { margin:0; }
+    .head p { margin:6px 0 0; color:#eee8f8; }
+    main { padding:34px 0 60px; }
+    .crumbs { margin-bottom:24px; }
+    .crumbs a { color:var(--purple); font-weight:700; text-decoration:none; }
+    .intro { margin-bottom:24px; }
+    .intro h2 { margin:0 0 8px; color:var(--purple); }
+    .intro p { margin:0; color:var(--muted); line-height:1.5; }
+
+    /* SIMULATION CARDS */
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .card {
+      background:white; border:1px solid var(--line); border-radius:14px;
+      padding:18px; display:flex; flex-direction:column; min-height:190px;
+      box-shadow:0 8px 22px rgba(70,43,122,.09);
+    }
+    .card h3 { margin:0 0 10px; color:var(--purple); }
+    .card p { margin:0 0 18px; color:var(--muted); line-height:1.45; flex:1; }
+    .btn {
+      display:block; text-align:center; background:var(--yellow); color:var(--purple);
+      font-weight:900; text-decoration:none; padding:11px 14px; border-radius:9px;
+    }
+    .btn:hover { filter:brightness(.96); }
+    footer { background:#321d5e; color:white; padding:20px 0; }
+    @media(max-width:850px){ .grid{grid-template-columns:repeat(2,1fr);} }
+    @media(max-width:560px){ .grid{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head">
+    <h1>Unit 9 — Electric Potential</h1>
+    <p>AP Physics C: Electricity &amp; Magnetism</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="crumbs">
+    <a href="../">← AP Physics C</a>
+  </div>
+
+  <section class="intro">
+    <h2>Simulations &amp; Investigations</h2>
+    <p>Interactive investigations for electric potential, equipotential lines,
+       electric potential energy, work, and conservation of electrical energy.</p>
+  </section>
+
+  <section class="grid">
+
+    <!-- =====================================================
+         SIMULATION 1 — EQUIPOTENTIAL LINES
+         ===================================================== -->
+    <article class="card">
+      <h3>Equipotential Lines Lab</h3>
+      <p>Map equipotential lines for charge configurations and investigate
+         how electric potential changes with position.</p>
+      <a class="btn" href="equipotential-lines/">Launch Simulation</a>
+    </article>
+
+    <!-- =====================================================
+         SIMULATION 2 — CONSERVATION OF ELECTRICAL ENERGY
+         ===================================================== -->
+    <article class="card">
+      <h3>Conservation of Electrical Energy Lab</h3>
+      <p>Use electric potential, work, and conservation of energy to determine
+         the magnitude and sign of an unknown charge.</p>
+      <a class="btn" href="conservation-electrical-energy/">Launch Simulation</a>
+    </article>
+
+    <!-- =====================================================
+         ADD NEW SIMULATIONS BELOW THIS LINE
+
+         Copy this block:
+
+         <article class="card">
+           <h3>Simulation Name</h3>
+           <p>Short description of the simulation.</p>
+           <a class="btn" href="simulation-folder/">Launch Simulation</a>
+         </article>
+         ===================================================== -->
+
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Lessons With Londot Physics Simulations</div>
+</footer>
+
+</body>
+</html>
