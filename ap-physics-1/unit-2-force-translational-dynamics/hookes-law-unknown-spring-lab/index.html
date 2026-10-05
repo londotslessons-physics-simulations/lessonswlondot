@@ -421,43 +421,34 @@ function rubberPath(y0, y1){
 
 }
 
-
 /* =========================================================
-   RUBBER BAND MODEL
+   DRAW RUBBER BAND
    ========================================================= */
 
-function rubberExtension(force){
-
-  /*
-    Rubber band model:
-
-    F = a x + b x²
-
-    Solve for positive x.
-  */
-
-  if(force <= 0){
-
-    return 0;
-
-  }
-
+function rubberPath(y0, y1) {
 
   return (
+    '<path d="M372 ' +
+    y0 +
+    ' C365 ' +
+    (y0 + 55) +
+    ', 374 ' +
+    (y1 - 55) +
+    ', 370 ' +
+    y1 +
+    '" fill="none" stroke="#555" stroke-width="9" stroke-linecap="round"/>' +
 
-    -rbA +
-
-    Math.sqrt(
-      rbA * rbA +
-      4 * rbB * force
-    )
-
-  ) /
-
-  (2 * rbB);
-
+    '<path d="M388 ' +
+    y0 +
+    ' C395 ' +
+    (y0 + 55) +
+    ', 386 ' +
+    (y1 - 55) +
+    ', 390 ' +
+    y1 +
+    '" fill="none" stroke="#777" stroke-width="9" stroke-linecap="round"/>'
+  );
 }
-
 
 /* =========================================================
    DRAW APPARATUS
