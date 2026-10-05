@@ -1,948 +1,1677 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Hooke's Law Investigation</title>
-<style>
-:root{--navy:#173a5e;--blue:#2d6da3;--light:#eef5fb;--border:#b8c7d5;--text:#1b2733}
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f3f6f8;color:var(--text)}
-header{background:var(--navy);color:#fff;padding:18px 22px}
-header h1{margin:0}
-header p{margin:6px 0 0}
-.wrap{max-width:1200px;margin:18px auto;padding:0 14px}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
-.tab{background:#fff;color:var(--navy);font-weight:bold}
-.tab.active{background:var(--navy);color:#fff}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:15px}
-.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:15px}
-.card h2,.card h3{margin:0 0 8px}
-.row,.buttons{display:flex;gap:8px;flex-wrap:wrap}
-.pill{padding:7px 10px;border:1px solid var(--border);border-radius:7px;margin:8px 0}
-label{display:block;font-weight:bold;margin:12px 0 5px}
-.range{display:flex;gap:9px;align-items:center}
-.range input{width:100%}
-.range output{min-width:85px;text-align:right;font-weight:bold}
-button{min-height:42px;padding:9px 14px;border:1px solid var(--border);border-radius:7px;background:#fff;font-size:15px;cursor:pointer}
-.primary{background:var(--blue);color:#fff}
-.record{background:var(--navy);color:#fff}
-.note{padding:10px;background:var(--light);border:1px solid var(--border);border-radius:7px;margin-top:10px;font-size:14px}
-svg{width:100%;display:block;border:1px solid var(--border);border-radius:8px;background:#fff}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:8px;border-bottom:1px solid #ddd;text-align:right}
-th:first-child,td:first-child{text-align:left}
-.question{font-size:18px;font-weight:bold;margin:0 0 5px}
-.hidden{display:none}
-@media(max-width:850px){.layout{grid-template-columns:1fr}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Hooke's Law Investigation</title>
+
+  <style>
+    :root {
+      --purple: #462b7a;
+      --yellow: #facf22;
+      --white: #fefefe;
+      --bg: #f5f3f9;
+      --text: #241b33;
+      --muted: #645d70;
+      --line: #d9d1e5;
+      --panel: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: var(--purple);
+      color: white;
+      border-bottom: 6px solid var(--yellow);
+      padding: 20px 24px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      line-height: 1.4;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 16px 40px;
+    }
+
+    /* =========================================================
+       TABS
+       ========================================================= */
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      border: 2px solid var(--purple);
+      background: white;
+      color: var(--purple);
+      padding: 11px 18px;
+      border-radius: 7px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: var(--purple);
+      color: white;
+    }
+
+    /* =========================================================
+       LAYOUT
+       ========================================================= */
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 350px;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .card h2,
+    .card h3 {
+      margin-top: 0;
+    }
+
+    .readouts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      background: #f7f5fa;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 8px 11px;
+    }
+
+    /* =========================================================
+       APPARATUS
+       ========================================================= */
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    /* =========================================================
+       CONTROLS
+       ========================================================= */
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin: 12px 0 6px;
+    }
+
+    .range-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .range-row input {
+      width: 100%;
+    }
+
+    .range-row output {
+      min-width: 85px;
+      text-align: right;
+      font-weight: bold;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    button {
+      min-height: 42px;
+      padding: 9px 14px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: white;
+      color: var(--text);
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      filter: brightness(0.97);
+    }
+
+    .primary {
+      background: var(--purple);
+      color: white;
+    }
+
+    .record {
+      background: var(--yellow);
+      color: var(--text);
+      font-weight: bold;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      font-size: 16px;
+    }
+
+    /* =========================================================
+       NOTES
+       ========================================================= */
+
+    .note {
+      margin-top: 12px;
+      padding: 11px 12px;
+      background: #f7f5fa;
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--purple);
+      border-radius: 7px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .question {
+      margin: 0;
+      font-size: 19px;
+      font-weight: bold;
+      color: var(--purple);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* =========================================================
+       DATA TABLE
+       ========================================================= */
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 9px;
+      border-bottom: 1px solid #ddd;
+      text-align: right;
+    }
+
+    th {
+      background: #f1edf7;
+      color: var(--purple);
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @media (max-width: 850px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
+
 
 <body>
 
-<header>
-  <h1>Hooke's Law Investigation</h1>
-  <p>Use force–extension data to model an unknown spring, then test whether a rubber band follows the same relationship.</p>
-</header>
+  <!-- =======================================================
+       HEADER
+       ======================================================= -->
 
-<div class="wrap">
+  <header>
+    <h1>Hooke's Law Investigation</h1>
 
-  <div class="tabs" role="tablist" aria-label="Investigation parts">
-    <button id="springTab" class="tab active" type="button">
-      Part A — Unknown Spring
-    </button>
+    <p>
+      Use force–extension data to model an unknown spring,
+      then test whether a rubber band follows the same relationship.
+    </p>
+  </header>
 
-    <button id="rubberTab" class="tab" type="button">
-      Part B — Rubber Band
-    </button>
-  </div>
 
-  <div class="layout">
+  <main class="wrap">
 
-    <section class="card">
+    <!-- =====================================================
+         PART SELECTION
+         ===================================================== -->
 
-      <h2 id="apparatusTitle">Unknown Spring</h2>
+    <div
+      class="tabs"
+      role="tablist"
+      aria-label="Investigation parts"
+    >
 
-      <div class="row">
-        <span class="pill">
-          Added mass:
-          <b id="mr">0.00</b> kg
-        </span>
-
-        <span class="pill">
-          Extension:
-          <b id="xr">0.000</b> m
-        </span>
-
-        <span class="pill">
-          Applied force:
-          <b id="fr">0.000</b> N
-        </span>
-      </div>
-
-      <svg
-        viewBox="0 0 760 500"
-        aria-label="Elastic object with hanging mass"
+      <button
+        id="springTab"
+        class="tab active"
+        type="button"
       >
-        <g id="scene"></g>
-      </svg>
+        Part A — Unknown Spring
+      </button>
+
+      <button
+        id="rubberTab"
+        class="tab"
+        type="button"
+      >
+        Part B — Rubber Band
+      </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         APPARATUS + CONTROLS
+         ===================================================== -->
+
+    <div class="layout">
+
+      <!-- APPARATUS -->
+
+      <section class="card">
+
+        <h2 id="apparatusTitle">
+          Unknown Spring
+        </h2>
+
+
+        <div class="readouts">
+
+          <span class="pill">
+            Added Mass:
+            <strong id="massReadout">0.00</strong> kg
+          </span>
+
+          <span class="pill">
+            Applied Force:
+            <strong id="forceReadout">0.000</strong> N
+          </span>
+
+          <span class="pill">
+            Extension:
+            <strong id="extensionReadout">0.000</strong> m
+          </span>
+
+        </div>
+
+
+        <svg
+          viewBox="0 0 760 500"
+          role="img"
+          aria-label="Elastic object with hanging mass"
+        >
+          <g id="scene"></g>
+        </svg>
+
+      </section>
+
+
+      <!-- CONTROLS -->
+
+      <aside class="card">
+
+        <h3>Controls</h3>
+
+
+        <label for="massSlider">
+          Added Mass
+        </label>
+
+
+        <div class="range-row">
+
+          <input
+            id="massSlider"
+            type="range"
+            min="0"
+            max="1.50"
+            step="0.05"
+            value="0"
+          >
+
+          <output id="massOutput">
+            0.00 kg
+          </output>
+
+        </div>
+
+
+        <div class="buttons">
+
+          <button
+            id="measureButton"
+            class="primary"
+            type="button"
+          >
+            Measure
+          </button>
+
+          <button
+            id="recordButton"
+            class="record"
+            type="button"
+          >
+            Record Trial
+          </button>
+
+          <button
+            id="resetButton"
+            type="button"
+          >
+            Reset
+          </button>
+
+          <button
+            id="clearButton"
+            type="button"
+          >
+            Clear Data
+          </button>
+
+        </div>
+
+
+        <!-- SPRING CONSTANT CHECK -->
+
+        <div id="springCheck">
+
+          <label for="springAnswer">
+            Your Calculated Spring Constant (N/m)
+          </label>
+
+          <input
+            id="springAnswer"
+            type="number"
+            min="0"
+            step="0.1"
+            placeholder="Enter your value"
+          >
+
+
+          <div class="buttons">
+
+            <button
+              id="checkButton"
+              type="button"
+            >
+              Check Spring Constant
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- GOAL -->
+
+        <div
+          id="goal"
+          class="note"
+        >
+          <strong>Goal:</strong>
+          Collect several force-extension measurements.
+          Decide what to graph and use your data to determine
+          the unknown spring constant.
+        </div>
+
+
+        <!-- EXPERIMENTAL VARIATION -->
+
+        <div class="note">
+          <strong>Measurement Note:</strong>
+          Extension is measured from the unstretched position.
+          Small experimental variation is included in the data.
+        </div>
+
+
+        <!-- FEEDBACK -->
+
+        <div
+          id="feedback"
+          class="note"
+        >
+          The spring constant is hidden.
+        </div>
+
+      </aside>
+
+    </div>
+
+
+    <!-- =====================================================
+         RUBBER BAND INVESTIGATION QUESTION
+         ===================================================== -->
+
+    <section
+      id="rubberPrompt"
+      class="card hidden"
+    >
+
+      <p class="question">
+        Investigation Question:
+        Does a rubber band follow Hooke's Law?
+      </p>
+
+
+      <div class="note">
+
+        Collect force-extension data across a wide range
+        of added masses.
+
+        Decide what graph will best test whether the rubber
+        band behaves like the spring in Part A.
+
+        Use the shape of your graph and your experimental
+        evidence to support your conclusion.
+
+      </div>
 
     </section>
 
 
-    <aside class="card">
+    <!-- =====================================================
+         DATA TABLE
+         ===================================================== -->
 
-      <h3>Controls</h3>
+    <section class="card">
 
-      <label>Added mass</label>
-
-      <div class="range">
-        <input
-          id="mass"
-          type="range"
-          min="0"
-          max="1.50"
-          step=".05"
-          value="0"
-        >
-
-        <output id="mo">0.00 kg</output>
-      </div>
+      <h3 id="dataTitle">
+        Experimental Data — Unknown Spring
+      </h3>
 
 
-      <div class="buttons">
+      <div class="table-wrap">
 
-        <button
-          id="measure"
-          class="primary"
-          type="button"
-        >
-          Measure
-        </button>
+        <table>
 
-        <button
-          id="record"
-          class="record"
-          type="button"
-        >
-          Record Trial
-        </button>
+          <thead>
 
-        <button
-          id="reset"
-          type="button"
-        >
-          Reset
-        </button>
+            <tr>
+              <th>Trial</th>
+              <th>Added Mass (kg)</th>
+              <th>Applied Force (N)</th>
+              <th>Extension (m)</th>
+            </tr>
 
-        <button
-          id="clear"
-          type="button"
-        >
-          Clear Data
-        </button>
+          </thead>
 
-        <button
-          id="check"
-          type="button"
-        >
-          Check Spring Constant
-        </button>
+
+          <tbody id="dataBody"></tbody>
+
+        </table>
 
       </div>
 
+    </section>
 
-      <div id="springCheck">
+  </main>
 
-        <label>
-          Your calculated spring constant (N/m)
-        </label>
 
-        <input
-          id="answer"
-          type="number"
-          step=".1"
-          style="
-            width:100%;
-            padding:9px;
-            border:1px solid #b8c7d5;
-            border-radius:7px
-          "
-        >
+  <!-- =======================================================
+       JAVASCRIPT
+       ======================================================= -->
 
-      </div>
+  <script>
 
+    (() => {
 
-      <div class="note" id="goal">
-        <b>Goal:</b>
-        collect several force-extension measurements,
-        decide what to graph, and use the slope to
-        determine the unknown spring constant.
-      </div>
+      "use strict";
 
 
-      <div class="note">
-        <b>Important:</b>
-        extension is measured from the unstretched position.
-        Small experimental variation is included.
-      </div>
+      /* =====================================================
+         HELPER
+         ===================================================== */
 
+      const $ = (id) =>
+        document.getElementById(id);
 
-      <div class="note" id="feedback">
-        The spring constant is hidden.
-      </div>
 
-    </aside>
+      /* =====================================================
+         CONSTANTS
+         ===================================================== */
 
-  </div>
+      const g = 9.81;
 
 
-  <section class="card">
+      /* =====================================================
+         UNKNOWN SPRING
 
-    <h3 id="dataTitle">
-      Experimental Data — Unknown Spring
-    </h3>
+         A different spring constant is selected whenever
+         the page is loaded.
+         ===================================================== */
 
-    <table>
+      const springChoices = [
+        18.5,
+        22.0,
+        27.5,
+        31.0,
+        36.5,
+        42.0,
+        48.0,
+        55.0
+      ];
 
-      <thead>
-        <tr>
-          <th>Trial</th>
-          <th>Added Mass (kg)</th>
-          <th>Applied Force (N)</th>
-          <th>Extension (m)</th>
-          <th id="lastHead">
-            Spring Constant (N/m)
-          </th>
-        </tr>
-      </thead>
 
-      <tbody id="body"></tbody>
+      const springConstant =
+        springChoices[
+          Math.floor(
+            Math.random() *
+            springChoices.length
+          )
+        ];
 
-    </table>
 
-  </section>
+      /* =====================================================
+         RUBBER BAND MODEL
 
+         Rubber band model:
 
-  <section
-    id="rubberPrompt"
-    class="card hidden"
-  >
+             F = A*x + B*x^2
 
-    <p class="question">
-      Investigation Question:
-      Does a rubber band follow Hooke's Law?
-    </p>
+         This creates a nonlinear force-extension
+         relationship.
 
-    <div class="note">
-      Collect force–extension data across a wide range
-      of added masses. Decide what graph will best test
-      whether the rubber band behaves like the spring
-      in Part A. Use the shape of your graph—not just
-      one trial—to support your conclusion.
-    </div>
+         A and B vary slightly each time the page loads.
+         ===================================================== */
 
-  </section>
+      const rubberA =
+        11.5 +
+        Math.random() * 4.0;
 
-</div>
 
+      const rubberB =
+        70 +
+        Math.random() * 25.0;
 
-<script>
 
-(()=>{
+      /* =====================================================
+         STATE
+         ===================================================== */
 
-const $ = id => document.getElementById(id);
+      let mode = "spring";
 
-const g = 9.81;
+      let currentMass = 0;
 
+      let currentForce = 0;
 
-/* =========================================================
-   UNKNOWN SPRING
-   ========================================================= */
+      let currentExtension = 0;
 
-const choices = [
-  18.5,
-  22.0,
-  27.5,
-  31.0,
-  36.5,
-  42.0,
-  48.0,
-  55.0
-];
+      let hasMeasurement = false;
 
-const k =
-  choices[
-    Math.floor(
-      Math.random() * choices.length
-    )
-  ];
 
+      let springTrialNumber = 1;
 
-/* =========================================================
-   RUBBER BAND
+      let rubberTrialNumber = 1;
 
-   Parameters are randomized slightly each page load.
 
-   The force-extension curve is intentionally nonlinear.
-   The rubber band becomes progressively stiffer as it
-   stretches.
-   ========================================================= */
+      let springData = [];
 
-const rbA =
-  11.5 +
-  Math.random() * 4.0;
+      let rubberData = [];
 
-const rbB =
-  70 +
-  Math.random() * 25;
 
+      /* =====================================================
+         SMALL EXPERIMENTAL VARIATION
+         ===================================================== */
 
-/* =========================================================
-   STATE
-   ========================================================= */
+      function noisy(value, percent) {
 
-let mode = 'spring';
+        const variation =
+          (
+            Math.random() * 2 - 1
+          ) * percent;
 
-let m = 0;
 
-let x = 0;
+        return value *
+          (
+            1 + variation
+          );
 
-let F = 0;
+      }
 
-let measured = false;
 
-let springN = 1;
+      /* =====================================================
+         RUBBER BAND EXTENSION
 
-let rubberN = 1;
+         Starting with:
 
-let springRows = [];
+             F = A*x + B*x^2
 
-let rubberRows = [];
+         Rearrange:
 
+             B*x^2 + A*x - F = 0
 
-/* =========================================================
-   EXPERIMENTAL VARIATION
-   ========================================================= */
+         Positive quadratic solution:
 
-function noisy(v, p = .008){
+             x =
+             (-A + sqrt(A^2 + 4BF))
+             / (2B)
+         ===================================================== */
 
-  return v *
-    (
-      1 +
-      (
-        Math.random() * 2 - 1
-      ) * p
-    );
+      function rubberExtension(force) {
 
-}
+        if (
+          !Number.isFinite(force) ||
+          force <= 0
+        ) {
 
+          return 0;
 
-/* =========================================================
-   DRAW SPRING
-   ========================================================= */
+        }
 
-function springPath(y0, y1){
 
-  let pts = [];
+        const discriminant =
+          (
+            rubberA * rubberA
+          ) +
+          (
+            4 *
+            rubberB *
+            force
+          );
 
-  let turns = 12;
 
-  let amp = 25;
+        const extension =
+          (
+            -rubberA +
+            Math.sqrt(discriminant)
+          ) /
+          (
+            2 *
+            rubberB
+          );
 
-  pts.push(
-    '380,' + y0
-  );
 
+        if (
+          !Number.isFinite(extension) ||
+          extension < 0
+        ) {
 
-  for(
-    let i = 1;
-    i < turns * 2;
-    i++
-  ){
+          return 0;
 
-    let y =
-      y0 +
-      (y1 - y0) *
-      i /
-      (turns * 2);
+        }
 
-    let xx =
-      380 +
-      (
-        i % 2
-          ? amp
-          : -amp
-      );
 
-    pts.push(
-      xx + ',' + y
-    );
+        return extension;
 
-  }
+      }
 
 
-  pts.push(
-    '380,' + y1
-  );
+      /* =====================================================
+         SPRING SVG PATH
+         ===================================================== */
 
-  return pts.join(' ');
-
-}
-
-
-/* =========================================================
-   DRAW RUBBER BAND
-   ========================================================= */
-
-function rubberPath(y0, y1){
-
-  return
-
-    '<path d="M372 ' +
-    y0 +
-    ' C365 ' +
-    (y0 + 55) +
-    ', 374 ' +
-    (y1 - 55) +
-    ', 370 ' +
-    y1 +
-    '" fill="none" stroke="#555" stroke-width="9" stroke-linecap="round"/>' +
-
-    '<path d="M388 ' +
-    y0 +
-    ' C395 ' +
-    (y0 + 55) +
-    ', 386 ' +
-    (y1 - 55) +
-    ', 390 ' +
-    y1 +
-    '" fill="none" stroke="#777" stroke-width="9" stroke-linecap="round"/>';
-
-}
-
-/* =========================================================
-   DRAW RUBBER BAND
-   ========================================================= */
-
-function rubberPath(y0, y1) {
-
-  return (
-    '<path d="M372 ' +
-    y0 +
-    ' C365 ' +
-    (y0 + 55) +
-    ', 374 ' +
-    (y1 - 55) +
-    ', 370 ' +
-    y1 +
-    '" fill="none" stroke="#555" stroke-width="9" stroke-linecap="round"/>' +
-
-    '<path d="M388 ' +
-    y0 +
-    ' C395 ' +
-    (y0 + 55) +
-    ', 386 ' +
-    (y1 - 55) +
-    ', 390 ' +
-    y1 +
-    '" fill="none" stroke="#777" stroke-width="9" stroke-linecap="round"/>'
-  );
-}
-
-/* =========================================================
-   DRAW APPARATUS
-   ========================================================= */
-
-function draw(){
-
-  $('mr').textContent =
-    m.toFixed(2);
-
-  $('xr').textContent =
-    x.toFixed(3);
-
-  $('fr').textContent =
-    F.toFixed(3);
-
-  $('mo').textContent =
-    m.toFixed(2) + ' kg';
-
-
-  let yTop = 80;
-
-  let yNatural = 245;
-
-
-  let scale =
-    mode === 'spring'
-      ? 350
-      : 520;
-
-
-  let yEnd =
-    yNatural +
-    Math.min(
-      175,
-      x * scale
-    );
-
-
-  let massY = yEnd;
-
-
-  let elastic =
-    mode === 'spring'
-
-      ?
-
-      '<polyline points="' +
-      springPath(
-        yTop,
+      function makeSpringPoints(
+        yStart,
         yEnd
-      ) +
-      '" fill="none" stroke="#555" stroke-width="4"/>'
+      ) {
 
-      :
+        const points = [];
 
-      rubberPath(
-        yTop,
+        const centerX = 380;
+
+        const turns = 12;
+
+        const amplitude = 25;
+
+
+        points.push(
+          centerX + "," + yStart
+        );
+
+
+        for (
+          let i = 1;
+          i < turns * 2;
+          i++
+        ) {
+
+          const fraction =
+            i /
+            (
+              turns * 2
+            );
+
+
+          const y =
+            yStart +
+            (
+              yEnd -
+              yStart
+            ) *
+            fraction;
+
+
+          const x =
+            centerX +
+            (
+              i % 2 === 0
+                ? -amplitude
+                : amplitude
+            );
+
+
+          points.push(
+            x + "," + y
+          );
+
+        }
+
+
+        points.push(
+          centerX + "," + yEnd
+        );
+
+
+        return points.join(" ");
+
+      }
+
+
+      /* =====================================================
+         RUBBER BAND SVG
+
+         IMPORTANT:
+         Keep the opening parenthesis directly after return.
+         ===================================================== */
+
+      function makeRubberBand(
+        yStart,
         yEnd
-      );
+      ) {
 
+        return (
 
-  $('scene').innerHTML =
+          '<path ' +
+          'd="M372 ' + yStart +
+          ' C366 ' + (yStart + 50) +
+          ', 369 ' + (yEnd - 50) +
+          ', 372 ' + yEnd +
+          '" ' +
+          'fill="none" ' +
+          'stroke="#555" ' +
+          'stroke-width="9" ' +
+          'stroke-linecap="round" />' +
 
-    '<line x1="250" y1="65" x2="510" y2="65" stroke="#444" stroke-width="8"/>' +
 
-    elastic +
+          '<path ' +
+          'd="M388 ' + yStart +
+          ' C394 ' + (yStart + 50) +
+          ', 391 ' + (yEnd - 50) +
+          ', 388 ' + yEnd +
+          '" ' +
+          'fill="none" ' +
+          'stroke="#777" ' +
+          'stroke-width="9" ' +
+          'stroke-linecap="round" />'
 
-    '<rect x="330" y="' +
-    massY +
-    '" width="100" height="65" rx="4" fill="#999" stroke="#333" stroke-width="2"/>' +
+        );
 
-    '<text x="380" y="' +
-    (massY + 38) +
-    '" text-anchor="middle">' +
-    m.toFixed(2) +
-    ' kg</text>' +
+      }
 
-    '<line x1="540" y1="' +
-    yNatural +
-    '" x2="650" y2="' +
-    yNatural +
-    '" stroke="#777" stroke-dasharray="6 5"/>' +
 
-    '<text x="655" y="' +
-    (yNatural + 5) +
-    '" font-size="13">unstretched reference</text>' +
+      /* =====================================================
+         DRAW APPARATUS
+         ===================================================== */
 
-    '<line x1="570" y1="' +
-    yNatural +
-    '" x2="570" y2="' +
-    yEnd +
-    '" stroke="#333"/>' +
+      function drawApparatus() {
 
-    '<line x1="560" y1="' +
-    yNatural +
-    '" x2="580" y2="' +
-    yNatural +
-    '" stroke="#333"/>' +
+        $("massReadout").textContent =
+          currentMass.toFixed(2);
 
-    '<line x1="560" y1="' +
-    yEnd +
-    '" x2="580" y2="' +
-    yEnd +
-    '" stroke="#333"/>' +
 
-    '<text x="590" y="' +
-    (
-      (yNatural + yEnd) / 2
-    ) +
-    '" font-size="15">x</text>';
+        $("forceReadout").textContent =
+          currentForce.toFixed(3);
 
-}
 
+        $("extensionReadout").textContent =
+          currentExtension.toFixed(3);
 
-/* =========================================================
-   DATA TABLE
-   ========================================================= */
 
-function render(){
+        $("massOutput").textContent =
+          currentMass.toFixed(2) +
+          " kg";
 
-  const rows =
-    mode === 'spring'
-      ? springRows
-      : rubberRows;
 
+        const yTop = 80;
 
-  $('body').innerHTML = '';
+        const yNatural = 245;
 
 
-  rows.forEach(q => {
+        /*
+          Different visual scale factors are used only
+          to make the extension easy to see on screen.
+        */
 
-    let tr =
-      document.createElement('tr');
+        const visualScale =
+          mode === "spring"
+            ? 350
+            : 520;
 
 
-    tr.innerHTML =
+        const maximumVisualExtension =
+          175;
 
-      '<td>' +
-      q.n +
-      '</td>' +
 
-      '<td>' +
-      q.m.toFixed(2) +
-      '</td>' +
+        const visualExtension =
+          Math.min(
+            maximumVisualExtension,
+            currentExtension *
+            visualScale
+          );
 
-      '<td>' +
-      q.F.toFixed(3) +
-      '</td>' +
 
-      '<td>' +
-      q.x.toFixed(3) +
-      '</td>' +
+        const yEnd =
+          yNatural +
+          visualExtension;
 
-      '<td></td>';
 
+        let elasticObject = "";
 
-    $('body').appendChild(tr);
 
-  });
+        if (
+          mode === "spring"
+        ) {
 
-}
+          elasticObject =
 
+            '<polyline ' +
+            'points="' +
+            makeSpringPoints(
+              yTop,
+              yEnd
+            ) +
+            '" ' +
+            'fill="none" ' +
+            'stroke="#555" ' +
+            'stroke-width="4" ' +
+            'stroke-linejoin="round" ' +
+            '/>';
 
-/* =========================================================
-   TAKE MEASUREMENT
-   ========================================================= */
+        }
 
-function measure(){
+        else {
 
-  F =
-    noisy(
-      m * g,
-      .004
-    );
+          elasticObject =
+            makeRubberBand(
+              yTop,
+              yEnd
+            );
 
+        }
 
-  x =
-    mode === 'spring'
 
-      ?
+        const objectLabel =
+          mode === "spring"
+            ? "spring"
+            : "rubber band";
 
-      noisy(
-        F / k,
-        .008
-      )
 
-      :
+        $("scene").innerHTML =
 
-      noisy(
-        rubberExtension(F),
-        .012
-      );
+          /* Support */
 
+          '<line ' +
+          'x1="250" y1="65" ' +
+          'x2="510" y2="65" ' +
+          'stroke="#444" ' +
+          'stroke-width="8" />' +
 
-  measured = true;
 
-  draw();
+          /* Elastic object */
 
-}
+          elasticObject +
 
 
-/* =========================================================
-   RESET CURRENT MEASUREMENT
-   ========================================================= */
+          /* Hanging mass */
 
-function resetMeasurement(){
+          '<rect ' +
+          'x="330" ' +
+          'y="' + yEnd + '" ' +
+          'width="100" ' +
+          'height="65" ' +
+          'rx="5" ' +
+          'fill="#aaa" ' +
+          'stroke="#333" ' +
+          'stroke-width="2" />' +
 
-  m = 0;
 
-  $('mass').value = 0;
+          '<text ' +
+          'x="380" ' +
+          'y="' + (yEnd + 38) + '" ' +
+          'text-anchor="middle" ' +
+          'font-size="16">' +
+          currentMass.toFixed(2) +
+          ' kg' +
+          '</text>' +
 
-  F = 0;
 
-  x = 0;
+          /* Natural position */
 
-  measured = false;
+          '<line ' +
+          'x1="525" ' +
+          'y1="' + yNatural + '" ' +
+          'x2="665" ' +
+          'y2="' + yNatural + '" ' +
+          'stroke="#777" ' +
+          'stroke-width="2" ' +
+          'stroke-dasharray="6 5" />' +
 
-  draw();
 
-}
+          '<text ' +
+          'x="530" ' +
+          'y="' + (yNatural - 10) + '" ' +
+          'font-size="13" ' +
+          'fill="#555">' +
+          'unstretched reference' +
+          '</text>' +
 
 
-/* =========================================================
-   SWITCH BETWEEN SPRING / RUBBER BAND
-   ========================================================= */
+          /* Extension bracket */
 
-function setMode(next){
+          '<line ' +
+          'x1="570" ' +
+          'y1="' + yNatural + '" ' +
+          'x2="570" ' +
+          'y2="' + yEnd + '" ' +
+          'stroke="#333" />' +
 
-  mode = next;
 
+          '<line ' +
+          'x1="560" ' +
+          'y1="' + yNatural + '" ' +
+          'x2="580" ' +
+          'y2="' + yNatural + '" ' +
+          'stroke="#333" />' +
 
-  const spring =
-    mode === 'spring';
 
+          '<line ' +
+          'x1="560" ' +
+          'y1="' + yEnd + '" ' +
+          'x2="580" ' +
+          'y2="' + yEnd + '" ' +
+          'stroke="#333" />' +
 
-  $('springTab')
-    .classList
-    .toggle(
-      'active',
-      spring
-    );
 
+          '<text ' +
+          'x="588" ' +
+          'y="' +
+          (
+            (
+              yNatural +
+              yEnd
+            ) /
+            2
+          ) +
+          '" ' +
+          'font-size="16">' +
+          'x' +
+          '</text>' +
 
-  $('rubberTab')
-    .classList
-    .toggle(
-      'active',
-      !spring
-    );
 
+          /* Object label */
 
-  $('apparatusTitle').textContent =
-    spring
-      ? 'Unknown Spring'
-      : 'Rubber Band';
+          '<text ' +
+          'x="300" ' +
+          'y="110" ' +
+          'font-size="14" ' +
+          'fill="#555">' +
+          objectLabel +
+          '</text>';
 
+      }
 
-  $('dataTitle').textContent =
-    spring
-      ? 'Experimental Data — Unknown Spring'
-      : 'Experimental Data — Rubber Band';
 
+      /* =====================================================
+         RENDER DATA TABLE
+         ===================================================== */
 
-  $('springCheck')
-    .classList
-    .toggle(
-      'hidden',
-      !spring
-    );
+      function renderTable() {
 
+        const rows =
+          mode === "spring"
+            ? springData
+            : rubberData;
 
-  $('check')
-    .classList
-    .toggle(
-      'hidden',
-      !spring
-    );
 
+        $("dataBody").innerHTML =
+          "";
 
-  $('rubberPrompt')
-    .classList
-    .toggle(
-      'hidden',
-      spring
-    );
 
+        rows.forEach(
+          (trial) => {
 
-  $('lastHead').textContent =
-    spring
-      ? 'Spring Constant (N/m)'
-      : 'Does F/x stay constant?';
+            const row =
+              document.createElement(
+                "tr"
+              );
 
 
-  $('goal').innerHTML =
-    spring
+            row.innerHTML =
 
-      ?
+              "<td>" +
+              trial.number +
+              "</td>" +
 
-      '<b>Goal:</b> collect several force-extension measurements, decide what to graph, and use the slope to determine the unknown spring constant.'
+              "<td>" +
+              trial.mass.toFixed(2) +
+              "</td>" +
 
-      :
+              "<td>" +
+              trial.force.toFixed(3) +
+              "</td>" +
 
-      '<b>Goal:</b> collect force-extension data and determine experimentally whether the rubber band follows Hooke\'s Law.';
+              "<td>" +
+              trial.extension.toFixed(3) +
+              "</td>";
 
 
-  $('feedback').textContent =
-    spring
+            $("dataBody")
+              .appendChild(row);
 
-      ?
+          }
+        );
 
-      'The spring constant is hidden.'
+      }
 
-      :
 
-      'Do not assume the rubber band follows the same model as the spring. Let your graph decide.';
+      /* =====================================================
+         TAKE MEASUREMENT
+         ===================================================== */
 
+      function takeMeasurement() {
 
-  resetMeasurement();
+        /*
+          Always read the mass directly from the slider.
+          This keeps both tabs synchronized with the
+          displayed control.
+        */
 
-  render();
+        currentMass =
+          Number(
+            $("massSlider").value
+          );
 
-}
 
+        if (
+          !Number.isFinite(
+            currentMass
+          )
+        ) {
 
-/* =========================================================
-   CONTROLS
-   ========================================================= */
+          currentMass = 0;
 
-$('mass').oninput = () => {
+        }
 
-  m =
-    +$('mass').value;
 
-  measured = false;
+        /*
+          Applied force is the weight of the hanging mass.
+        */
 
-  F = 0;
+        currentForce =
+          noisy(
+            currentMass * g,
+            0.004
+          );
 
-  x = 0;
 
-  draw();
+        /*
+          SPRING
+        */
 
-};
+        if (
+          mode === "spring"
+        ) {
 
+          currentExtension =
+            noisy(
+              currentForce /
+              springConstant,
+              0.008
+            );
 
-$('measure').onclick =
-  measure;
+        }
 
 
-$('record').onclick = () => {
+        /*
+          RUBBER BAND
+        */
 
-  if(!measured){
+        else if (
+          mode === "rubber"
+        ) {
 
-    measure();
+          const idealExtension =
+            rubberExtension(
+              currentForce
+            );
 
-  }
 
+          currentExtension =
+            noisy(
+              idealExtension,
+              0.012
+            );
 
-  if(mode === 'spring'){
+        }
 
-    springRows.push({
 
-      n: springN++,
+        /*
+          Safety checks
+        */
 
-      m,
+        if (
+          !Number.isFinite(
+            currentForce
+          )
+        ) {
 
-      F,
+          currentForce = 0;
 
-      x
+        }
 
-    });
 
-  }
+        if (
+          !Number.isFinite(
+            currentExtension
+          )
+        ) {
 
-  else {
+          currentExtension = 0;
 
-    rubberRows.push({
+        }
 
-      n: rubberN++,
 
-      m,
+        hasMeasurement = true;
 
-      F,
 
-      x
+        drawApparatus();
 
-    });
+      }
 
-  }
 
+      /* =====================================================
+         RECORD CURRENT TRIAL
+         ===================================================== */
 
-  render();
+      function recordTrial() {
 
-  measured = false;
+        if (
+          !hasMeasurement
+        ) {
 
-};
+          takeMeasurement();
 
+        }
 
-$('reset').onclick =
-  resetMeasurement;
 
+        if (
+          mode === "spring"
+        ) {
 
-$('clear').onclick = () => {
+          springData.push({
 
-  if(mode === 'spring'){
+            number:
+              springTrialNumber++,
 
-    springRows = [];
+            mass:
+              currentMass,
 
-    springN = 1;
+            force:
+              currentForce,
 
-  }
+            extension:
+              currentExtension
 
-  else {
+          });
 
-    rubberRows = [];
+        }
 
-    rubberN = 1;
+        else {
 
-  }
+          rubberData.push({
 
+            number:
+              rubberTrialNumber++,
 
-  render();
+            mass:
+              currentMass,
 
-};
+            force:
+              currentForce,
 
+            extension:
+              currentExtension
 
-/* =========================================================
-   CHECK SPRING CONSTANT
-   ========================================================= */
+          });
 
-$('check').onclick = () => {
+        }
 
-  let a =
-    +$('answer').value;
 
+        renderTable();
 
-  if(
-    !isFinite(a) ||
-    a <= 0
-  ){
 
-    $('feedback').textContent =
-      'Enter your calculated spring constant first.';
+        hasMeasurement = false;
 
-    return;
+      }
 
-  }
 
+      /* =====================================================
+         RESET CURRENT TRIAL
+         ===================================================== */
 
-  let err =
-    Math.abs(
-      a - k
-    ) /
-    k *
-    100;
+      function resetCurrentTrial() {
 
+        currentMass = 0;
 
-  $('feedback').innerHTML =
-    err <= 3
+        currentForce = 0;
 
-      ?
+        currentExtension = 0;
 
-      '<b>Correct.</b> Your experimental value is within 3% of the hidden spring constant.'
+        hasMeasurement = false;
 
-      :
 
-      'Not quite. Recheck your graph, slope, units, and calculations.';
+        $("massSlider").value =
+          "0";
 
-};
 
+        drawApparatus();
 
-/* =========================================================
-   TAB CONTROLS
-   ========================================================= */
+      }
 
-$('springTab').onclick =
-  () => setMode('spring');
 
+      /* =====================================================
+         CLEAR CURRENT DATA SET
+         ===================================================== */
 
-$('rubberTab').onclick =
-  () => setMode('rubber');
+      function clearCurrentData() {
 
+        if (
+          mode === "spring"
+        ) {
 
-/* =========================================================
-   INITIALIZE
-   ========================================================= */
+          springData = [];
 
-render();
+          springTrialNumber = 1;
 
-draw();
+        }
 
-})();
+        else {
 
-</script>
+          rubberData = [];
+
+          rubberTrialNumber = 1;
+
+        }
+
+
+        renderTable();
+
+      }
+
+
+      /* =====================================================
+         SWITCH INVESTIGATION PARTS
+         ===================================================== */
+
+      function switchMode(
+        newMode
+      ) {
+
+        mode = newMode;
+
+
+        const isSpring =
+          mode === "spring";
+
+
+        /*
+          Tabs
+        */
+
+        $("springTab")
+          .classList
+          .toggle(
+            "active",
+            isSpring
+          );
+
+
+        $("rubberTab")
+          .classList
+          .toggle(
+            "active",
+            !isSpring
+          );
+
+
+        /*
+          Apparatus title
+        */
+
+        $("apparatusTitle")
+          .textContent =
+
+          isSpring
+            ? "Unknown Spring"
+            : "Rubber Band";
+
+
+        /*
+          Data title
+        */
+
+        $("dataTitle")
+          .textContent =
+
+          isSpring
+
+            ? "Experimental Data — Unknown Spring"
+
+            : "Experimental Data — Rubber Band";
+
+
+        /*
+          Spring constant controls
+        */
+
+        $("springCheck")
+          .classList
+          .toggle(
+            "hidden",
+            !isSpring
+          );
+
+
+        /*
+          Rubber-band question
+        */
+
+        $("rubberPrompt")
+          .classList
+          .toggle(
+            "hidden",
+            isSpring
+          );
+
+
+        /*
+          Goal
+        */
+
+        if (
+          isSpring
+        ) {
+
+          $("goal").innerHTML =
+
+            "<strong>Goal:</strong> " +
+
+            "Collect several force-extension measurements. " +
+
+            "Decide what to graph and use your data to determine " +
+
+            "the unknown spring constant.";
+
+
+          $("feedback").innerHTML =
+
+            "The spring constant is hidden.";
+
+        }
+
+        else {
+
+          $("goal").innerHTML =
+
+            "<strong>Goal:</strong> " +
+
+            "Collect force-extension data across a wide range " +
+
+            "and determine experimentally whether the rubber " +
+
+            "band follows Hooke's Law.";
+
+
+          $("feedback").innerHTML =
+
+            "Do not assume the rubber band follows the same " +
+
+            "model as the spring. Let your data and graph decide.";
+
+        }
+
+
+        /*
+          Start the new apparatus at zero,
+          but preserve previously collected data.
+        */
+
+        resetCurrentTrial();
+
+        renderTable();
+
+      }
+
+
+      /* =====================================================
+         CHECK SPRING CONSTANT
+         ===================================================== */
+
+      function checkSpringConstant() {
+
+        const studentValue =
+          Number(
+            $("springAnswer").value
+          );
+
+
+        if (
+          !Number.isFinite(
+            studentValue
+          ) ||
+          studentValue <= 0
+        ) {
+
+          $("feedback").innerHTML =
+
+            "Enter your calculated spring constant first.";
+
+          return;
+
+        }
+
+
+        const percentError =
+
+          Math.abs(
+            studentValue -
+            springConstant
+          ) /
+
+          springConstant *
+
+          100;
+
+
+        if (
+          percentError <= 3
+        ) {
+
+          $("feedback").innerHTML =
+
+            "<strong>Correct.</strong> " +
+
+            "Your experimental value is within 3% " +
+
+            "of the hidden spring constant.";
+
+        }
+
+        else {
+
+          $("feedback").innerHTML =
+
+            "Not quite. Recheck your graph, slope, " +
+
+            "units, and calculations.";
+
+        }
+
+      }
+
+
+      /* =====================================================
+         EVENT LISTENERS
+         ===================================================== */
+
+      $("massSlider")
+        .addEventListener(
+          "input",
+          () => {
+
+            currentMass =
+              Number(
+                $("massSlider").value
+              );
+
+
+            currentForce = 0;
+
+            currentExtension = 0;
+
+            hasMeasurement = false;
+
+
+            drawApparatus();
+
+          }
+        );
+
+
+      $("measureButton")
+        .addEventListener(
+          "click",
+          takeMeasurement
+        );
+
+
+      $("recordButton")
+        .addEventListener(
+          "click",
+          recordTrial
+        );
+
+
+      $("resetButton")
+        .addEventListener(
+          "click",
+          resetCurrentTrial
+        );
+
+
+      $("clearButton")
+        .addEventListener(
+          "click",
+          clearCurrentData
+        );
+
+
+      $("checkButton")
+        .addEventListener(
+          "click",
+          checkSpringConstant
+        );
+
+
+      $("springTab")
+        .addEventListener(
+          "click",
+          () => {
+
+            switchMode(
+              "spring"
+            );
+
+          }
+        );
+
+
+      $("rubberTab")
+        .addEventListener(
+          "click",
+          () => {
+
+            switchMode(
+              "rubber"
+            );
+
+          }
+        );
+
+
+      /* =====================================================
+         INITIALIZE
+         ===================================================== */
+
+      renderTable();
+
+      drawApparatus();
+
+    })();
+
+  </script>
 
 </body>
-</html>
