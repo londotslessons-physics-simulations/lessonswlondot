@@ -1563,43 +1563,7 @@
 
 }
 
-        const percentError =
-
-          Math.abs(
-            studentValue -
-            springConstant
-          ) /
-
-          springConstant *
-
-          100;
-
-
-        if (
-          percentError <= 3
-        ) {
-
-          $("feedback").innerHTML =
-
-            "<strong>Correct.</strong> " +
-
-            "Your experimental value is within 3% " +
-
-            "of the hidden spring constant.";
-
-        }
-
-        else {
-
-          $("feedback").innerHTML =
-
-            "Not quite. Recheck your graph, slope, " +
-
-            "units, and calculations.";
-
-        }
-
-      }
+      
 
 
       /* =====================================================
