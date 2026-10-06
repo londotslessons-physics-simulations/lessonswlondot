@@ -1510,29 +1510,58 @@
          CHECK SPRING CONSTANT
          ===================================================== */
 
-      function checkSpringConstant() {
+ function checkSpringConstant() {
 
-        const studentValue =
-          Number(
-            $("springAnswer").value
-          );
+  const studentValue =
+    Number(
+      $("springAnswer").value
+    );
 
+  if (
+    !Number.isFinite(studentValue) ||
+    studentValue <= 0
+  ) {
 
-        if (
-          !Number.isFinite(
-            studentValue
-          ) ||
-          studentValue <= 0
-        ) {
+    $("feedback").innerHTML =
+      "Enter your calculated spring constant first.";
 
-          $("feedback").innerHTML =
+    return;
+  }
 
-            "Enter your calculated spring constant first.";
+  const percentError =
+    Math.abs(
+      studentValue -
+      springConstant
+    ) /
+    springConstant *
+    100;
 
-          return;
+  if (
+    percentError <= 3
+  ) {
 
-        }
+    $("feedback").innerHTML =
+      "<strong>Correct.</strong> " +
+      "Your experimental value is within 3% of the actual spring constant." +
+      "<br><br>" +
+      "<strong>Actual Spring Constant: " +
+      springConstant.toFixed(1) +
+      " N/m</strong>";
 
+  }
+  else {
+
+    $("feedback").innerHTML =
+      "<strong>Not quite.</strong> " +
+      "Recheck your graph, slope, units, and calculations." +
+      "<br><br>" +
+      "<strong>Actual Spring Constant: " +
+      springConstant.toFixed(1) +
+      " N/m</strong>";
+
+  }
+
+}
 
         const percentError =
 
