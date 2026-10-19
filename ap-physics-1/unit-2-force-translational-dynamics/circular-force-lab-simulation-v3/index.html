@@ -1,38 +1,195 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Circular Force Lab</title><style>body{font-family:Arial;margin:0;background:#f4f6f8}header{background:#173a5e;color:white;padding:18px}main{max-width:1100px;margin:auto;padding:15px}.grid{display:grid;grid-template-columns:2fr 1fr;gap:14px}.card{background:white;border:1px solid #bbb;border-radius:9px;padding:14px;margin-bottom:14px}.row,.buttons{display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid #bbb;padding:7px;border-radius:6px}label{display:block;font-weight:bold;margin-top:10px}input{width:100%}button{padding:10px;border:1px solid #aaa;border-radius:6px;background:white}.primary{background:#2d6da3;color:white}svg{width:100%;border:1px solid #bbb}.note{background:#eef5fb;border:1px solid #bbb;padding:9px;margin-top:10px}table{width:100%;border-collapse:collapse}th,td{padding:7px;border-bottom:1px solid #ddd;text-align:right}@media(max-width:800px){.grid{grid-template-columns:1fr}}</style></head><body><header><h1>Classic Circular Force Lab</h1><p>Investigate force, mass, radius, and speed in circular motion.</p></header><main><div class="grid"><section class="card"><h2>String-Through-a-Tube Apparatus</h2><div class="row"><span class="pill">Rotating mass <b id="rr"></b> kg</span><span class="pill">Hanging mass <b id="hr"></b> kg</span><span class="pill">Radius <b id="rad"></b> m</span><span class="pill">Period <b id="pr">—</b></span></div><svg viewBox="0 0 850 500"><g id="scene"></g></svg><div class="row"><span class="pill">Revolutions <b id="revs">0</b></span><span class="pill">Time <b id="time">0.00</b> s</span><span class="pill">Hanging mass <b id="pos">At mark</b></span></div></section><aside class="card"><h3>Controls</h3><label>Rotating mass</label><input id="rm" type="range" min=".05" max=".40" step=".01" value=".15"><div id="rmo"></div><label>Hanging mass</label><input id="hm" type="range" min=".03" max=".30" step=".01" value=".10"><div id="hmo"></div><label>Radius</label><input id="radius" type="range" min=".25" max="1" step=".05" value=".60"><div id="ro"></div><label>Rotation rate</label><input id="rate" type="range" min=".3" max="2.5" step=".01" value="1"><div id="rateo"></div><div class="buttons"><button id="start" class="primary">Start Rotation</button><button id="pause">Pause</button><button id="reset">Reset</button><button id="record">Record Trial</button><button id="new">New Trial</button><button id="clear">Clear Data</button></div><div class="note">Adjust the rotation rate until the hanging mass stays near the reference mark. Too fast makes it rise; too slow makes it fall.</div><div class="note">Students calculate tangential speed and inward force themselves.</div></aside></div><section class="card"><h3>Experimental Data</h3><table><thead><tr><th>Trial</th><th>Rotating Mass</th><th>Hanging Mass</th><th>Radius</th><th>Period</th><th>Speed</th><th>Inward Force</th></tr></thead><tbody id="body"></tbody></table></section></main><script>
-const $=x=>document.getElementById(x),g=9.81;let mr=.15,mh=.10,r=.6,rate=1,t=0,th=0,revs=0,h=0,run=false,last,raf,trial=1,rows=[];
-function ratio(){let w=2*Math.PI*rate;return mr*w*w*r/(mh*g)}
-function draw(){
-$('rr').textContent=mr.toFixed(3);$('hr').textContent=mh.toFixed(3);$('rad').textContent=r.toFixed(2);$('pr').textContent=(1/rate).toFixed(3)+' s';
-$('rmo').textContent=mr.toFixed(3)+' kg';$('hmo').textContent=mh.toFixed(3)+' kg';$('ro').textContent=r.toFixed(2)+' m';$('rateo').textContent=rate.toFixed(2)+' rev/s';
-$('revs').textContent=Math.floor(revs);$('time').textContent=t.toFixed(2);
-let q=ratio();$('pos').textContent=q>.96&&q<1.04?'At mark':q>=1.04?'Above mark':'Below mark';
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Circular Force Lab — Graphing Investigation</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#182c3e}
+header{background:#173a5e;color:#fff;padding:18px}
+header h1{margin:0 0 8px}
+header p{margin:0}
+main{max-width:1160px;margin:auto;padding:15px}
+.grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:14px}
+.card{background:#fff;border:1px solid #bbc5cf;border-radius:9px;padding:14px;margin-bottom:14px}
+.row,.buttons{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{border:1px solid #bbb;padding:7px;border-radius:6px;background:#fff}
+label{display:block;font-weight:bold;margin-top:12px}
+input[type=range]{width:100%}
+input[type=number]{max-width:130px;padding:8px}
+button,select{padding:10px;border:1px solid #aaa;border-radius:6px;background:#fff;font-size:14px}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.primary{background:#2d6da3;color:#fff}
+.active{background:#173a5e;color:#fff}
+svg{width:100%;border:1px solid #bbb;background:#fff}
+.note{background:#eef5fb;border:1px solid #bdcddc;padding:9px;margin-top:10px;border-radius:5px}
+.warning{background:#fff4df}
+.small{font-size:13px;color:#425467}
+table{width:100%;border-collapse:collapse;min-width:580px}
+th,td{padding:8px;border-bottom:1px solid #ddd;text-align:right}
+th:first-child,td:first-child{text-align:left}
+.scroll{overflow-x:auto}
+.result{font-weight:bold;margin-top:10px}
+.field{margin-top:10px}
+.field input{width:110px}
+canvas{width:100%;height:300px;border:1px solid #ccd2d9;background:white;display:block}
+h2,h3{margin-top:0}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>Classic Circular Force Lab</h1>
+<p>Determine the unknown rotating mass using two linear graphs.</p>
+</header>
+<main>
+<section class="card">
+<h2>Investigation</h2>
+<div class="buttons">
+<button id="part1" class="active">Part 1: Constant Radius</button>
+<button id="part2">Part 2: Constant Hanging Mass</button>
+<button id="restartlab">Restart Lab — New Radius</button>
+</div>
+<div id="instructions" class="note"></div>
+</section>
 
-let cx=370,cy=170,R=175*r,px=cx+R*Math.cos(th),py=cy+R*.42*Math.sin(th);
-let tubeX=370,tubeTop=230,tubeBottom=360,hy=385+h;
+<div class="grid">
+<section class="card">
+<h2>String-Through-a-Tube Apparatus</h2>
+<div class="row">
+<span class="pill">Rotating mass <b>Unknown</b></span>
+<span class="pill">Hanging mass <b id="hr"></b> kg</span>
+<span class="pill">Radius <b id="rad"></b> m</span>
+</div>
+<svg viewBox="0 0 850 500" aria-label="Rotating object on string above a tube with hanging mass below">
+<g id="scene"></g>
+</svg>
+<div class="row">
+<span class="pill">Revolutions <b id="revs">0</b> / 10</span>
+<span class="pill">Time <b id="time">0.00</b> s</span>
+<span class="pill">Hanging mass <b id="pos">At mark</b></span>
+</div>
+<div id="status" class="note">The hanging mass provides the inward force and sets the rotation speed. Complete exactly 10 revolutions.</div>
+</section>
 
-/* Apparatus:
-   rotating mass circles above the hand/tube;
-   string runs horizontally from rotating mass to tube top,
-   then vertically through tube to hanging mass. */
-$('scene').innerHTML=
-'<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+R+'" ry="'+(R*.42)+'" fill="none" stroke="#b8b8b8" stroke-width="2" stroke-dasharray="7 6"/>'+
-'<circle cx="'+px+'" cy="'+py+'" r="19" fill="#777" stroke="#333" stroke-width="2"/>'+
-'<text x="'+px+'" y="'+(py+5)+'" text-anchor="middle" fill="white" font-size="12">m</text>'+
-'<line x1="'+px+'" y1="'+py+'" x2="'+tubeX+'" y2="'+tubeTop+'" stroke="#333" stroke-width="3"/>'+
-'<rect x="'+(tubeX-20)+'" y="'+tubeTop+'" width="40" height="'+(tubeBottom-tubeTop)+'" rx="8" fill="#d9d9d9" stroke="#333" stroke-width="3"/>'+
-'<line x1="'+tubeX+'" y1="'+tubeTop+'" x2="'+tubeX+'" y2="'+hy+'" stroke="#222" stroke-width="3"/>'+
-'<text x="'+(tubeX+30)+'" y="'+(tubeTop+65)+'" font-size="14">tube</text>'+
-'<line x1="'+(tubeX-70)+'" y1="385" x2="'+(tubeX+70)+'" y2="385" stroke="#555" stroke-width="2" stroke-dasharray="5 4"/>'+
-'<text x="'+(tubeX+78)+'" y="390" font-size="12">reference mark</text>'+
-'<rect x="'+(tubeX-28)+'" y="'+hy+'" width="56" height="52" fill="#888" stroke="#333" stroke-width="2"/>'+
-'<text x="'+tubeX+'" y="'+(hy+31)+'" text-anchor="middle" fill="white" font-size="12">mₕ</text>'+
-'<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+R)+'" y2="'+cy+'" stroke="#777" stroke-width="1"/>'+
-'<text x="'+(cx+R/2)+'" y="'+(cy-8)+'" text-anchor="middle" font-size="13">r = '+r.toFixed(2)+' m</text>'+
-'<path d="M'+(cx-55)+' '+(cy-55)+' A75 38 0 0 1 '+(cx+55)+' '+(cy-55)+'" fill="none" stroke="#666" stroke-width="2"/>'+
-'<polygon points="'+(cx+55)+','+(cy-55)+' '+(cx+44)+','+(cy-62)+' '+(cx+46)+','+(cy-49)+'" fill="#666"/>'+
-'<text x="'+cx+'" y="'+(cy-75)+'" text-anchor="middle" font-size="13">rotation</text>';
+<aside class="card">
+<h3>Controls</h3>
+<label>Hanging mass</label>
+<input id="hm" type="range" min=".04" max=".30" step=".01" value=".10">
+<div id="hmo"></div>
+<label>Radius</label>
+<input id="radius" type="range" min=".25" max="1" step=".05" value=".60">
+<div id="ro"></div>
+<div class="buttons" style="margin-top:14px">
+<button id="start" class="primary">Start Rotation</button>
+<button id="pause">Pause</button>
+<button id="reset">Reset Trial</button>
+<button id="record">Record Trial</button>
+<button id="new">New Trial</button>
+</div>
+<div class="note">The rotating mass is hidden and remains the same in both parts. The hanging mass stays at the reference mark while the rotation speed responds to hanging mass and radius.</div>
+<div class="note">The timer measures 10 revolutions. Students calculate speed, period, and graphing values independently.</div>
+</aside>
+</div>
+
+<section class="card">
+<h3>Experimental Data — <span id="partname"></span></h3>
+<div class="scroll">
+<table>
+<thead>
+<tr>
+<th>Trial</th>
+<th>Hanging mass (kg)</th>
+<th>Radius (m)</th>
+<th>Time for 10 rev (s)</th>
+</tr>
+</thead>
+<tbody id="body"></tbody>
+</table>
+</div>
+<div class="buttons" style="margin-top:12px">
+<button id="clear">Clear This Part</button>
+<button id="csv">Download All Data (CSV)</button>
+</div>
+<p class="small">Use the measured time for 10 revolutions to calculate speed, period, and any graphing quantities on your own paper or spreadsheet.</p>
+</section>
+</main>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id),g=9.81,unknownMass=.15,TAU=2*Math.PI;
+let part=1,mh=.10,r=.60,t=0,theta=0,h=0,run=false,last=null,raf=null,finished=false,rows={1:[],2:[]},locked={1:{r:.60},2:{mh:.10}};
+
+function randomRadius(previous){
+ const choices=Array.from({length:16},(_,i)=>+(0.25+i*.05).toFixed(2)).filter(x=>x!==previous);
+ return choices[Math.floor(Math.random()*choices.length)]
 }
-function frame(s){if(!run)return;if(last==null)last=s;let d=Math.min(.04,(s-last)/1000);last=s;t+=d;let old=th;th+=2*Math.PI*rate*d;if(Math.floor(th/(2*Math.PI))>Math.floor(old/(2*Math.PI)))revs++;let q=ratio();h+=(q<.96?1:q>1.04?-1:0)*20*d;h=Math.max(-50,Math.min(50,h));draw();raf=requestAnimationFrame(frame)}
-function reset(){run=false;if(raf)cancelAnimationFrame(raf);t=th=revs=h=0;last=null;draw()}function render(){$('body').innerHTML='';rows.forEach(x=>{let tr=document.createElement('tr');tr.innerHTML='<td>'+x.n+'</td><td>'+x.mr.toFixed(3)+'</td><td>'+x.mh.toFixed(3)+'</td><td>'+x.r.toFixed(2)+'</td><td>'+x.T.toFixed(3)+'</td><td></td><td></td>';$('body').appendChild(tr)})}
-function sync(){mr=+$('rm').value;mh=+$('hm').value;r=+$('radius').value;rate=+$('rate').value;reset()}['rm','hm','radius','rate'].forEach(id=>$(id).oninput=sync);$('start').onclick=()=>{if(!run){run=true;last=null;raf=requestAnimationFrame(frame)}};$('pause').onclick=()=>{run=false;if(raf)cancelAnimationFrame(raf)};$('reset').onclick=reset;$('record').onclick=()=>{if(ratio()<.96||ratio()>1.04||t<2)return;rows.push({n:trial,mr,mh,r,T:1/rate});render()};$('new').onclick=()=>{reset();trial++};$('clear').onclick=()=>{rows=[];trial=1;render();reset()};render();draw();
-</script></body></html>
+function rotationRate(){return Math.sqrt(mh*g/(unknownMass*r))/TAU}
+function draw(){
+ $('hr').textContent=mh.toFixed(3);$('rad').textContent=r.toFixed(2);
+ $('hmo').textContent=mh.toFixed(3)+' kg'+(part===2?' (fixed)':'');
+ $('ro').textContent=r.toFixed(2)+' m'+(part===1?' (fixed)':'');
+ $('revs').textContent=Math.min(10,Math.floor(theta/TAU+1e-9));$('time').textContent=t.toFixed(2);
+ $('pos').textContent='At mark';
+ const cx=370,cy=170,R=175*r,px=cx+R*Math.cos(theta),py=cy+R*.42*Math.sin(theta);
+ const tubeX=370,tubeTop=230,tubeBottom=360,hy=385+h;
+ $('scene').innerHTML=
+ '<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+R+'" ry="'+(R*.42)+'" fill="none" stroke="#b8b8b8" stroke-width="2" stroke-dasharray="7 6"/>'+
+ '<circle cx="'+px+'" cy="'+py+'" r="19" fill="#777" stroke="#333" stroke-width="2"/>'+
+ '<text x="'+px+'" y="'+(py+5)+'" text-anchor="middle" fill="white" font-size="12">m</text>'+
+ '<line x1="'+px+'" y1="'+py+'" x2="'+tubeX+'" y2="'+tubeTop+'" stroke="#333" stroke-width="3"/>'+
+ '<rect x="'+(tubeX-20)+'" y="'+tubeTop+'" width="40" height="'+(tubeBottom-tubeTop)+'" rx="8" fill="#d9d9d9" stroke="#333" stroke-width="3"/>'+
+ '<line x1="'+tubeX+'" y1="'+tubeTop+'" x2="'+tubeX+'" y2="'+hy+'" stroke="#222" stroke-width="3"/>'+
+ '<text x="'+(tubeX+30)+'" y="'+(tubeTop+65)+'" font-size="14">tube</text>'+
+ '<line x1="'+(tubeX-70)+'" y1="385" x2="'+(tubeX+70)+'" y2="385" stroke="#555" stroke-width="2" stroke-dasharray="5 4"/>'+
+ '<text x="'+(tubeX+78)+'" y="390" font-size="12">reference mark</text>'+
+ '<rect x="'+(tubeX-28)+'" y="'+hy+'" width="56" height="52" fill="#888" stroke="#333" stroke-width="2"/>'+
+ '<text x="'+tubeX+'" y="'+(hy+31)+'" text-anchor="middle" fill="white" font-size="12">mₕ</text>'+
+ '<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+R)+'" y2="'+cy+'" stroke="#777" stroke-width="1"/>'+
+ '<text x="'+(cx+R/2)+'" y="'+(cy-8)+'" text-anchor="middle" font-size="13">r = '+r.toFixed(2)+' m</text>'+
+ '<path d="M'+(cx-55)+' '+(cy-55)+' A75 38 0 0 1 '+(cx+55)+' '+(cy-55)+'" fill="none" stroke="#666" stroke-width="2"/>'+
+ '<polygon points="'+(cx+55)+','+(cy-55)+' '+(cx+44)+','+(cy-62)+' '+(cx+46)+','+(cy-49)+'" fill="#666"/>'+
+ '<text x="'+cx+'" y="'+(cy-75)+'" text-anchor="middle" font-size="13">rotation</text>';
+ $('record').disabled=!finished||rows[part].some(x=>Math.abs(x.mh-mh)<1e-8&&Math.abs(x.r-r)<1e-8);
+ $('start').disabled=finished||run;$('pause').disabled=!run;
+ $('hm').disabled=part===2||run||t>0;$('radius').disabled=part===1||run||t>0;
+}
+function stopAnimation(){run=false;if(raf!==null)cancelAnimationFrame(raf);raf=null;last=null}
+function frame(ms){
+ if(!run)return;
+ if(last===null)last=ms;
+ const dt=Math.min(.06,Math.max(0,(ms-last)/1000));last=ms;
+ const rate=rotationRate(),remaining=(10*TAU-theta)/(TAU*rate),step=Math.min(dt,remaining);
+ theta+=TAU*rate*step;t+=step;
+ if(theta>=10*TAU-1e-8){theta=10*TAU;finished=true;stopAnimation();$('status').textContent='10 revolutions complete in '+t.toFixed(2)+' s. '+'Hanging mass at reference mark — record your trial.'}
+ draw();if(run)raf=requestAnimationFrame(frame);
+}
+function reset(){stopAnimation();t=theta=h=0;finished=false;$('status').textContent='Ready for 10 revolutions. The hanging mass determines the rotation speed.';draw()}
+function updatePart(){
+ reset();
+ $('part1').classList.toggle('active',part===1);$('part2').classList.toggle('active',part===2);
+ if(part===1){r=locked[1].r;$('radius').value=r;$('instructions').innerHTML='<b>Part 1:</b> Keep radius fixed at '+r.toFixed(2)+' m. Change the hanging mass. Graph <b>hanging mass (kg)</b> vs. <b>1/T² (s⁻²)</b>. Use slope × g / (4π²r) to find the unknown rotating mass.';}
+ else{mh=locked[2].mh;$('hm').value=mh;$('instructions').innerHTML='<b>Part 2:</b> Keep hanging mass fixed at '+mh.toFixed(2)+' kg. Change the radius. Graph <b>T² (s²)</b> vs. <b>radius (m)</b>. Use slope × hanging mass × g / (4π²) to find the unknown rotating mass.';}
+ $('partname').textContent=part===1?'Constant Radius':'Constant Hanging Mass';
+ render();draw();
+}
+function render(){
+ $('body').innerHTML='';
+ rows[part].forEach((x,i)=>{const tr=document.createElement('tr');[i+1,x.mh.toFixed(3),x.r.toFixed(2),x.t.toFixed(2)].forEach(v=>{let td=document.createElement('td');td.textContent=v;tr.appendChild(td)});$('body').appendChild(tr)});
+}
+$('hm').oninput=()=>{mh=+$('hm').value;reset()};
+$('radius').oninput=()=>{r=+$('radius').value;reset()};
+$('start').onclick=()=>{if(!run&&!finished){run=true;last=null;raf=requestAnimationFrame(frame)}};
+$('pause').onclick=()=>{stopAnimation();draw()};
+$('reset').onclick=reset;$('new').onclick=reset;
+$('record').onclick=()=>{if(!finished)return;if(rows[part].some(x=>Math.abs(x.mh-mh)<1e-8&&Math.abs(x.r-r)<1e-8))return;rows[part].push({mh,r,t});render();$('status').textContent='Trial recorded. Select New Trial and change the adjustable variable.';draw()};
+$('clear').onclick=()=>{if(confirm('Clear all data for Part '+part+'?')){rows[part]=[];render();reset()}};
+$('restartlab').onclick=()=>{if((rows[1].length||rows[2].length)&&!confirm('Restart the entire lab? This clears both data tables and assigns a new fixed radius for Part 1.'))return;locked[1].r=randomRadius(locked[1].r);rows={1:[],2:[]};part=1;updatePart()};
+$('part1').onclick=()=>{part=1;updatePart()};$('part2').onclick=()=>{part=2;updatePart()};
+$('csv').onclick=()=>{const lines=['Part,Trial,Hanging mass (kg),Radius (m),Time for 10 rev (s)'];for(const k of [1,2])rows[k].forEach((z,i)=>lines.push([k,i+1,z.mh,z.r,z.t].join(',')));const blob=new Blob([lines.join('\n')],{type:'text/csv'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='circular-force-lab-data.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+locked[1].r=randomRadius(locked[1].r);updatePart();
+</script>
+</body>
+</html>
